@@ -262,6 +262,10 @@ class ImageTab(QueueClient, QWidget):
         gb = QHBoxLayout(); u = QPushButton("Usar como entrada"); u.clicked.connect(self.use_selected)
         o = QPushButton("Abrir pasta"); o.clicked.connect(lambda: open_path(config.output_dir("pictures")))
         gb.addWidget(u); gb.addWidget(o); rv.addLayout(gb)
+        ab = QHBoxLayout(); self.up_scale = QComboBox(); self.up_scale.addItem("2x", 2); self.up_scale.addItem("4x", 4)
+        self.up_scale.setCurrentIndex(1); self.up_btn = QPushButton("Ampliar com IA")
+        self.up_btn.setToolTip("Amplia a imagem selecionada na galeria (ou escolha um arquivo) com Real-ESRGAN na CPU")
+        self.up_btn.clicked.connect(self.upscale_image); ab.addWidget(self.up_btn); ab.addWidget(self.up_scale); rv.addLayout(ab)
         sp.addWidget(scroll); sp.addWidget(mid); sp.addWidget(right); sp.setSizes([380, 520, 300])
         self.load_gallery(); self._mode_changed()
 
@@ -327,7 +331,7 @@ class ImageTab(QueueClient, QWidget):
         if mask is not None:
             mp = config.APP_DIR / "tmp_mask.png"; mp.parent.mkdir(parents=True, exist_ok=True); mask.save(mp)
             params["mask"] = str(mp)
-        self._upscale = (fw, fh, sharpen) if up else None
+        self._upscale = (fw, fh, sharpen) if up else None; self._kind = "imagem"
         self._submit(params, prompt, neg, do_tr, cfg)
 
     def _submit(self, params, prompt, neg, do_tr, cfg):
@@ -342,7 +346,28 @@ class ImageTab(QueueClient, QWidget):
             self.gen_btn.setEnabled(True); self.bar.setRange(0, 100); self.bar.setFormat("%p%"); QMessageBox.warning(self, "Tradução", msg)
         self.tjob = Job(job, self, on_info=self._info, on_done=ok, on_error=err); self.tjob.start()
 
+    def upscale_image(self):
+        it = self.gallery.currentItem(); src = it.data(Qt.UserRole) if it else None
+        if not src:
+            src, _ = QFileDialog.getOpenFileName(self, "Imagem para ampliar", str(config.output_dir("pictures")),
+                                                 "Imagens (*.png *.jpg *.jpeg *.webp *.bmp)")
+        if not src: return
+        self._kind = "ampliar"; self.up_btn.setEnabled(False)
+        self._enqueue("ampliar", {"entrada": src, "escala": self.up_scale.currentData(), "cfg_override": self.cfg(),
+                                  "saida": str(config.output_dir("pictures"))})
+
+    def _q_end(self, jid):
+        super()._q_end(jid)
+        if not self._jobs: self.up_btn.setEnabled(True)
+
     def on_result(self, path):
+        if getattr(self, "_kind", None) == "ampliar":
+            self._kind = None; self._done([path] if path else [])
+            if path and "_lanczos" in Path(path).name:
+                QMessageBox.information(self, "Ampliar", "O modelo de IA do ampliador não foi encontrado, então a imagem foi "
+                                        "ampliada pelo método simples (Lanczos). Instale o modelo com tools\\baixar_ampliador.py.")
+            return
+        self._kind = None
         up = getattr(self, "_upscale", None)
         if up and path:
             fw, fh, sharpen = up
