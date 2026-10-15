@@ -16,7 +16,7 @@ for %%F in (pt_BR-faber-medium.onnx pt_BR-faber-medium.onnx.json) do (
   if not exist "%PD%\%%F" ( echo Baixando %%F... & curl -fL --retry 3 -o "%PD%\%%F.part" "%PV%/%%F" && move /Y "%PD%\%%F.part" "%PD%\%%F" >nul || goto erro )
 )
 echo OK: modelos de voz em %VOZ%
-pause
+if not defined IA_NOPAUSE pause
 exit /b 0
 
 :whisper
@@ -29,5 +29,5 @@ exit /b 0
 
 :erro
 echo ERRO no download (veja a mensagem acima). Rode de novo: arquivos completos são pulados.
-pause
+if not defined IA_NOPAUSE pause
 exit /b 1
