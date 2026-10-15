@@ -1,0 +1,129 @@
+import json, os, shutil, subprocess, sys, time, tempfile
+from pathlib import Path
+import requests
+
+class OllamaError(Exception):
+    pass
+
+class OllamaClient:
+    def __init__(self, url="http://localhost:11434", exe=""):
+        self.url = url.rstrip("/")
+        self.exe = exe
+
+    def find_exe(self):
+        if self.exe and Path(self.exe).is_file():
+            return self.exe
+        return shutil.which("ollama") or ""
+
+    def is_running(self):
+        try:
+            return requests.get(self.url + "/api/version", timeout=2).ok
+        except requests.RequestException:
+            return False
+
+    def ensure_running(self, wait=15):
+        if self.is_running():
+            return True
+        exe = self.find_exe()
+        if not exe:
+            raise OllamaError("Ollama não encontrado. Verifique o caminho em Configurações.")
+        flags = 0x08000000 if sys.platform == "win32" else 0  # CREATE_NO_WINDOW
+        subprocess.Popen([exe, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         creationflags=flags)
+        t = time.time()
+        while time.time() - t < wait:
+            if self.is_running():
+                return True
+            time.sleep(0.5)
+        raise OllamaError("Não foi possível iniciar o Ollama (ollama serve).")
+
+    def list_models(self):
+        r = requests.get(self.url + "/api/tags", timeout=5)
+        r.raise_for_status()
+        return sorted(m["name"] for m in r.json().get("models", []))
+
+    def has_model(self, name):
+        names = self.list_models()
+        return any(n == name or n.split(":")[0] == name.split(":")[0] for n in names)
+
+    def chat_stream(self, model, messages, options, stop_flag=lambda: False):
+        body = {"model": model, "messages": messages, "stream": True, "options": options}
+        with requests.post(self.url + "/api/chat", json=body, stream=True, timeout=(5, 600)) as r:
+            if not r.ok:
+                raise OllamaError(f"Erro {r.status_code}: {r.text[:300]}")
+            for line in r.iter_lines():
+                if stop_flag():
+                    break
+                if not line:
+                    continue
+                d = json.loads(line)
+                if "error" in d:
+                    raise OllamaError(d["error"])
+                c = d.get("message", {}).get("content", "")
+                if c:
+                    yield c
+                if d.get("done"):
+                    break
+
+    def chat(self, model, messages, options=None):
+        r = requests.post(self.url + "/api/chat", json={"model": model, "messages": messages, "stream": False,
+                          "options": options or {}}, timeout=(5, 300))
+        if not r.ok:
+            raise OllamaError(f"Erro {r.status_code}: {r.text[:300]}")
+        return r.json().get("message", {}).get("content", "")
+
+    def generate(self, model, prompt, options=None):
+        r = requests.post(self.url + "/api/generate", json={"model": model, "prompt": prompt,
+                          "stream": False, "options": options or {}}, timeout=600)
+        r.raise_for_status()
+        return r.json().get("response", "")
+
+    def embed(self, model, texts):
+        r = requests.post(self.url + "/api/embed", json={"model": model, "input": texts}, timeout=600)
+        if r.status_code == 404 and "not found" not in r.text.lower():
+            # old Ollama fallback
+            return [requests.post(self.url + "/api/embeddings", json={"model": model, "prompt": t},
+                                  timeout=300).json()["embedding"] for t in texts]
+        if not r.ok:
+            raise OllamaError(f"Erro de embeddings {r.status_code}: {r.text[:300]}")
+        return r.json()["embeddings"]
+
+    def pull(self, model, progress=lambda s: None):
+        with requests.post(self.url + "/api/pull", json={"model": model, "stream": True},
+                           stream=True, timeout=(5, 3600)) as r:
+            r.raise_for_status()
+            for line in r.iter_lines():
+                if not line:
+                    continue
+                d = json.loads(line)
+                if "error" in d:
+                    raise OllamaError(d["error"])
+                st = d.get("status", "")
+                if d.get("total"):
+                    st += f" {100*d.get('completed',0)//d['total']}%"
+                progress(st)
+
+def build_modelfile(gguf_path, num_ctx=4096, threads=4, temperature=0.7, system=""):
+    lines = [f'FROM "{gguf_path}"',
+             f"PARAMETER num_ctx {int(num_ctx)}",
+             f"PARAMETER num_thread {int(threads)}",
+             f"PARAMETER temperature {float(temperature)}"]
+    if system:
+        lines.append('SYSTEM """' + system.replace('"""', "'''") + '"""')
+    return "\n".join(lines) + "\n"
+
+def create_from_gguf(exe, name, gguf_path, **kw):
+    """Gera Modelfile referenciando o GGUF no lugar e executa `ollama create`."""
+    if not Path(gguf_path).is_file():
+        raise OllamaError(f"Arquivo GGUF não encontrado: {gguf_path}")
+    if not exe:
+        raise OllamaError("ollama.exe não encontrado.")
+    d = Path(tempfile.mkdtemp(prefix="iaoff_mf_"))
+    mf = d / "Modelfile"
+    mf.write_text(build_modelfile(gguf_path, **kw), encoding="utf-8")
+    flags = 0x08000000 if sys.platform == "win32" else 0
+    p = subprocess.run([exe, "create", name, "-f", str(mf)], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", creationflags=flags)
+    if p.returncode != 0:
+        raise OllamaError((p.stderr or p.stdout)[-800:])
+    return (p.stdout or "") + (p.stderr or "")
