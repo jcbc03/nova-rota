@@ -1,0 +1,41 @@
+realesr-general-x4v3.onnx
+=========================
+Convertido para ONNX (opset 17, entrada "input" [N,3,H,W] RGB 0..1, saída "output" 4x) a partir dos pesos oficiais
+do Real-ESRGAN, sem alteração dos parâmetros, por tools/converter_ampliador.py.
+
+Origem:  https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth
+  SHA-256 do .pth:  8dc7edb9ac80ccdc30c3a5dca6616509367f05fbc184ad95b731f05bece96292
+  SHA-256 do .onnx: 5f68a264499634ecc7ccbee5ae1903bc49847f92b43c56bc7057a43eeda0fb4d
+Arquitetura: SRVGGNetCompact (num_feat=64, num_conv=32, upscale=4, prelu), de realesrgan/archs/srvgg_arch.py.
+
+Licença do Real-ESRGAN (https://github.com/xinntao/Real-ESRGAN/blob/master/LICENSE):
+
+BSD 3-Clause License
+
+Copyright (c) 2021, Xintao Wang
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

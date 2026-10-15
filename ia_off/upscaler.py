@@ -21,8 +21,9 @@ from .engine_api import Cancelled
 
 log = logging.getLogger(__name__)
 
-MODEL_URL = "https://huggingface.co/Heliosoph/realesrgan-onnx/resolve/main/realesr-general-x4v3.onnx"
-MODEL_SHA256 = "09b757accd747d7e423c1d352b3e8f23e77cc5742d04bae958d4eb8082b76fa4"
+# Modelo versionado no repo (models/), convertido dos pesos oficiais por tools/converter_ampliador.py.
+MODEL_REPO_FILE = Path(__file__).resolve().parents[1] / "models" / "realesr-general-x4v3.onnx"
+MODEL_SHA256 = "5f68a264499634ecc7ccbee5ae1903bc49847f92b43c56bc7057a43eeda0fb4d"
 SCALES = (2, 4)
 DEFAULT_TILE = 256
 DEFAULT_PAD = 24          # margem por lado (px de entrada) descartada na colagem; medido: 24 -> dif. máx 2/255 vs imagem inteira
