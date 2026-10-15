@@ -44,3 +44,11 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - Fila: sinal extra `cancelled(id)`; `progress(id, passo, total, pct, eta_s)`. Ver `docs/FILA_API.md`.
 - Roteiro de testes pronto (sub2): `docs/ROTEIRO_TESTES.md`.
 - Pendente decisão do Julio: apagar o GGUF original de 18 GB em `C:\IA\modelos\texto` (duplicado no Ollama).
+
+## Regra de centralização de modelos (aprovada pelo Julio em 15/10)
+- Todos os modelos ficam em `C:\IA\modelos`, por tipo: `texto`, `imagem`, `video`, `shared`, `ollama`, `huggingface` (ver `LEIA-ME.txt` na pasta).
+- Ollama usa `C:\IA\modelos\ollama` (`OLLAMA_MODELS`); Hugging Face/diffusers/OpenVINO usam `C:\IA\modelos\huggingface` (`HF_HOME`).
+- Projetos antigos (LivreStudio, EngenhariaIA, `C:\estudio_local`) acessam via junctions/hard links apontando pra `C:\IA\modelos`.
+- **Nenhum caminho de modelo fixo no código**: tudo vem do `config.py` e dessas variáveis. Modelo novo entra direto na subpasta certa. O sub2 checa isso antes da entrega.
+- Dados gerados (não modelos) ficam fora de `C:\IA\modelos`: índice vetorial dos documentos em `C:\IA\dados\rag`, caminho no `config.py`.
+- Qwen3-30B: o GGUF em `C:\IA\modelos\texto` virou hard link pra cópia do Ollama (conteúdo conferido); 18 GB liberados, C: com 147 GB livres.
