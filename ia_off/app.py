@@ -8,7 +8,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget, Q
 from . import config
 from .ollama_client import OllamaClient, OllamaError, create_from_gguf
 from .storage import Storage
-from .rag import VectorStore, index_file, build_prompt, citations
+from .rag import VectorStore, index_file, build_prompt, citations, migrate
+from .job_queue import JobQueue
 
 STYLE = """
 * { font-family: 'Segoe UI', sans-serif; font-size: 10.5pt; color: #e6e6e6; }
@@ -42,7 +43,8 @@ class MainWindow(QMainWindow):
         self.cfg = config.load()
         self.client = OllamaClient(self.cfg["ollama_url"], self.cfg["ollama_exe"])
         self.db = Storage(config.APP_DIR / "conversas.db")
-        self.store = VectorStore(config.APP_DIR / "rag")
+        self.store = VectorStore()  # pasta vem do rag_dir do config.py
+        self.fila = JobQueue(self)  # criada na thread da tela; a interface só escuta os sinais
         self.conv_id = None; self.worker = None; self.answer = ""
         self.setWindowTitle("IA Off — Assistente Local"); self.resize(1200, 780)
         tabs = QTabWidget(); self.setCentralWidget(tabs)
@@ -58,6 +60,12 @@ class MainWindow(QMainWindow):
         tabs.addTab(self._settings_tab(), "Configurações")
         self.reload_convs()
         self.refresh_models()
+        if self.store.needs_migration:
+            try:
+                n = migrate(self.store, lambda m: (self.status.showMessage(m), QApplication.processEvents()))
+                self.status.showMessage(f"Índice de documentos convertido: {n} trechos", 8000)
+            except Exception as ex:
+                QMessageBox.warning(self, "Documentos", f"Não consegui converter o índice antigo: {ex}")
 
     # ---------- Chat ----------
     def _chat_tab(self):
@@ -396,6 +404,8 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, e):
         from . import jobs
+        try: self.fila.shutdown(wait=True, timeout=5)
+        except Exception as ex: log_line(f"Fila não encerrou limpa: {ex}")
         busy = jobs.running()
         if busy:
             self.status.showMessage("Encerrando tarefas em andamento…"); QApplication.processEvents()
