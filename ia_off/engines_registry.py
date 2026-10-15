@@ -147,10 +147,56 @@ def gerar_video(params, on_progress, cancel_flag):
         return str(avi)
 
 
+def transcrever(params, on_progress, cancel_flag):
+    """Áudio -> texto. Grava <saida>/<nome>.txt e retorna esse caminho (o texto vai no arquivo)."""
+    from . import voice_engine
+    p = dict(params); audio = p.get("audio")
+    if not audio:
+        raise ValueError("params['audio'] (caminho) é obrigatório.")
+    cfg = _cfg(p)
+    if p.get("idioma"): cfg["whisper_lang"] = p["idioma"]
+    if p.get("modelo"): cfg["whisper_model"] = p["modelo"]
+    txt = voice_engine.transcribe(audio, on_progress, cancel_flag, cfg=cfg)
+    out = Path(p["saida"]) if p.get("saida") else Path(audio).parent
+    out.mkdir(parents=True, exist_ok=True)
+    fp = out / f"{Path(audio).stem}_{time.strftime('%Y%m%d_%H%M%S')}.txt"
+    fp.write_text(txt, encoding="utf-8")
+    return str(fp)
+
+
+def _music_dir(params):
+    if params.get("saida"):
+        return _out_dir(params, "pictures")
+    try:
+        from PySide6.QtCore import QStandardPaths as QS
+        base = Path(QS.writableLocation(QS.MusicLocation)) or Path.home() / "Music"
+    except Exception:
+        base = Path.home() / "Music"
+    d = base / "IA_Off"; d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def falar(params, on_progress, cancel_flag):
+    """Texto -> WAV. Retorna o caminho do .wav."""
+    from . import voice_engine
+    p = dict(params); text = str(p.get("texto") or "").strip()
+    if not text:
+        raise ValueError("params['texto'] é obrigatório.")
+    cfg = _cfg(p)
+    if p.get("voz"): cfg["piper_voice"] = p["voz"]
+    if p.get("arquivo"):
+        wav = Path(p["arquivo"])
+    else:
+        wav = _music_dir(p) / f"{time.strftime('%Y%m%d_%H%M%S')}_voz.wav"
+    return voice_engine.speak(text, wav, on_progress, cancel_flag, cfg=cfg)
+
+
 def register_all(queue=None):
-    """Registra 'imagem' e 'video'. Com `queue`, só naquela fila; sem, no registro global do job_queue."""
+    """Registra 'imagem', 'video', 'transcrever' e 'falar'. Com `queue`, só naquela fila; sem, no registro global do job_queue."""
     reg = queue.register_engine if queue is not None else __import__(
         "ia_off.job_queue", fromlist=["register_engine"]).register_engine
     reg("imagem", gerar_imagem)
     reg("video", gerar_video)
+    reg("transcrever", transcrever)
+    reg("falar", falar)
     return queue

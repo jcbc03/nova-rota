@@ -36,6 +36,12 @@ DEFAULTS = {
     "flux2_model": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\flux2-klein-4b\flux-2-klein-4b-Q4_0.gguf",
     "flux2_vae": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\shared\flux2-vae.safetensors",
     "flux2_llm": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\shared\Qwen3-4B-Q4_K_M.gguf",
+    # --- Voz (voice_engine.py): modelos em <voz_dir>\whisper\faster-whisper-<modelo> e <voz_dir>\piper\<voz>.onnx ---
+    "voz_dir": os.environ.get("IA_OFF_VOZ_DIR") or r"C:\IA\modelos\voz",
+    "whisper_model": "small",  # small | base | caminho de uma pasta CTranslate2
+    "whisper_lang": "pt",
+    "piper_voice": "pt_BR-faber-medium",  # nome em <voz_dir>\piper ou caminho do .onnx
+    "piper_exe": "",  # vazio = pacote python piper-tts; senão caminho do piper.exe
 }
 
 MEDIA_PATH_KEYS = [

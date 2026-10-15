@@ -129,4 +129,5 @@ def test_register_all_na_fila(app, tmp_path, fake_engine):
 def test_register_all_global(monkeypatch):
     monkeypatch.setattr(jq, "_ENGINES", {})
     er.register_all()
-    assert jq.engines() == {"imagem": er.gerar_imagem, "video": er.gerar_video}
+    assert jq.engines() == {"imagem": er.gerar_imagem, "video": er.gerar_video,
+                            "transcrever": er.transcrever, "falar": er.falar}

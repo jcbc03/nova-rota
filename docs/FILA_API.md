@@ -83,3 +83,17 @@ register_engine("imagem", motor_imagem)   # também: fila.register_engine(...) s
   metadado `upscaler = "lanczos (fallback: motivo)"`, `upscaler.ULTIMO_FALLBACK[0]` = motivo). Total = 1 passo nesse caso.
 - Arquivos de modelo faltando -> `failed` com `FileNotFoundError`. O motor de imagem (pipelines residentes) é um só por processo,
   separado do da aba Imagem (que continua no fluxo antigo até a tela migrar).
+
+### Voz (ia_off/voice_engine.py) — tipos "transcrever" e "falar"
+- `transcribe(audio_path, progress_cb=None, cancel_flag=None, cfg=None, language=None) -> str` — faster-whisper, CPU int8;
+  progresso em segundos de áudio (`passo`/`total` = s processados / duração).
+- `speak(text, out_wav, progress_cb=None, cancel_flag=None, cfg=None) -> str` (caminho do WAV mono 16 bits) — Piper;
+  progresso por frase. Usa o pacote `piper-tts`; com `piper_exe` no config usa o piper.exe (cancelar mata o processo).
+  Cancelado não deixa WAV pela metade.
+- Config: `voz_dir` (padrão `C:\IA\modelos\voz`, env `IA_OFF_VOZ_DIR`), `whisper_model` (`small`|`base`|pasta),
+  `whisper_lang` (`pt`), `piper_voice` (`pt_BR-faber-medium` ou caminho .onnx), `piper_exe` ("").
+  Pastas: `<voz_dir>\whisper\faster-whisper-<modelo>\` e `<voz_dir>\piper\<voz>.onnx(+.json)`. Baixar com `baixar_voz.bat`.
+- Fila `"transcrever"`: `audio` (obrigatório, caminho), `idioma` (padrão do config), `modelo` (small/base), `saida` (pasta;
+  padrão = pasta do áudio), `cfg_override`. Retorna o caminho do `.txt` com o texto (ler o arquivo no `finished`).
+- Fila `"falar"`: `texto` (obrigatório), `voz` (padrão do config), `arquivo` (caminho .wav) ou `saida` (pasta; padrão Música\IA_Off),
+  `cfg_override`. Retorna o caminho do `.wav`.
