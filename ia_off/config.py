@@ -49,13 +49,13 @@ MEDIA_PATH_KEYS = [
     ("lcm_lora_path", "LCM LoRA (.safetensors)", "file"),
     ("inpaint_path", "SD 1.5 Inpainting (pasta)", "dir"),
     ("pix2pix_path", "InstructPix2Pix (pasta ou id HF em cache)", "dir"),
+    ("upscale_model", "Ampliador: Real-ESRGAN (.onnx)", "file"),
     ("sdcpp_dir", "Pasta do stable-diffusion.cpp (vazio = automático)", "dir"),
     ("wan_model", "Wan 2.1 T2V 1.3B (GGUF)", "file"),
     ("wan_t5", "Wan: codificador UMT5 (GGUF)", "file"),
     ("wan_vae", "Wan: VAE", "file"),
     ("flux2_model", "FLUX.2 Klein 4B (GGUF)", "file"),
     ("flux2_vae", "FLUX.2: VAE", "file"),
-    ("upscale_model", "Ampliador: Real-ESRGAN (.onnx)", "file"),
     ("flux2_llm", "FLUX.2: codificador Qwen3-4B (GGUF)", "file"),
 ]
 
