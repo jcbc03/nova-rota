@@ -45,6 +45,7 @@ class MainWindow(QMainWindow):
         self.db = Storage(config.APP_DIR / "conversas.db")
         self.store = VectorStore()  # pasta vem do rag_dir do config.py
         self.fila = JobQueue(self)  # criada na thread da tela; a interface só escuta os sinais
+        from .engines_registry import register_all; register_all(self.fila)
         self.conv_id = None; self.worker = None; self.answer = ""
         self.setWindowTitle("IA Off — Assistente Local"); self.resize(1200, 780)
         tabs = QTabWidget(); self.setCentralWidget(tabs)
