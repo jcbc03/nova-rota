@@ -547,3 +547,79 @@ class VideoTab(QueueClient, QWidget):
 
     def _done(self, path):
         self.bar.setValue(100); self.load_list(); self.preview(path); self.status.showMessage(f"Vídeo salvo: {path}", 10000)
+
+
+class VoiceTab(QueueClient, QWidget):
+    """Voz offline: transcrever (Whisper) e falar (Piper), ambos pela fila."""
+    def __init__(self, cfg_getter, status):
+        super().__init__(); self.cfg = cfg_getter; self.status = status; self.audio_path = None; self._tipo = None
+        v = QVBoxLayout(self)
+        # gen_btn é o contêiner dos dois botões: desabilitar ele trava ambos enquanto há tarefa
+        self.gen_btn = QWidget(); bl = QHBoxLayout(self.gen_btn); bl.setContentsMargins(0, 0, 0, 0)
+        g1 = QGroupBox("Transcrever áudio (Whisper, sem internet)"); f1 = QVBoxLayout(g1)
+        h = QHBoxLayout(); pick = QPushButton("Escolher áudio…"); pick.clicked.connect(self.pick_audio)
+        self.audio_lbl = QLabel("Nenhum arquivo escolhido", objectName="hint"); h.addWidget(pick); h.addWidget(self.audio_lbl, 1)
+        f1.addLayout(h)
+        self.tr_text = QPlainTextEdit(); self.tr_text.setReadOnly(True); self.tr_text.setPlaceholderText("O texto transcrito aparece aqui")
+        f1.addWidget(self.tr_text, 1)
+        cp = QPushButton("Copiar texto"); cp.clicked.connect(lambda: self._copy(self.tr_text.toPlainText())); f1.addWidget(cp)
+        g2 = QGroupBox("Falar texto (Piper, voz pt-BR)"); f2 = QVBoxLayout(g2)
+        self.say = QPlainTextEdit(); self.say.setPlaceholderText("Digite o texto para ser falado…"); f2.addWidget(self.say, 1)
+        self.wav_lbl = QLabel("", objectName="hint"); f2.addWidget(self.wav_lbl)
+        ph = QHBoxLayout(); self.play_btn = QPushButton("▶ Ouvir de novo"); self.play_btn.setEnabled(False)
+        self.play_btn.clicked.connect(self.play); ph.addWidget(self.play_btn); ph.addStretch(); f2.addLayout(ph)
+        self.t_btn = QPushButton("Transcrever"); self.t_btn.clicked.connect(self.transcribe)
+        self.s_btn = QPushButton("Falar"); self.s_btn.clicked.connect(self.speak)
+        bl.addWidget(self.t_btn); bl.addWidget(self.s_btn); bl.addStretch()
+        self.cancel_btn = QPushButton("Cancelar"); self.cancel_btn.setObjectName("danger"); self.cancel_btn.setEnabled(False)
+        self.cancel_btn.clicked.connect(self.cancel_queue); bl.addWidget(self.cancel_btn)
+        sp = QSplitter(); sp.addWidget(g1); sp.addWidget(g2); v.addWidget(sp, 1)
+        v.addWidget(self.gen_btn)
+        self.bar = QProgressBar(); self.bar.setValue(0); v.addWidget(self.bar)
+        self.player = None; self.wav = None
+        try:
+            from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+            self.player = QMediaPlayer(self); self.audio_out = QAudioOutput(self); self.player.setAudioOutput(self.audio_out)
+        except Exception:
+            pass
+
+    def _copy(self, t):
+        from PySide6.QtWidgets import QApplication
+        if t: QApplication.clipboard().setText(t); self.status.showMessage("Copiado!", 3000)
+
+    def pick_audio(self):
+        fn, _ = QFileDialog.getOpenFileName(self, "Áudio", str(Path.home()), "Áudio (*.wav *.mp3 *.m4a *.ogg *.flac *.opus *.webm)")
+        if fn: self.audio_path = fn; self.audio_lbl.setText(Path(fn).name)
+
+    def transcribe(self):
+        if not self.audio_path:
+            QMessageBox.information(self, "Voz", "Escolha um arquivo de áudio primeiro."); return
+        self._tipo = "transcrever"; self.tr_text.clear()
+        self._enqueue("transcrever", {"audio": self.audio_path, "cfg_override": self.cfg()})
+
+    def speak(self):
+        t = self.say.toPlainText().strip()
+        if not t:
+            QMessageBox.information(self, "Voz", "Digite um texto para falar."); return
+        self._tipo = "falar"
+        self._enqueue("falar", {"texto": t, "cfg_override": self.cfg()})
+
+    def _q_progress(self, jid, passo, total, pct, eta_s):
+        if not self._mine(jid): return
+        if total <= 0: self.bar.setRange(0, 0); return
+        self.bar.setRange(0, 100); self.bar.setValue(int(pct))
+        unidade = "s de áudio" if self._tipo == "transcrever" else "frase(s)"
+        txt = f"{passo} de {total} {unidade} · {int(pct)}% · falta {fmt_eta(eta_s)}"
+        self.bar.setFormat(txt); self.status.showMessage(txt)
+
+    def on_result(self, path):
+        if self._tipo == "transcrever":
+            try: self.tr_text.setPlainText(Path(path).read_text(encoding="utf-8"))
+            except Exception as e: self.tr_text.setPlainText(f"Não consegui ler {path}: {e}")
+            self.status.showMessage(f"Transcrição salva em {path}", 8000)
+        else:
+            self.wav = path; self.wav_lbl.setText(f"Salvo em {path}"); self.play_btn.setEnabled(bool(self.player)); self.play()
+
+    def play(self):
+        if self.player and self.wav:
+            self.player.setSource(QUrl.fromLocalFile(str(self.wav))); self.player.play()

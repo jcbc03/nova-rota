@@ -58,7 +58,9 @@ class MainWindow(QMainWindow):
         self.image_tab.set_queue(self.fila); self.video_tab.set_queue(self.fila)
         tabs.addTab(self.image_tab, "Imagem")
         tabs.addTab(self.video_tab, "Vídeo")
-        tabs.addTab(self._soon("Reconhecimento e síntese de voz"), "Voz")
+        from .media_tabs import VoiceTab
+        self.voice_tab = VoiceTab(lambda: dict(self.cfg), self.status); self.voice_tab.set_queue(self.fila)
+        tabs.addTab(self.voice_tab, "Voz")
         tabs.addTab(self._settings_tab(), "Configurações")
         self.reload_convs()
         self.refresh_models()
