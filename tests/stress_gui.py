@@ -16,12 +16,11 @@ def on_main(tag):
 
 class FakeEngine:
     cfg = {}; last_backend = "fake"
-    def generate(self, mode, prompt, steps=4, batch=1, progress=lambda i, n: None, cancelled=lambda: False, log=lambda s: None, **kw):
-        log("fake engine")
+    def generate(self, mode, prompt, steps=4, batch=1, progress_cb=None, cancel_flag=None, **kw):
         total = 3000
         for i in range(total):
-            if cancelled(): raise Cancelled()
-            progress(i + 1, total)
+            if cancel_flag is not None and cancel_flag.is_set(): raise Cancelled()
+            if progress_cb: progress_cb(i + 1, total)
             time.sleep(0.0005)
         from PIL import Image
         return [(1, Image.new("RGB", (64, 64)))]
@@ -29,13 +28,18 @@ class FakeEngine:
 qa = QApplication(sys.argv); A.install_diagnostics()
 qa.aboutToQuit.connect(lambda: jobs.shutdown_all(8000))
 w = A.MainWindow(); w.show()
-it = w.image_tab; it.engine = FakeEngine(); it.tr_chk.setChecked(False); it.prompt.setPlainText("gato")
-orig_prog, orig_fail, orig_done = it._prog, it._fail, it._done
-def prog(i, n, m): on_main("prog"); seen["prog"] += 1; orig_prog(i, n, m)
+from ia_off import engines_registry
+engines_registry._image_engine[0] = FakeEngine()   # motor único da fila (a aba não tem motor próprio)
+vt = w.video_tab
+it = w.image_tab; it.tr_chk.setChecked(False); it.prompt.setPlainText("gato")
 results = []
-def fail(m): on_main("fail"); results.append(m); orig_fail(m)
-def done(p): on_main("done"); results.append("ok"); orig_done(p)
-it._prog, it._fail, it._done = prog, fail, done
+def _prog(jid, *a):
+    on_main("prog"); seen["prog"] += 1
+    if jid in vt._jobs: seen["video_lines"] += 1
+w.fila.progress.connect(_prog)
+w.fila.finished.connect(lambda jid, p: (on_main("done"), results.append("ok")))
+w.fila.failed.connect(lambda jid, m: (on_main("fail"), results.append(m)))
+w.fila.cancelled.connect(lambda jid: (on_main("cancel"), results.append("Cancelado.")))
 
 # chat com streaming falso e rápido
 def fake_stream(model, msgs, opts, stop_flag=lambda: False):
@@ -53,15 +57,10 @@ from ia_off import sdcpp, perf
 fake = os.path.join(os.environ["IA_OFF_HOME"], "fake_sd.py")
 open(fake, "w").write("import sys,time\nfor i in range(1,100000):\n sys.stdout.write(f'\\r|==> | {i}/99999 - 0.01s/it')\n if i%500==0: print('linha de log', i)\n")
 real_rwf = sdcpp.run_with_fallback
-sdcpp.run_with_fallback = lambda folder, variant, mk, on_line, cancelled, log=None, progress=None, ensure=None: \
-    real_rwf(folder, "cpu", lambda b: [sys.executable, fake], on_line, cancelled, log or (lambda s: None),
-             ensure=lambda *a: fake)
-vt = w.video_tab
+sdcpp.run_with_fallback = lambda folder, variant, mk, *a, **kw: \
+    real_rwf(folder, "cpu", lambda b: [sys.executable, fake], *a, **dict(kw, ensure=lambda *x: fake))
 for k in ("wan_model", "wan_t5", "wan_vae"): w.cfg[k] = fake
 vt.prompt.setPlainText("um gato"); vt.tr_chk.setChecked(False)
-orig_vprog = vt._prog
-def vprog(i, n, m): on_main("vprog"); seen["video_lines"] += 1; orig_vprog(i, n, m)
-vt._prog = vprog
 
 steps = []
 def step(fn, ms): steps.append((fn, ms))
@@ -71,7 +70,7 @@ step(lambda: it.generate(), 900)                     # 2º job
 step(lambda: (w.input.setPlainText("oi"), w.send()), 950)  # chat em paralelo
 step(lambda: w.stop(), 1600)                         # para o chat
 step(lambda: vt.generate(), 1700)                    # vídeo (subprocesso)
-step(lambda: setattr(vt.job, "cancel", True), 2600)  # cancela vídeo (mata o processo)
+step(lambda: vt.cancel_queue(), 2600)               # cancela vídeo pela fila (mata o processo)
 step(lambda: vt.generate(), 3200)                    # vídeo de novo
 step(lambda: it.generate(), 3300)                    # e imagem de novo
 step(lambda: w.close(), 3600)                        # fecha com tudo rodando
@@ -81,6 +80,6 @@ QTimer.singleShot(30000, lambda: (print("TIMEOUT"), os._exit(3)))
 qa.exec()
 assert not bad, f"callbacks fora da thread principal: {set(bad)}"
 assert "Cancelado." in results, results
-assert seen["prog"] > 20 and seen["chunks"] >= 2 and seen["video_lines"] > 5, seen
+assert seen["prog"] > 20 and seen["chunks"] >= 2 and seen["video_lines"] > 0, seen  # a fila agrupa o progresso (~10/s) e o vídeo espera a imagem
 assert not jobs.running(), "threads ainda rodando"
 print("STRESS OK", seen, results)
