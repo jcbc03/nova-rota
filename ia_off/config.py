@@ -24,6 +24,10 @@ DEFAULTS = {
     "lcm_lora_path": r"C:\estudio_local\models\imagem\lcm-lora-sdv1-5\pytorch_lora_weights.safetensors",
     "inpaint_path": r"C:\estudio_local\models\imagem\sd15-inpainting",
     "pix2pix_path": "timbrooks/instruct-pix2pix",
+    # --- Ampliador (upscaler.py): Real-ESRGAN ONNX; env IA_OFF_UPSCALE_MODEL sobrepõe ---
+    "upscale_model": os.environ.get("IA_OFF_UPSCALE_MODEL") or r"C:\IA\modelos\imagem\realesr-general-x4v3.onnx",
+    "upscale_backend": "auto",  # auto (onnxruntime -> openvino) | onnxruntime | openvino | lanczos
+    "upscale_tile": 256,        # lado do bloco de entrada (px); menor = menos RAM
     # --- sd.cpp (Wan / FLUX.2) ---
     "sdcpp_dir": "",  # vazio = %APPDATA%\IA_Off_v1\sdcpp
     "wan_model": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\wan2.1-t2v-1.3b\wan2.1_t2v_1.3b-q5_k_m.gguf",
@@ -45,6 +49,7 @@ MEDIA_PATH_KEYS = [
     ("wan_vae", "Wan: VAE", "file"),
     ("flux2_model", "FLUX.2 Klein 4B (GGUF)", "file"),
     ("flux2_vae", "FLUX.2: VAE", "file"),
+    ("upscale_model", "Ampliador: Real-ESRGAN (.onnx)", "file"),
     ("flux2_llm", "FLUX.2: codificador Qwen3-4B (GGUF)", "file"),
 ]
 

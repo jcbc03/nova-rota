@@ -3,7 +3,7 @@
 Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
 
 ## Métodos
-- `enqueue(tipo, params) -> id`: tipo = "imagem" | "video"
+- `enqueue(tipo, params) -> id`: tipo = "imagem" | "video" | "ampliar"
 - `cancel(id)`: cancela na fila ou rodando
 - `list_jobs()`: estados: na_fila, rodando, concluida, falhou, cancelada
 
@@ -72,5 +72,14 @@ register_engine("imagem", motor_imagem)   # também: fila.register_engine(...) s
   `total` = steps × batch.
 - `"video"` (Wan 2.1 via sd.cpp): `width` (480), `height` (272), `frames` (17; ajustado p/ 4k+1), `steps` (20),
   `cfg_scale` (6.0), `fps` (16), `flow_shift` (3.0). Retorna o `.mp4` (ou o `.avi` se a conversão falhar) + um `.txt` com os parâmetros.
+- `"ampliar"` (DEV beck, `ia_off/upscaler.py`, `ampliar(params, on_progress, cancel_flag)`; Real-ESRGAN ONNX na CPU):
+  `entrada` (caminho da imagem; obrigatório; aceita também `input`), `escala` (2|4, padrão 4; aceita `scale`),
+  `saida` (opcional: arquivo `.png/.jpg/.webp` OU pasta; padrão Imagens\IA_Off; aceita `output`), `tile` (padrão `cfg["upscale_tile"]`=256),
+  `cfg_override`. Progresso = bloco i de N (`total` = nº de blocos); `cancel_flag` checado entre blocos (-> `Cancelled`).
+  Retorna o PNG `AAAAMMDD_HHMMSS_<nome>_x<escala>.png` (transparência preservada; metadado `upscaler`).
+  Config: `upscale_model` (.onnx; env `IA_OFF_UPSCALE_MODEL`; padrão `C:\IA\modelos\imagem\realesr-general-x4v3.onnx`),
+  `upscale_backend` (`auto`|`onnxruntime`|`openvino`|`lanczos`), `upscale_tile`. Baixar o modelo (~5 MB, SHA-256 conferido):
+  `python tools\baixar_ampliador.py`. Sem modelo/runtime: NÃO falha, amplia com Lanczos e sinaliza (nome `..._x4_lanczos.png`,
+  metadado `upscaler = "lanczos (fallback: motivo)"`, `upscaler.ULTIMO_FALLBACK[0]` = motivo). Total = 1 passo nesse caso.
 - Arquivos de modelo faltando -> `failed` com `FileNotFoundError`. O motor de imagem (pipelines residentes) é um só por processo,
   separado do da aba Imagem (que continua no fluxo antigo até a tela migrar).

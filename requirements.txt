@@ -15,3 +15,5 @@ peft>=0.12
 pillow>=10
 imageio>=2.34
 imageio-ffmpeg>=0.5
+# --- v3: ampliador (upscaler.py) — Real-ESRGAN ONNX na CPU, sem torch; openvino (opcional) também lê o .onnx ---
+onnxruntime>=1.17
