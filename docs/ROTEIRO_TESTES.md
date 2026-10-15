@@ -64,6 +64,14 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | S2 | Rodar Benchmark CPU x GPU (OpenVINO) | Resultado registrado aqui | ⏳ |
 | S3 | Desligar a internet e usar todas as abas | Tudo funciona offline | ⏳ |
 
+## 8. Regra de centralização (antes da entrega)
+| ID | Passos | Esperado | Status |
+|---|---|---|---|
+| R1 | `rg -n -i 'C:\\\\|C:/' ia_off --glob '!config.py'` | Nenhum caminho fixo fora do `config.py` (15/10: ✅ limpo) | ⏳ |
+| R2 | Conferir `OLLAMA_MODELS` e `HF_HOME` no PC | Apontam pra `C:\IA\modelos\ollama` e `\huggingface` | ⏳ |
+| R3 | Índice de documentos após a busca vetorial | Gravado em `C:\IA\dados\rag` | ⏳ |
+| R4 | Abrir LivreStudio, EngenhariaIA e estudio_local | Continuam achando os modelos | ⏳ |
+
 ## Registro de falhas
 | Data | ID | Versão | O que aconteceu | Responsável | Status |
 |---|---|---|---|---|---|
