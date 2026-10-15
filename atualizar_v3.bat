@@ -36,7 +36,7 @@ call :log "   OK (config.json fica em %APPDATA%\IA_Off_v1 e nao e alterado)"
 call :log "[2/6] Copiando o codigo novo"
 robocopy "%PKG%\ia_off" "%APP%\ia_off" /E /XD __pycache__ /NFL /NDL /NJH /NP /LOG+:"%LOG%" >nul
 if errorlevel 8 ( call :log "ERRO ao copiar ia_off." & goto fim_erro )
-for %%D in (tools docs) do if exist "%PKG%\%%D" robocopy "%PKG%\%%D" "%APP%\%%D" /E /XD __pycache__ /NFL /NDL /NJH /NP /LOG+:"%LOG%" >nul
+for %%D in (tools docs models) do if exist "%PKG%\%%D" robocopy "%PKG%\%%D" "%APP%\%%D" /E /XD __pycache__ /NFL /NDL /NJH /NP /LOG+:"%LOG%" >nul
 for %%F in ("%PKG%\*.bat" "%PKG%\*.txt" "%PKG%\*.md") do copy /Y "%%~F" "%APP%\" >nul
 call :log "   OK"
 
