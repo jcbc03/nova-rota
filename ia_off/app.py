@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
         from .media_tabs import ImageTab, VideoTab
         self.image_tab = ImageTab(lambda: dict(self.cfg), self.status, self.set_cfg)
         self.video_tab = VideoTab(lambda: dict(self.cfg), self.status, self.set_cfg)
+        self.image_tab.set_queue(self.fila); self.video_tab.set_queue(self.fila)
         tabs.addTab(self.image_tab, "Imagem")
         tabs.addTab(self.video_tab, "Vídeo")
         tabs.addTab(self._soon("Reconhecimento e síntese de voz"), "Voz")

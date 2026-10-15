@@ -149,7 +149,64 @@ class SizeSelector(QWidget):
         self.cfg_set(**{self.prefix + "aspect": self.aspect.currentText(), self.prefix + "res": self.res.currentData(),
                         self.prefix + "w": self.w.value(), self.prefix + "h": self.h.value()})
 
-class ImageTab(QWidget):
+def fmt_eta(eta_s):
+    if eta_s is None or eta_s < 0: return "calculando…"
+    m, sec = divmod(int(eta_s), 60); h, m = divmod(m, 60)
+    return f"{h}h{m:02d}min" if h else (f"{m}min{sec:02d}s" if m else f"{sec}s")
+
+class QueueClient:
+    """Liga uma aba à JobQueue (fila única do app). A aba só escuta sinais; nada de thread mexendo na tela."""
+    def set_queue(self, fila):
+        self.fila = fila; self._jobs = set()
+        fila.started.connect(self._q_started); fila.progress.connect(self._q_progress)
+        fila.finished.connect(self._q_finished); fila.failed.connect(self._q_failed); fila.cancelled.connect(self._q_cancelled)
+
+    def _enqueue(self, tipo, params):
+        if getattr(self, "fila", None) is None:
+            raise RuntimeError("Fila de tarefas indisponível.")
+        jid = self.fila.enqueue(tipo, params); self._jobs.add(jid); self.qid = jid
+        self.gen_btn.setEnabled(False); self.cancel_btn.setEnabled(True)
+        self.bar.setRange(0, 0); self.bar.setFormat("Na fila…"); self.status.showMessage("Tarefa na fila…")
+        return jid
+
+    def _mine(self, jid): return jid in getattr(self, "_jobs", ())
+
+    def _q_started(self, jid):
+        if self._mine(jid): self.bar.setRange(0, 0); self.bar.setFormat("Carregando modelo…"); self.status.showMessage("Rodando…")
+
+    def _q_progress(self, jid, passo, total, pct, eta_s):
+        if not self._mine(jid): return
+        if total <= 0: self.bar.setRange(0, 0); return
+        self.bar.setRange(0, total); self.bar.setValue(passo)
+        txt = f"Passo {passo}/{total} · {int(pct)}% · falta {fmt_eta(eta_s)}"
+        self.bar.setFormat(txt); self.status.showMessage(txt)
+
+    def _q_end(self, jid):
+        self._jobs.discard(jid)
+        if getattr(self, "qid", None) == jid: self.qid = None
+        if not self._jobs:
+            self.gen_btn.setEnabled(True); self.cancel_btn.setEnabled(False); self.bar.setRange(0, 100); self.bar.setFormat("%p%")
+
+    def _q_finished(self, jid, path):
+        if not self._mine(jid): return
+        self._q_end(jid); self.bar.setValue(100); self.on_result(path)
+
+    def _q_failed(self, jid, err):
+        if not self._mine(jid): return
+        self._q_end(jid); self.bar.setValue(0); self.status.showMessage(err, 8000)
+        if err != "Cancelado.": QMessageBox.warning(self, "Erro na geração", err)
+
+    def _q_cancelled(self, jid):
+        if not self._mine(jid): return
+        self._q_end(jid); self.bar.setValue(0); self.status.showMessage("Cancelado.", 6000)
+
+    def cancel_queue(self):
+        if getattr(self, "qid", None):
+            self.fila.cancel(self.qid); self.status.showMessage("Cancelando… (termina o passo atual)")
+            return True
+        return False
+
+class ImageTab(QueueClient, QWidget):
     def __init__(self, cfg_getter, status, cfg_set=lambda **kw: None):
         super().__init__(); self.cfg = cfg_getter; self.status = status; self.engine = None; self.job = None
         self.init_image = None
@@ -261,43 +318,50 @@ class ImageTab(QWidget):
         if m == "inpaint" and mask.getbbox() is None:
             QMessageBox.information(self, "Inpaint", "Marque 'Pintar máscara' e pinte a área a ser refeita."); return
         cfg = self.cfg(); w, h, fw, fh, up = self.sizesel.plan(); sharpen = self.sharpen.isChecked()
-        p = dict(prompt=prompt, negative=self.neg.toPlainText().strip(), width=w, height=h, steps=self.steps.value(),
-                 guidance=self.guid.value(), seed=self.seed.value(), batch=self.batch.value())
-        out = config.output_dir("pictures"); init = self.init_image; do_tr = self.tr_chk.isChecked()
-        self.tr_out.clear()
-        p["final_w"], p["final_h"] = fw, fh
-        strength, img_guid, use_lcm = self.strength.value(), self.img_guid.value(), self.lcm.isChecked()  # lidos na GUI
-        def finish(im):
-            if up:
-                j_last[0].progress.emit(0, 0, f"Ampliando para {fw}×{fh} (Lanczos)…")
+        neg = self.neg.toPlainText().strip(); do_tr = self.tr_chk.isChecked(); self.tr_out.clear()
+        params = dict(modo=m, width=w, height=h, steps=self.steps.value(), guidance=self.guid.value(), seed=self.seed.value(),
+                      batch=self.batch.value(), strength=self.strength.value(), image_guidance=self.img_guid.value(),
+                      lcm=self.lcm.isChecked(), cfg_override=cfg, saida=str(config.output_dir("pictures")))
+        if self.init_image is not None and m != "txt2img":
+            params["init_image"] = str(getattr(self, "init_path", ""))
+        if mask is not None:
+            mp = config.APP_DIR / "tmp_mask.png"; mp.parent.mkdir(parents=True, exist_ok=True); mask.save(mp)
+            params["mask"] = str(mp)
+        self._upscale = (fw, fh, sharpen) if up else None
+        self._submit(params, prompt, neg, do_tr, cfg)
+
+    def _submit(self, params, prompt, neg, do_tr, cfg):
+        """Tradução (rápida, LLM pequeno) roda antes; a geração pesada vai pra fila."""
+        if not do_tr:
+            params.update(prompt=prompt, negative=neg); self._enqueue("imagem", params); return
+        self.gen_btn.setEnabled(False); self.bar.setRange(0, 0); self.bar.setFormat("Traduzindo prompt…")
+        def job(j): return translate_in_job(j, cfg, prompt, neg)
+        def ok(r):
+            params.update(prompt=r[0], negative=r[1]); self._enqueue("imagem", params)
+        def err(msg):
+            self.gen_btn.setEnabled(True); self.bar.setRange(0, 100); self.bar.setFormat("%p%"); QMessageBox.warning(self, "Tradução", msg)
+        self.tjob = Job(job, self, on_info=self._info, on_done=ok, on_error=err); self.tjob.start()
+
+    def on_result(self, path):
+        up = getattr(self, "_upscale", None)
+        if up and path:
+            fw, fh, sharpen = up
+            self.status.showMessage(f"Ampliando para {fw}×{fh} (Lanczos)…")
+            def job(j):
+                from PIL import Image
                 from .sizing import upscale
-                return upscale(im, fw, fh, sharpen)
-            return im
-        j_last = [None]
-        def job(j):
-            j_last[0] = j
-            prog = lambda i, n, msg="": j.progress.emit(i, n, msg)
-            p["prompt_original"], p["negative_original"] = p["prompt"], p["negative"]
-            if do_tr:
-                p["prompt"], p["negative"] = translate_in_job(j, cfg, p["prompt"], p["negative"])
-            if m == "flux2":
-                return self._flux2(j, cfg, p, out, finish)
-            if self.engine is None:
-                from .image_engine import ImageEngine
-                self.engine = ImageEngine(cfg)
-            self.engine.cfg = cfg
-            j.progress.emit(0, 0, "Carregando modelo…")
-            gp = {k: v for k, v in p.items() if not k.endswith("_original") and not k.startswith("final_")}
-            imgs = self.engine.generate(m, log=lambda t: j.info.emit("log", t), init_image=init, mask=mask, strength=strength,
-                                        image_guidance=img_guid, lcm=use_lcm,
-                                        progress=lambda i, n: prog(i, n, f"Passo {i}/{n}"), cancelled=lambda: j.cancel, **gp)
-            paths = []
-            tag = "_en" if p["prompt"] != p["prompt_original"] else ""
-            for seed, im in imgs:
-                fp = out / f"{time.strftime('%Y%m%d_%H%M%S')}_{m}_{seed}{tag}.png"
-                save_png(finish(im), fp, image_meta(p, m, seed)); paths.append(fp)
-            return paths
-        self._start(job)
+                import glob
+                stem = Path(path).name.rsplit("_", 1)[0]
+                outs = [Path(path)] + [Path(x) for x in glob.glob(str(Path(path).parent / (stem + "_*.png"))) if Path(x) != Path(path)]
+                for fp in outs:
+                    with Image.open(fp) as im0: im0.load(); info = dict(im0.info); im = im0.copy()
+                    from PIL.PngImagePlugin import PngInfo
+                    pi = PngInfo(); [pi.add_itxt(k, str(v)) for k, v in info.items() if isinstance(v, str)]
+                    upscale(im, fw, fh, sharpen).save(fp, pnginfo=pi)
+                return [path]
+            self.ujob = Job(job, self, on_done=self._done, on_error=self._fail); self.ujob.start()
+        else:
+            self._done([path] if path else [])
 
     def _flux2(self, j, cfg, p, out, finish=lambda im: im):
         from . import sdcpp, perf
@@ -355,9 +419,10 @@ class ImageTab(QWidget):
         if msg != "Cancelado.": QMessageBox.warning(self, "Erro na geração", msg)
 
     def cancel(self):
+        if self.cancel_queue(): return
         if self.job: self.job.cancel = True; self.status.showMessage("Cancelando… (termina o passo atual)")
 
-class VideoTab(QWidget):
+class VideoTab(QueueClient, QWidget):
     def __init__(self, cfg_getter, status, cfg_set=lambda **kw: None):
         super().__init__(); self.cfg = cfg_getter; self.status = status; self.job = None
         root = QHBoxLayout(self); sp = QSplitter(); root.addWidget(sp)
@@ -384,7 +449,7 @@ class VideoTab(QWidget):
         f.addRow("FPS:", self.fps); f.addRow("Semente:", self.seed)
         gh = QHBoxLayout(); self.gen_btn = QPushButton("Gerar vídeo"); self.gen_btn.clicked.connect(self.generate)
         self.cancel_btn = QPushButton("Cancelar"); self.cancel_btn.setObjectName("danger"); self.cancel_btn.setEnabled(False)
-        self.cancel_btn.clicked.connect(lambda: self.job and setattr(self.job, "cancel", True))
+        self.cancel_btn.clicked.connect(lambda: self.cancel_queue() or (self.job and setattr(self.job, "cancel", True)))
         gh.addWidget(self.gen_btn); gh.addWidget(self.cancel_btn); f.addRow(gh)
         self.bar = QProgressBar(); f.addRow(self.bar)
         self.dl_btn = QPushButton("Baixar/verificar stable-diffusion.cpp"); self.dl_btn.clicked.connect(self.check_bin); f.addRow(self.dl_btn)
@@ -430,7 +495,6 @@ class VideoTab(QWidget):
                     done=lambda b: self.log.appendPlainText(f"sd-cli:\n{b}"))
 
     def generate(self):
-        from . import sdcpp
         prompt = self.prompt.toPlainText().strip()
         if not prompt:
             QMessageBox.information(self, "Vídeo", "Escreva um prompt."); return
@@ -438,34 +502,25 @@ class VideoTab(QWidget):
         missing = [cfg[k] for k in ("wan_model", "wan_t5", "wan_vae") if not Path(cfg[k]).is_file()]
         if missing:
             QMessageBox.warning(self, "Vídeo", "Arquivos não encontrados:\n" + "\n".join(missing)); return
-        w, h = self.sizesel.plan()[:2]; frames = sdcpp.wan_frames(self.frames.value())
-        seed = self.seed.value() if self.seed.value() >= 0 else int(time.time()) % (2**31)
-        out = config.output_dir("videos"); stem = f"{time.strftime('%Y%m%d_%H%M%S')}_wan_{seed}"
-        neg, steps, cfgs, fps = self.neg.toPlainText().strip(), self.steps.value(), self.cfgs.value(), self.fps.value()
-        do_tr = self.tr_chk.isChecked(); self.tr_out.clear()
-        def job(j):
-            pr_en, neg_en = translate_in_job(j, cfg, prompt, neg) if do_tr else (prompt, neg)
-            j.progress.emit(-1, -1, f"Prompt usado: {pr_en}" + (f" | Negativo: {neg_en}" if neg_en else ""))
-            from . import perf
-            avi = out / f"{stem}.avi"
-            mk = lambda b: sdcpp.build_wan_args(b, cfg, pr_en, avi, neg_en, w, h, frames, steps, cfgs, seed, fps)
-            (out / f"{stem}.txt").write_text(f"prompt: {pr_en}\nnegative: {neg_en}\nprompt_original: {prompt}\n"
-                f"negative_original: {neg}\nseed: {seed}\nsize: {w}x{h}\nframes: {frames}\nsteps: {steps}\ncfg: {cfgs}\nfps: {fps}\n",
-                encoding="utf-8")
-            j.progress.emit(0, 0, "Carregando modelos Wan…")
-            def line(s):
-                pr = sdcpp.parse_progress(s)
-                if pr: j.progress.emit(pr[0], pr[1], f"Vídeo: passo {pr[0]}/{pr[1]}")
-                else: j.progress.emit(-1, -1, s)
-            sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), perf.sdcpp_variant(cfg), mk, line, lambda: j.cancel,
-                                    log=lambda m: j.progress.emit(-1, -1, m),
-                                    progress=lambda d, t: j.progress.emit(d, t or 1, "Baixando sd.cpp…"))
-            mp4 = out / f"{stem}.mp4"
-            try:
-                sdcpp.to_mp4(avi, mp4, fps); avi.unlink(missing_ok=True); return str(mp4)
-            except Exception as e:
-                j.progress.emit(-1, -1, f"Aviso: {e}"); return str(avi)
-        self._start(job, done=self._done)
+        w, h = self.sizesel.plan()[:2]
+        neg = self.neg.toPlainText().strip(); do_tr = self.tr_chk.isChecked(); self.tr_out.clear()
+        params = dict(width=w, height=h, frames=self.frames.value(), steps=self.steps.value(), cfg_scale=self.cfgs.value(),
+                      fps=self.fps.value(), seed=self.seed.value(), cfg_override=cfg, saida=str(config.output_dir("videos")))
+        def go(pr, ng):
+            params.update(prompt=pr, negative=ng)
+            self.log.appendPlainText(f"Prompt usado: {pr}" + (f" | Negativo: {ng}" if ng else ""))
+            self._enqueue("video", params)
+        if not do_tr:
+            go(prompt, neg); return
+        self.gen_btn.setEnabled(False); self.bar.setRange(0, 0); self.bar.setFormat("Traduzindo prompt…")
+        def err(msg):
+            self._end(); self.bar.setFormat("%p%"); QMessageBox.warning(self, "Tradução", msg)
+        self.tjob = Job(lambda j: translate_in_job(j, cfg, prompt, neg), self, on_info=self._info,
+                        on_done=lambda r: go(r[0], r[1]), on_error=err)
+        self.tjob.start()
+
+    def on_result(self, path):
+        self._done(path)
 
     def _start(self, fn, done):
         self.gen_btn.setEnabled(False); self.dl_btn.setEnabled(False); self.cancel_btn.setEnabled(True); self.bar.setRange(0, 0)
