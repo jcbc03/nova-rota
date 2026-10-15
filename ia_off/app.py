@@ -1,6 +1,6 @@
 import os, sys, html, traceback
 import markdown as md
-from PySide6.QtCore import Qt, QThread, Signal, QObject
+from PySide6.QtCore import Qt, QThread, Signal, QObject, QTimer
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget, QVBoxLayout, QHBoxLayout,
     QListWidget, QListWidgetItem, QTextBrowser, QPlainTextEdit, QPushButton, QComboBox, QLabel, QLineEdit,
     QSpinBox, QDoubleSpinBox, QFormLayout, QFileDialog, QMessageBox, QInputDialog, QSplitter, QDialog,
@@ -137,15 +137,29 @@ class MainWindow(QMainWindow):
             self.db.delete(self.conv_id); self.conv_id = None; self.reload_convs(); self.view.clear()
 
     def render(self, partial=None):
-        msgs = self.db.messages(self.conv_id) if self.conv_id else []
-        out = [f"<style>{CSS}</style>"]
-        for m in msgs:
-            who = "<b class='u'>Você</b>" if m["role"] == "user" else "<b class='a'>IA</b>"
-            out.append(f"<p>{who}</p>{md_html(m['content'])}<hr>")
+        """Desenha a conversa. Com partial, reaproveita o HTML do histórico em cache
+        (sem reler o banco nem reconverter o markdown antigo a cada pedaço)."""
+        if partial is None or getattr(self, "_hist_cid", object()) != self.conv_id:
+            msgs = self.db.messages(self.conv_id) if self.conv_id else []
+            out = [f"<style>{CSS}</style>"]
+            for m in msgs:
+                who = "<b class='u'>Você</b>" if m["role"] == "user" else "<b class='a'>IA</b>"
+                out.append(f"<p>{who}</p>{md_html(m['content'])}<hr>")
+            self._hist_html = "".join(out); self._hist_cid = self.conv_id
+        html_ = self._hist_html
         if partial is not None:
-            out.append(f"<p><b class='a'>IA</b> <i>(gerando…)</i></p>{md_html(partial)}")
-        self.view.setHtml("".join(out))
-        self.view.verticalScrollBar().setValue(self.view.verticalScrollBar().maximum())
+            html_ += f"<p><b class='a'>IA</b> <i>(gerando…)</i></p>{md_html(partial)}"
+        sb = self.view.verticalScrollBar()
+        at_end = partial is None or sb.value() >= sb.maximum() - 40
+        self.view.setHtml(html_)
+        if at_end: sb.setValue(sb.maximum())
+
+    def _schedule_render(self):
+        """Agrupa os pedaços do streaming: no máximo ~12 redesenhos por segundo."""
+        if not hasattr(self, "_render_timer"):
+            self._render_timer = QTimer(self); self._render_timer.setSingleShot(True); self._render_timer.setInterval(80)
+            self._render_timer.timeout.connect(lambda: self.worker and self.render(self.answer))
+        if not self._render_timer.isActive(): self._render_timer.start()
 
     def send(self):
         text = self.input.toPlainText().strip()
@@ -160,7 +174,7 @@ class MainWindow(QMainWindow):
         self.db.add_msg(self.conv_id, "user", text); self.input.clear()
         msgs = [{"role": "system", "content": self.cfg["system_prompt"]}] + self.db.messages(self.conv_id)
         self.cfg["model"] = model; config.save(self.cfg)
-        self.answer = ""; self.render("")
+        self.answer = ""; self._hist_cid = None; self.render("")
         cid = self.conv_id
         def job(w):
             self.client.ensure_running()
@@ -168,9 +182,10 @@ class MainWindow(QMainWindow):
                 w.chunk.emit(c)
             return ""
         def chunk(c):
-            self.answer += c; self.render(self.answer)
+            self.answer += c; self._schedule_render()
         def fin(_=""):
             if self.answer: self.db.add_msg(cid, "assistant", self.answer)
+            if hasattr(self, "_render_timer"): self._render_timer.stop()
             self.worker = None; self.send_btn.setEnabled(True); self.stop_btn.setEnabled(False); self.render()
         def err(m):
             fin(); QMessageBox.warning(self, "Erro no chat", m)
