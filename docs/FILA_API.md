@@ -57,3 +57,20 @@ register_engine("imagem", motor_imagem)   # também: fila.register_engine(...) s
 - `OVEngine.pipeline(..., cancel_flag=None)` checa o flag entre exportar/carregar/compilar.
 - Caminhos de modelo só vêm do `cfg` (config.py). Motores rodam na thread de trabalho e não tocam em Qt.
 - Adaptador p/ a fila: `lambda params, on_progress, cancel_flag: motor(..., progress_cb=on_progress, cancel_flag=cancel_flag)`.
+
+### Registro na fila (ia_off/engines_registry.py)
+- No `app.py`, logo após criar a fila: `from .engines_registry import register_all; register_all(self.fila)`
+  (sem argumento registra no registro global do `job_queue`). Tipos: `"imagem"` e `"video"`.
+- `on_progress(passo, total)` vem da fila (ela calcula pct/eta). Retorno = caminho do arquivo -> `finished(id, caminho)`.
+- Prompts vão como estão (a tradução PT->EN fica com a tela, antes de enfileirar).
+- Comum aos dois: `prompt` (obrigatório), `negative` (""), `seed` (-1 = aleatório), `saida` (pasta; padrão Imagens/Vídeos\IA_Off),
+  `cfg_override` (dict que sobrepõe o config.json só nesta tarefa).
+- `"imagem"`: `modo` (`txt2img`|`img2img`|`inpaint`|`pix2pix`|`flux2`, padrão `txt2img`), `width`/`height` (512),
+  `steps` (4), `guidance` (1.0), `batch` (1), `strength` (0.6), `image_guidance` (1.5, pix2pix), `lcm` (True),
+  `init_image` (caminho; obrigatório em img2img/inpaint/pix2pix; referência opcional no flux2), `mask` (caminho; obrigatório em inpaint).
+  Retorna o 1º PNG (`AAAAMMDD_HHMMSS_<modo>_<seed>.png`); com batch > 1 os outros ficam na mesma pasta (seed+1, ...).
+  `total` = steps × batch.
+- `"video"` (Wan 2.1 via sd.cpp): `width` (480), `height` (272), `frames` (17; ajustado p/ 4k+1), `steps` (20),
+  `cfg_scale` (6.0), `fps` (16), `flow_shift` (3.0). Retorna o `.mp4` (ou o `.avi` se a conversão falhar) + um `.txt` com os parâmetros.
+- Arquivos de modelo faltando -> `failed` com `FileNotFoundError`. O motor de imagem (pipelines residentes) é um só por processo,
+  separado do da aba Imagem (que continua no fluxo antigo até a tela migrar).
