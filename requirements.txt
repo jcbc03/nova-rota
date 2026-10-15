@@ -1,6 +1,7 @@
 PySide6>=6.6
 requests>=2.31
 numpy>=1.26
+faiss-cpu>=1.8  # RAG: índice vetorial local (opcional; sem ele o rag.py usa numpy)
 pypdf>=4.0
 python-docx>=1.1
 markdown>=3.5

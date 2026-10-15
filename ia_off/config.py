@@ -17,6 +17,8 @@ DEFAULTS = {
     "model": "qwen2.5:3b",
     "embed_model": "nomic-embed-text",
     "translate_model": "qwen2.5:3b",
+    # --- RAG (rag.py): pasta do índice vetorial; env IA_OFF_RAG_DIR sobrepõe ---
+    "rag_dir": os.environ.get("IA_OFF_RAG_DIR") or r"C:\IA\dados\rag",
     # --- Imagem (diffusers) ---
     "sd15_path": r"C:\estudio_local\models\imagem\sd15",
     "lcm_lora_path": r"C:\estudio_local\models\imagem\lcm-lora-sdv1-5\pytorch_lora_weights.safetensors",
