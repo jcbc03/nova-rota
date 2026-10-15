@@ -40,3 +40,7 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
   - Sinais Qt: `started(id)`, `progress(id, pct, eta_s, passo, total)`, `finished(id, caminho_resultado)`, `failed(id, erro)`. A tela só escuta os sinais.
   - Motores aceitam callback de progresso (com passo e total) e checam flag de cancelamento entre passos.
   - Detalhes em `docs/FILA_API.md` (DEV beck).
+- 15/10, 20h23: 2.3.1 instalada no PC do Julio; Qwen3-30B registrado no Ollama como `qwen3-30b-a3b` (~11 tok/s, ~30 s pra carregar). Etapa 2 (modelo) concluída antes do prazo; Benchmark CPU x GPU ainda pendente. DEV Front e sub2 liberados.
+- Fila: sinal extra `cancelled(id)`; `progress(id, passo, total, pct, eta_s)`. Ver `docs/FILA_API.md`.
+- Roteiro de testes pronto (sub2): `docs/ROTEIRO_TESTES.md`.
+- Pendente decisão do Julio: apagar o GGUF original de 18 GB em `C:\IA\modelos\texto` (duplicado no Ollama).
