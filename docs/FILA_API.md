@@ -78,7 +78,7 @@ register_engine("imagem", motor_imagem)   # também: fila.register_engine(...) s
   `cfg_override`. Progresso = bloco i de N (`total` = nº de blocos); `cancel_flag` checado entre blocos (-> `Cancelled`).
   Retorna o PNG `AAAAMMDD_HHMMSS_<nome>_x<escala>.png` (transparência preservada; metadado `upscaler`).
   Config: `upscale_model` (.onnx; env `IA_OFF_UPSCALE_MODEL`; padrão `C:\IA\modelos\imagem\realesr-general-x4v3.onnx`),
-  `upscale_backend` (`auto`|`onnxruntime`|`openvino`|`lanczos`), `upscale_tile`. Baixar o modelo (~5 MB, SHA-256 conferido):
+  `upscale_backend` (`auto`|`onnxruntime`|`openvino`|`lanczos`), `upscale_tile`. Instalar o modelo (~5 MB, convertido dos pesos oficiais do Real-ESRGAN v0.2.5.0, já incluído no repositório em `models/`, licença BSD-3; nada é baixado da internet, o script só copia pro `upscale_model` e confere o SHA-256):
   `python tools\baixar_ampliador.py`. Sem modelo/runtime: NÃO falha, amplia com Lanczos e sinaliza (nome `..._x4_lanczos.png`,
   metadado `upscaler = "lanczos (fallback: motivo)"`, `upscaler.ULTIMO_FALLBACK[0]` = motivo). Total = 1 passo nesse caso.
 - Arquivos de modelo faltando -> `failed` com `FileNotFoundError`. O motor de imagem (pipelines residentes) é um só por processo,
