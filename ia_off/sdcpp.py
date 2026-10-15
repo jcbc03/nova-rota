@@ -57,23 +57,29 @@ def download_binary(folder, progress=lambda done, total: None, cancelled=lambda:
 def ensure_binary(folder, variant="cpu", progress=lambda d, t: None, cancelled=lambda: False):
     return find_binary(folder, variant) or download_binary(folder, progress, cancelled, variant)
 
-def run_with_fallback(folder, variant, build_args, on_line=lambda s: None, cancelled=lambda: False,
-                      log=lambda s: None, progress=lambda d, t: None, ensure=None):
-    """Executa com a variante pedida (ex.: vulkan); se falhar (e não foi cancelado), repete na CPU."""
+def run_with_fallback(folder, variant, build_args, on_line=lambda s: None, cancelled=None,
+                      log=lambda s: None, progress=lambda d, t: None, ensure=None,
+                      progress_cb=None, cancel_flag=None):
+    """Executa com a variante pedida (ex.: vulkan); se falhar (e não foi cancelado), repete na CPU.
+    `progress` é o do download do binário; `progress_cb(step, total)` é o dos passos da geração."""
+    from .engine_api import Cancelled, make_cancel_check
     ensure = ensure or ensure_binary
+    check = make_cancel_check(cancel_flag, cancelled)
     if variant == "vulkan":
         try:
-            b = ensure(folder, "vulkan", progress, cancelled)
+            b = ensure(folder, "vulkan", progress, check)
             log(f"sd.cpp: usando GPU Vulkan ({b})")
-            run(build_args(b), on_line, cancelled)
+            run(build_args(b), on_line, check, progress_cb=progress_cb)
             return "vulkan"
         except Exception as e:
-            if cancelled():
-                raise
+            if check() or isinstance(e, Cancelled):
+                raise Cancelled() from e
             log(f"sd.cpp Vulkan falhou, voltando para CPU: {str(e)[-300:]}")
-    b = ensure(folder, "cpu", progress, cancelled)
+    b = ensure(folder, "cpu", progress, check)
+    if check():
+        raise Cancelled()
     log(f"sd.cpp: usando CPU ({b})")
-    run(build_args(b), on_line, cancelled)
+    run(build_args(b), on_line, check, progress_cb=progress_cb)
     return "cpu"
 
 def wan_frames(n):
@@ -105,25 +111,68 @@ def parse_progress(line):
     m = PROG_RE.search(line)
     return (int(m.group(1)), int(m.group(2))) if m else None
 
-def run(args, on_line=lambda s: None, cancelled=lambda: False):
-    flags = 0x08000000 if sys.platform == "win32" else 0
-    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=flags,
-                         cwd=str(Path(args[0]).parent))
+def kill_tree(p, timeout=5.0):
+    """Encerra o processo e os filhos (Windows: taskkill /T /F; POSIX: grupo de processos)."""
+    if p.poll() is not None:
+        return
+    try:
+        if sys.platform == "win32":
+            subprocess.run(["taskkill", "/PID", str(p.pid), "/T", "/F"], capture_output=True,
+                           creationflags=0x08000000, timeout=timeout)
+        else:
+            import signal
+            try:
+                os.killpg(p.pid, signal.SIGTERM)
+            except (ProcessLookupError, PermissionError, OSError):
+                p.terminate()
+        p.wait(timeout)
+    except Exception:
+        pass
+    if p.poll() is None:
+        try:
+            if sys.platform != "win32":
+                import signal
+                os.killpg(p.pid, signal.SIGKILL)
+            else:
+                p.kill()
+        except Exception:
+            p.kill()
+
+def run(args, on_line=lambda s: None, cancelled=None, progress_cb=None, cancel_flag=None):
+    """Roda o sd-cli. progress_cb(step, total) recebe as linhas "3/20"; cancel_flag (is_set()) ou
+    cancelled() encerram a árvore de processos e levantam Cancelled."""
+    from .engine_api import Cancelled, make_cancel_check
+    check = make_cancel_check(cancel_flag, cancelled)
+    if check():
+        raise Cancelled()
+    win = sys.platform == "win32"
+    kw = dict(creationflags=0x08000000 | 0x00000200) if win else dict(start_new_session=True)  # NO_WINDOW|NEW_PROCESS_GROUP
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                         cwd=str(Path(args[0]).parent), **kw)
     import threading
     tail = []; killed = []
     stop = threading.Event()
     def watch():  # mata o processo mesmo se ele não imprimir nada (leitura bloqueada)
-        while not stop.wait(0.3):
-            if cancelled() and p.poll() is None:
-                killed.append(1); p.kill(); return
+        while not stop.wait(0.2):
+            if check() and p.poll() is None:
+                killed.append(1); kill_tree(p); return
     threading.Thread(target=watch, daemon=True, name="sdcpp-cancel").start()
+    last = [None]
+    def line(s):
+        on_line(s)
+        if progress_cb is not None:
+            pr = parse_progress(s)
+            if pr and pr != last[0]:
+                last[0] = pr; progress_cb(*pr)
     try:
-        _read_loop(p, on_line, tail)
+        _read_loop(p, line, tail)
+    except BaseException:
+        kill_tree(p); raise
     finally:
         stop.set()
     code = p.wait()
-    if killed or cancelled():
-        raise RuntimeError("Cancelado.")
+    if killed or check():
+        raise Cancelled()
     if code != 0:
         raise RuntimeError(f"sd-cli terminou com código {code}:\n" + "\n".join(tail))
 

@@ -11,8 +11,7 @@ SD15_SCHEDULER = {
     "prediction_type": "epsilon", "timestep_spacing": "leading",
 }
 
-class Cancelled(Exception):
-    pass
+from .engine_api import Cancelled, make_cancel_check, make_progress  # noqa: F401 (Cancelled reexportado)
 
 def _variant(folder):
     f = Path(folder)
@@ -119,13 +118,19 @@ class ImageEngine:
 
     def generate(self, mode, prompt, negative="", width=512, height=512, steps=4, guidance=1.0,
                  seed=-1, batch=1, init_image=None, mask=None, strength=0.6, image_guidance=1.5,
-                 lcm=True, progress=lambda i, n: None, cancelled=lambda: False, log=lambda s: None, backend=None):
+                 lcm=True, progress=None, cancelled=None, log=lambda s: None, backend=None,
+                 progress_cb=None, cancel_flag=None):
+        """progress_cb(step, total) e cancel_flag (is_set()) opcionais; `progress`/`cancelled` são o legado."""
         import torch
+        cancelled = make_cancel_check(cancel_flag, cancelled)
+        progress = make_progress(progress_cb, progress)
+        if cancelled(): raise Cancelled()
         self._threads()
         backend = backend or self.resolve_backend(mode)
         if backend.startswith("ov:"):
             try:
-                pipe = self._ov_engine(backend[3:]).pipeline(mode, lcm, width, height, 1, log, cfg_on=guidance > 1.0)
+                pipe = self._ov_engine(backend[3:]).pipeline(mode, lcm, width, height, 1, log, cfg_on=guidance > 1.0,
+                                                             cancel_flag=cancel_flag)
                 self.last_backend = backend
                 log(f"Dispositivo: OpenVINO {backend[3:]}")
                 return self._run(pipe, mode, prompt, negative, width, height, steps, guidance, seed, batch,
@@ -136,7 +141,9 @@ class ImageEngine:
                 if cancelled(): raise Cancelled()
                 self.ov_failed = True
                 log(f"OpenVINO falhou ({type(e).__name__}: {str(e)[:300]}). Voltando para CPU (torch).")
-        pipe = self.pipeline(mode, lcm); self.last_backend = "torch"
+        pipe = self.pipeline(mode, lcm)
+        if cancelled(): raise Cancelled()
+        self.last_backend = "torch"
         log(f"Dispositivo: CPU (torch, {torch.get_num_threads()} threads)")
         return self._run(pipe, mode, prompt, negative, width, height, steps, guidance, seed, batch,
                          init_image, mask, strength, image_guidance, progress, cancelled)
@@ -144,19 +151,27 @@ class ImageEngine:
     def _run(self, pipe, mode, prompt, negative, width, height, steps, guidance, seed, batch,
              init_image, mask, strength, image_guidance, progress, cancelled, ov=False):
         import torch
+        from .ov_engine import step_callback_kwargs
         if seed is None or seed < 0:
             seed = random.randint(0, 2**31 - 1)
         total = steps * batch
         images = []
         for b in range(batch):
             gen = torch.Generator("cpu").manual_seed(seed + b)
-            def cb(p, i, t, kw, b=b):
+            if cancelled():
+                raise Cancelled()
+            def on_step(i, b=b):
                 if cancelled():
                     raise Cancelled()
                 progress(b * steps + min(i + 1, steps), total)
-                return kw
+            if ov:
+                cbkw = step_callback_kwargs(pipe, on_step)
+            else:
+                def cb(p, i, t, kw, on_step=on_step):
+                    on_step(i); return kw
+                cbkw = dict(callback_on_step_end=cb)
             kw = dict(prompt=prompt, negative_prompt=negative or None, num_inference_steps=steps,
-                      guidance_scale=guidance, generator=gen, callback_on_step_end=cb)
+                      guidance_scale=guidance, generator=gen, **cbkw)
             if mode == "txt2img":
                 kw.update(width=width, height=height)
             elif mode == "img2img":
@@ -171,5 +186,8 @@ class ImageEngine:
                 kw.pop("width", None); kw.pop("height", None)  # forma estática já definida no reshape
                 if mode == "txt2img": kw.update(width=width, height=height)
             with torch.inference_mode():
-                images.append((seed + b, pipe(**kw).images[0]))
+                out = pipe(**kw)
+            if cancelled():
+                raise Cancelled()
+            images.append((seed + b, out.images[0]))
         return images

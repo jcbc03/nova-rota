@@ -42,3 +42,18 @@ register_engine("imagem", motor_imagem)   # também: fila.register_engine(...) s
 
 ## Tela (DEV Front)
 - Conectar sinais a métodos de QObject/QWidget (slots rodam na thread da GUI).
+
+## Motores (ia_off: image_engine.py, sdcpp.py, ov_engine.py)
+- Todo ponto de entrada de geração aceita, opcionais (padrão `None`, compatível com chamadas antigas):
+  `progress_cb(step:int, total:int)` e `cancel_flag` (qualquer objeto com `is_set()`, ex. `threading.Event`).
+- Cancelado -> levanta `ia_off.engine_api.Cancelled` (subclasse de `RuntimeError`, mensagem "Cancelado."; `image_engine.Cancelled` é o mesmo).
+  Na fila: tratar como cancelamento (o `cancel_flag` já estará setado).
+- `ImageEngine.generate(..., progress_cb=None, cancel_flag=None)`: diffusers via `callback_on_step_end`; OpenVINO via
+  callback por passo (`callback_on_step_end` ou `callback` nas versões antigas do optimum). `total = steps * batch`.
+  Cancelamento no OV não cai para a CPU.
+- `sdcpp.run(args, on_line, cancelled=None, progress_cb=None, cancel_flag=None)` e
+  `sdcpp.run_with_fallback(..., progress_cb=None, cancel_flag=None)`: progresso lido das linhas "3/20" do sd-cli;
+  ao cancelar mata a árvore do processo (Windows: `taskkill /T /F`; Linux: grupo de processos) em até ~0,2 s, mesmo sem saída.
+- `OVEngine.pipeline(..., cancel_flag=None)` checa o flag entre exportar/carregar/compilar.
+- Caminhos de modelo só vêm do `cfg` (config.py). Motores rodam na thread de trabalho e não tocam em Qt.
+- Adaptador p/ a fila: `lambda params, on_progress, cancel_flag: motor(..., progress_cb=on_progress, cancel_flag=cancel_flag)`.

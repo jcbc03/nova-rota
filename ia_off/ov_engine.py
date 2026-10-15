@@ -7,6 +7,24 @@ faz reshape estático para o tamanho pedido e compila no dispositivo (GPU). Pipe
 import hashlib, json, shutil, tempfile
 from pathlib import Path
 from .perf import ov_cache_dir
+from .engine_api import Cancelled
+
+
+def step_callback_kwargs(pipe, on_step):
+    """kwargs de callback por passo para a pipeline OV: on_step(i) com i base 0 (pode levantar Cancelled).
+    Versões novas do optimum-intel aceitam callback_on_step_end; as antigas só callback(step, t, latents)."""
+    import inspect
+    try:
+        params = inspect.signature(pipe.__call__).parameters
+    except (TypeError, ValueError):
+        params = {}
+    if "callback_on_step_end" in params or "callback" not in params:
+        def cb(p, i, t, kw):
+            on_step(i); return kw
+        return {"callback_on_step_end": cb}
+    def legacy(i, t, latents):
+        on_step(i)
+    return {"callback": legacy, "callback_steps": 1}
 
 def _key(src_path, lcm_path, lcm, kind):
     p = Path(src_path)
@@ -63,12 +81,18 @@ class OVEngine:
             c["INFERENCE_NUM_THREADS"] = str(effective_threads(self.cfg))
         return c
 
-    def pipeline(self, mode, lcm, width, height, batch, log=lambda s: None, cfg_on=True):
+    def pipeline(self, mode, lcm, width, height, batch, log=lambda s: None, cfg_on=True, cancel_flag=None):
+        """cancel_flag (is_set()) é checado entre exportar/carregar/compilar; levanta Cancelled."""
+        def chk():
+            if cancel_flag is not None and cancel_flag.is_set():
+                raise Cancelled()
+        chk()
         from optimum.intel import (OVStableDiffusionPipeline, OVStableDiffusionImg2ImgPipeline,
                                    OVStableDiffusionInpaintPipeline)
         kind = "inpaint" if mode == "inpaint" else "sd15"
         src = self.cfg["inpaint_path"] if kind == "inpaint" else self.cfg["sd15_path"]
         ir = export_ir(src, kind, lcm, self.cfg.get("lcm_lora_path"), log)
+        chk()
         key = (mode, lcm, self.device)
         cls = {"txt2img": OVStableDiffusionPipeline, "img2img": OVStableDiffusionImg2ImgPipeline,
                "inpaint": OVStableDiffusionInpaintPipeline}[mode]
@@ -77,6 +101,7 @@ class OVEngine:
             log(f"OpenVINO: carregando {mode} em {self.device}…")
             pipe = cls.from_pretrained(str(ir), compile=False, device=self.device, ov_config=self._ov_config())
             entry = self._pipes[key] = {"pipe": pipe, "shape": None}
+        chk()
         shape = (width, height, batch, cfg_on)
         if entry["shape"] != shape:
             # optimum-intel assume CFG (lote x2) no reshape estático; com guidance <= 1 deixamos o lote dinâmico
