@@ -31,3 +31,12 @@ Extra se sobrar tempo: ampliador de imagem com IA na CPU.
 - Testes no PC real dependem das janelas combinadas com o ia_off; vídeo testado curto e em baixa resolução, com um teste longo no final.
 
 Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_TESTES.md` (sub2).
+
+## Atualizações (15/10, noite)
+- Trabalho da 3.0 só em `/workspace/ia_off_v3` (git; commits com prefixo do responsável, ex. `beck: ...`). `/workspace/ia_off` fica intocada.
+- Versão 2.3.1 (correção do travamento do vídeo) pronta; ia_off instala no PC do Julio junto com o Qwen3-30B. O aviso de conclusão libera o DEV Front em `app.py`/`media_tabs.py` e o sub2 nos testes de vídeo.
+- Fila de tarefas aprovada (DEV beck, DEV Front, ia_off): módulo `job_queue.py`, uma tarefa pesada por vez.
+  - `enqueue(tipo, params) -> id`, `cancel(id)`, `list_jobs()` (na fila, rodando, concluída, falhou, cancelada).
+  - Sinais Qt: `started(id)`, `progress(id, pct, eta_s, passo, total)`, `finished(id, caminho_resultado)`, `failed(id, erro)`. A tela só escuta os sinais.
+  - Motores aceitam callback de progresso (com passo e total) e checam flag de cancelamento entre passos.
+  - Detalhes em `docs/FILA_API.md` (DEV beck).
