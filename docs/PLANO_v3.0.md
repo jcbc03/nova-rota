@@ -79,3 +79,11 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - Correção: o vídeo **não** está pausado. O Julio liberou tudo às 8h12. Ordem no PC: terminar o V5, fazer o bloco do moderador e depois rodar o V6. O V4 já passou (cancelou em 0,6 s). Com o Wan 2.2 a 480x272, deu uns 107 s por passo no V4 e uns 67 s no V5.
 - O Julio autorizou a equipe a cuidar do PC e criar uma senha temporária. A senha não passa pelo chat. Depois dos testes SE1 a SE4, a proposta é apagar o `moderacao_senha.json` pro Julio criar a dele, mas só com o ok dele. Ele também pode usar o botão "Trocar senha…" (`0111f92`).
 - Pendente: instalar o `0111f92` no PC, MO5 na tela, SE1 a SE4 e o resto do R6 (Z-Image e Qwen3.8 dentro do app, com o moderador ligado e desligado).
+
+## Status em 16/10, 18h (substitui o de 9h)
+- PC do Julio no `4c6d743`, instalado às 15h50, com backup em `C:\IA\backup\v3head_20261016_1550`. Suíte limpa com 173 ok e 3 skips. Teste rápido depois da instalação ok (chat Qwen3.8, Z-Image e Wan 2.2).
+- Aprovados no PC: V3 a V8 (Wan 2.2 5B, V6 longo em ~68 min), fases Decodificando/Salvando/Convertendo em vídeo, FLUX.2 e Z-Image, C1 a C4, M1 a M4, D1 a D4, I1 a I4, A1 a A3, R1 a R6, MO1 a MO6, SE1 a SE3, SE5, P1 e S1 (prioridade alta corrigida em `c2cd115` e `945402d`).
+- Etapas 1 a 3 e moderador (prazo 23/10) adiantados. Nada atrasado.
+- Depende do Julio: S3 (sem internet), SE4 (apagar a senha temporária, só com o ok dele), cliques reais (menu da aba Vídeo, MO5, SE1), trocar a senha temporária e ok pra apagar os temporários de instalação.
+- Pontas soltas: confirmar pelo log do V8 que o negativo do Wan chega legível (falha "????", ia_off) e reconferir o V4 com `950cb26` e `3786502` (sub2).
+- Próximo: etapa 4 (robustez e polimento) e versão candidata 3.0 (`docs/NOTAS_3.0_RC.md`).

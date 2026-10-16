@@ -1,0 +1,37 @@
+# IA Off 3.0: versão candidata (16/10/2026)
+
+Versão no PC: `4c6d743`, instalada em 16/10 às 15h50. Backup em `C:\IA\backup\v3head_20261016_1550`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
+
+## O que tem de novo
+- **Moderador opcional**, desligado por padrão. Desligado, não restringe nada. Ligado, tem três níveis (leve, médio e rígido), e mudar o filtro exige senha. A senha fica guardada só como hash.
+- **Chat com o Qwen3.8 27B** (`qwen3.8-27b-aggressive`): ~1,4 tok/s, primeiro texto em ~1 min.
+- **Imagem com Z-Image Turbo**: ~13 min a 512 px.
+- **Vídeo com Wan 2.2 5B**, escolhido no seletor Wan 2.1/2.2 da aba Vídeo, a 24 fps.
+- **Fases depois do último passo** (Decodificando, Salvando e Convertendo) na barra e no log, em vídeo, FLUX.2 e Z-Image.
+
+## O que foi corrigido
+- O seletor do chat não lista mais modelos de embedding (o erro 400).
+- Nenhum caminho fixo: os modelos ficam em `C:\IA\modelos`.
+- `vcomp140.dll` encontrada pelo gerador de imagem e vídeo.
+- Não aparece mais um passo falso depois de Cancelar.
+- A prioridade alta do modo turbo agora funciona no Windows 64-bit.
+
+## Limites conhecidos
+- O vídeo é lento neste PC. O menor teste (5 quadros, 2 passos) leva ~12 min, quase 9 deles decodificando, e um de 17 quadros com 20 passos leva ~68 min.
+- Z-Image a 768 px passa de 30 min.
+- Transcrever e Ampliar não passam pela moderação.
+
+## Passo a passo dos testes do Julio
+Faça um de cada vez, com o app aberto.
+
+1. **Trocar a senha temporária.** Abra Configurações > Moderação e clique em "Trocar senha…". Use a senha de `C:\IA\dados\SENHA_TEMPORARIA.txt` como atual e crie a sua. Quando der certo, avise a equipe pra apagar o txt.
+2. **Senha errada (SE1).** Clique em "Alterar filtro…" e digite uma senha errada. Nada pode mudar.
+3. **Ligar o filtro (MO5).** Em "Alterar filtro…", com a senha certa, ligue a moderação no nível médio.
+4. **Bloqueio.** Na aba Imagem, mande um prompt proibido. Tem que aparecer a mensagem de bloqueio, sem gerar nada.
+5. **Desligar.** Volte em "Alterar filtro…" e desligue a moderação. Mande o mesmo prompt de novo: agora não pode haver bloqueio.
+6. **Menu do vídeo.** Na aba Vídeo, abra o menu Modelo e confira se aparece "Wan 2.2". Gere um vídeo curto (5 quadros, 2 passos) e veja a barra mostrar "Decodificando…" depois do último passo. Leva uns 12 min.
+7. **Sem internet (S3).** Desligue o Wi-Fi ou tire o cabo. Teste uma mensagem no chat, uma imagem pequena e uma voz. Tudo tem que funcionar. Depois religue a internet. Enquanto ela estiver desligada, a equipe perde o acesso ao PC.
+8. **SE4.** Diga se pode apagar o `moderacao_senha.json`. Isso só é necessário se quiser zerar a senha, e quem apaga é a equipe, com o seu ok.
+9. **Limpeza.** Diga se pode apagar os temporários da instalação (`ad56e06.zip` e `C:\IA\tmp\ad56e06_src`).
+
+Se algo falhar, mande no grupo um print e o horário.
