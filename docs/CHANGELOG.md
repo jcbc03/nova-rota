@@ -21,9 +21,11 @@
 - Modelo de chat `qwen3.8-27b-aggressive` (Qwen3.8-27B abliterated, IQ4_XS, 15,7 GB) no Ollama. Medido: 1,6 tokens/s e 19 s pra carregar. (ia_off, 16/10)
 
 ### Melhorado
+- Com `queue_unload_ollama` ligado, a fila não descarrega o Ollama enquanto um chat está respondendo. Ela espera até `queue_unload_wait_s` (120 s) e, se passar disso, roda o job sem descarregar. O padrão continua desligado. (beck `0a3000d`, ligação no chat com o DEV Front)
+- Chaves `wan22_model`, `wan22_t5` e `wan22_vae` pro Wan 2.2 5B, que começam vazias e aceitam `IA_OFF_WAN22_*`. A escolha entre o 2.1 e o 2.2 (`video_modelo`) está em andamento. (beck `f2c2c93`)
 - Chat rápido em conversas longas: histórico montado uma vez e tela atualizada no máximo a cada 80 ms; rolagem automática só quando você está no fim da conversa. (front `daa045d`)
 ### Corrigido
-- Depois de Cancelar, a aba Vídeo mostrava um passo a mais que não existia (ex.: "passo 4/20"). Agora ela ignora o progresso que ainda chega da fila. (front `950cb26`)
+- Depois de Cancelar, a aba Vídeo mostrava um passo a mais que não existia (ex.: "passo 4/20"). Agora a tela e a fila ignoram o progresso que ainda chega. (front `950cb26`, beck `3786502`)
 - O `sd-cli` não abria fora do app (erro 0xC0000135, faltava a `vcomp140.dll`). Agora o código acha a DLL sozinho e monta o PATH do `sd-cli` (`runtime_dlls.py`, chave opcional `vcruntime_dir`). Testado no PC sem as cópias manuais: achou a DLL no PySide6 e o `sd-cli` abriu normal e com Vulkan. As cópias manuais continuam como reserva. (beck `7e67730`, ia_off `b0eb083`, instalado em 16/10 às 7h19)
 - Nenhum caminho de modelo fica mais fixo no código, e nenhum aponta pro OneDrive. Os padrões vêm de `MODELOS_DIR` (`C:\IA\modelos`, que pode ser trocada por `IA_OFF_MODELOS_DIR`), e o `ollama_exe` usa `%LOCALAPPDATA%`. (beck `d4c9b83`)
 - O seletor de modelo do chat listava modelos de embeddings (como `embeddinggemma-2:740m`), que davam "Erro 400: does not support chat". Agora eles ficam fora da lista, e um modelo salvo que não serve pra conversa volta pra um modelo de chat. (front `25b048e`, aguardando a suíte e a instalação)
