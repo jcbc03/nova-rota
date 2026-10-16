@@ -7,7 +7,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | P1 | Abrir pelo atalho "IA Off" | Janela abre em < 15 s, 6 abas visíveis | ⏳ |
-| P2 | Rodar `pytest tests/` na ia_off_v3, num ambiente limpo só com o requirements.txt | Todos passam | ✅ 15/10, commit 2d73849: 88 ok e 1 pulado |
+| P2 | Rodar `pytest tests/` na ia_off_v3, num ambiente limpo só com o requirements.txt | Todos passam | ✅ 16/10 9h, commit 0a3000d: 158 ok e 3 pulados (2 sem modelo tiny, 1 sem `optimum.intel`). Antes: 15/10, 2d73849, 88 ok e 1 pulado |
 
 ## 1. Vídeo (Wan 2.1) — prioridade, testar primeiro
 | ID | Passos | Esperado | Status |
@@ -15,11 +15,11 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | V1 | Abrir a aba Vídeo e carregar o modelo | Não fecha nem trava (correção 2.3.1) | ✅ 15/10 no PC (ia_off) |
 | V2 | Gerar vídeo curto em baixa resolução | Termina, arquivo salvo e reproduzível | ✅ 15/10 (fila + engines_registry, headless): 480x272, 17 quadros, 20 passos → `20261015_205851_wan_1107368692.mp4`, 32 784 B, ffprobe ok (h264 480x272, 16 fps, 17 quadros, 1,06 s). TEMPO_TOTAL 8124 s = ~45 min Vulkan (morta em 11/20) + ~90 min na CPU (recaída automática) |
 | V3 | Durante a geração, trocar de aba e mexer na janela | Interface continua respondendo | ✅ 15/10 offscreen no PC: vídeo (sd.cpp falso) na fila trocando de aba a cada 100 ms: 23–29 trocas, maior pausa da UI 0,13 s, sinais na thread principal; repetido após aplicar 6b581cc. smoke_gui ✅. stress_gui ❌ no PC (video_lines=0: o FakeEngine de imagem usa sleep(0.0005) que no Windows dura ~15 ms, o vídeo não chega a rodar antes do fechamento; problema do teste, não do app) → com 4cfdaf7 instalado: stress_gui ✅ e smoke_gui ✅ no PC (15/10 23:39) |
-| V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ⏳ |
-| V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ⏳ |
+| V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ⏳ sem resultado da noite; pausado (status 16/10 9h) até o Julio retomar. Pronto pra testar com 950cb26 (ignora progresso após Cancelar) |
+| V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ⏳ sem resultado da noite; pausado até o Julio retomar |
 | V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ✅ 15/10 (mesmo vídeo do V2). Vulkan (UHD 620): ~200 s/passo (11/20 em ~2535 s; carga ~9 min). CPU (-t 4): carga+texto ~9 min, amostragem ~65 min (~170–245 s/passo, média ~197 s), decodificação VAE ~16 min, total ~90 min (5405 s). CPU ≈ Vulkan na amostragem, não mais rápida; CPU fica padrão (bb21e2d) por usar pouca GPU/RAM compartilhada |
-| V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ⏳ |
-| V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | ⏳ |
+| V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ⏳ sem resultado da noite (076a2d5 instalado no PC em 15/10 23h46); pausado até o Julio retomar, ~90 min |
+| V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | ⏳ pausado até o Julio retomar; fica pro final |
 
 ## 2. Chat (Ollama)
 | ID | Passos | Esperado | Status |
@@ -78,7 +78,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 8. Regra de centralização (antes da entrega)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| R1 | `rg -n -i 'C:\\\\|C:/' ia_off --glob '!config.py'` | Nenhum caminho fixo fora do `config.py` (15/10: ✅ limpo) | ⏳ |
+| R1 | `rg -n -i 'C:\\\\|C:/' ia_off --glob '!config.py'` | Nenhum caminho fixo fora do `config.py` (15/10: ✅ limpo) | ✅ 16/10 (0a3000d): só a docstring do `rag.py` cita o padrão `C:\\IA\\dados\\rag` |
 | R2 | Conferir `OLLAMA_MODELS` e `HF_HOME` no PC | Apontam pra `C:\IA\modelos\ollama` e `\huggingface` | ⏳ |
 | R3 | Índice de documentos após a busca vetorial | Gravado em `C:\IA\dados\rag` | ⏳ |
 | R4 | Abrir LivreStudio, EngenhariaIA e estudio_local | Continuam achando os modelos | ⏳ |
