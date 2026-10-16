@@ -20,7 +20,8 @@ pm = it.painter.pixmap(); c = it.painter.rect().center()
 it.painter.mousePressEvent(QMouseEvent(QEvent.MouseButtonPress, QPointF(c), QPointF(c), Qt.LeftButton, Qt.LeftButton, Qt.NoModifier))
 assert it.painter.mask_pil().getbbox() is not None, "máscara não pintada"
 for i in range(it.mode.count()): it.mode.setCurrentIndex(i)
-assert it.steps.value() == 4  # flux2 defaults
+it.mode.setCurrentIndex(it.mode.findData("flux2")); assert it.steps.value() == 4  # flux2 defaults
+it.mode.setCurrentIndex(it.mode.findData("zimage")); assert it.steps.value() == 8 and not it.neg.isEnabled()  # zimage defaults
 assert "sd15_path" in w.s_paths and w.video_tab.player is not None
 QTimer.singleShot(1500, qa.quit); qa.exec()
 print("SMOKE OK", names)

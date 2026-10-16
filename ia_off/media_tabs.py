@@ -98,7 +98,8 @@ class MaskPainter(QLabel):
         return Image.frombuffer("L", (m.width(), m.height()), bytes(ptr), "raw", "L", bpl, 1).copy()
 
 MODES = [("txt2img", "Texto → Imagem"), ("img2img", "Imagem → Imagem"), ("inpaint", "Inpaint (pintar máscara)"),
-         ("pix2pix", "Editar por instrução (InstructPix2Pix)"), ("flux2", "FLUX.2 Klein 4B (sd.cpp, melhor qualidade)")]
+         ("pix2pix", "Editar por instrução (InstructPix2Pix)"), ("flux2", "FLUX.2 Klein 4B (sd.cpp, melhor qualidade)"),
+         ("zimage", "Z-Image Turbo (sd.cpp)")]
 
 class SizeSelector(QWidget):
     """Proporção + resolução (pelo lado curto) + W/H personalizados + rótulo do tamanho final."""
@@ -276,9 +277,10 @@ class ImageTab(QueueClient, QWidget):
         m = self.mode.currentData()
         self.lcm.setEnabled(m in ("txt2img", "img2img", "inpaint"))
         self.img_guid.setEnabled(m == "pix2pix"); self.strength.setEnabled(m in ("img2img", "inpaint"))
-        self.paint_chk.setEnabled(m == "inpaint"); self.neg.setEnabled(m != "flux2")
-        self.tr_chk.setChecked(m != "flux2")  # padrão por motor: SD1.5/inpaint/pix2pix ON, FLUX.2 OFF
+        self.paint_chk.setEnabled(m == "inpaint"); self.neg.setEnabled(m not in ("flux2", "zimage"))
+        self.tr_chk.setChecked(m not in ("flux2", "zimage"))  # padrão por motor: SD1.5/inpaint/pix2pix ON, FLUX.2 OFF
         if m == "flux2": self.steps.setValue(4); self.guid.setValue(1.0)
+        elif m == "zimage": self.steps.setValue(8); self.guid.setValue(1.0)
         elif m == "pix2pix": self.steps.setValue(15); self.guid.setValue(7.0)
         else: self._lcm_toggled(self.lcm.isChecked())
         if m != "inpaint": self.paint_chk.setChecked(False)
