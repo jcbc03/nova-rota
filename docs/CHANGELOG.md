@@ -25,9 +25,10 @@
 - Modelo de embeddings padrão trocado pra `embeddinggemma-2:740m`, já presente no Ollama do PC. (beck `98931fb`)
 - Teste de estresse da interface estável no Windows. (sub2 `4cfdaf7`)
 - Cancelar a transcrição levava 88 s; agora para em 0,1 s. (ia_off `d798d2c`)
+- Prompt negativo padrão do vídeo Wan chegava como "????" no Windows; agora vai em inglês, e os prompts do vídeo têm os acentos trocados pela letra base. (ia_off `076a2d5`)
 
 ### Em andamento
-- Prompt negativo padrão do vídeo Wan chegando como "????" no Windows (ia_off).
+- Revisão final antes da entrega de 30/10.
 
 ## 2.3.1 (15/10/2026)
 - Corrigido: o app fechava sozinho ao carregar a geração de vídeo (Wan 2.1).
