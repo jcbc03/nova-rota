@@ -14,7 +14,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 |---|---|---|---|
 | V1 | Abrir a aba Vídeo e carregar o modelo | Não fecha nem trava (correção 2.3.1) | ✅ 15/10 no PC (ia_off) |
 | V2 | Gerar vídeo curto em baixa resolução | Termina, arquivo salvo e reproduzível | ✅ 15/10 (fila + engines_registry, headless): 480x272, 17 quadros, 20 passos → `20261015_205851_wan_1107368692.mp4`, 32 784 B, ffprobe ok (h264 480x272, 16 fps, 17 quadros, 1,06 s). TEMPO_TOTAL 8124 s = ~45 min Vulkan (morta em 11/20) + ~90 min na CPU (recaída automática) |
-| V3 | Durante a geração, trocar de aba e mexer na janela | Interface continua respondendo | ✅ 15/10 offscreen no PC: vídeo (sd.cpp falso) na fila trocando de aba a cada 100 ms: 23–29 trocas, maior pausa da UI 0,13 s, sinais na thread principal; repetido após aplicar 6b581cc. smoke_gui ✅. stress_gui ❌ no PC (video_lines=0: o FakeEngine de imagem usa sleep(0.0005) que no Windows dura ~15 ms, o vídeo não chega a rodar antes do fechamento; problema do teste, não do app) |
+| V3 | Durante a geração, trocar de aba e mexer na janela | Interface continua respondendo | ✅ 15/10 offscreen no PC: vídeo (sd.cpp falso) na fila trocando de aba a cada 100 ms: 23–29 trocas, maior pausa da UI 0,13 s, sinais na thread principal; repetido após aplicar 6b581cc. smoke_gui ✅. stress_gui ❌ no PC (video_lines=0: o FakeEngine de imagem usa sleep(0.0005) que no Windows dura ~15 ms, o vídeo não chega a rodar antes do fechamento; problema do teste, não do app) → com 4cfdaf7 instalado: stress_gui ✅ e smoke_gui ✅ no PC (15/10 23:39) |
 | V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ⏳ |
 | V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ⏳ |
 | V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ✅ 15/10 (mesmo vídeo do V2). Vulkan (UHD 620): ~200 s/passo (11/20 em ~2535 s; carga ~9 min). CPU (-t 4): carga+texto ~9 min, amostragem ~65 min (~170–245 s/passo, média ~197 s), decodificação VAE ~16 min, total ~90 min (5405 s). CPU ≈ Vulkan na amostragem, não mais rápida; CPU fica padrão (bb21e2d) por usar pouca GPU/RAM compartilhada |
@@ -65,7 +65,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 |---|---|---|---|
 | A1 | Gravar/transcrever áudio em português (Whisper) | Texto correto | ⏳ |
 | A2 | Sintetizar texto (Piper) | Áudio claro, sem internet | ⏳ |
-| A3 | Cancelar a transcrição de um áudio longo | Para sem travar | ⚠ 15/10 (fila): cancelar `transcrever` levou 88 s até parar (com o vídeo na CPU em paralelo); `falar` parou em 6,9 s. Sem travar/fechar. Antes disso o Piper derrubava o processo: espeak-ng não abre dados em caminho com "Área" (corrigido em 1755162) |
+| A3 | Cancelar a transcrição de um áudio longo | Para sem travar | ✅ 15/10 com d798d2c (testado no PC sem instalar, módulo carregado pelo script): áudio de 108 s, transcrição completa 117 s; cancelar aos 4 s (carregando o modelo) e aos 25 s (decodificando) → job cancelado em 0,1 s; a thread auxiliar termina o trecho de 10 s em andamento em segundo plano. Antes: 88 s |
 
 ## 7. Configurações e desempenho
 | ID | Passos | Esperado | Status |
@@ -87,8 +87,8 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 |---|---|---|---|---|---|
 | 15/10 | V2 | 3.0 | Barra foi a 242/242 em 8 s: carregamento do modelo contado como passo (também 825/825 e 108 e 4 na decodificação) | ia_off (sdcpp.py) | corrigido em 0e2f431/bb21e2d (só conta barras com total == --steps) |
 | 15/10 | V2 | 3.0 | ~200 s por passo em 480x272 (20 passos, cerca de 1h10), acima do esperado; causa: vídeo rodando pela versão Vulkan na UHD 620; correção = CPU por padrão no sdcpp.py | ia_off | CPU padrão em bb21e2d; na CPU também ~197 s/passo (V7), o modelo é que é pesado pro i5 |
-| 15/10 | U1 | 3.0 | Tipo `ampliar` não registrado na fila (botão Ampliar com IA: "Nenhum motor registrado") | ia_off | corrigido em b8b39bf (falta aplicar no PC) |
+| 15/10 | U1 | 3.0 | Tipo `ampliar` não registrado na fila (botão Ampliar com IA: "Nenhum motor registrado") | ia_off | corrigido em b8b39bf (instalado no PC 15/10 23:38; fila real ok) |
 | 15/10 | A2/A3 | 3.0 | Piper derrubava o processo: espeak-ng não abre dados no caminho com "Área de Trabalho" | ia_off | corrigido em 1755162 (aplicado no PC) |
-| 15/10 | A3 | 3.0 | Cancelar transcrição demorou 88 s | ia_off (voice_engine) | aberto |
+| 15/10 | A3 | 3.0 | Cancelar transcrição demorou 88 s | ia_off (voice_engine) | corrigido em d798d2c (trechos de 10 s numa thread; falta instalar no PC) |
 | 15/10 | V2 | 3.0 | Negativo padrão do Wan chega ao sd-cli como "????" (página de código do Windows) | ia_off (sdcpp) | aberto |
-| 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | aberto |
+| 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
