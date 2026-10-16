@@ -57,3 +57,4 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - 15/10, 21h44: lentidão do vídeo (V2, ~200 s/passo) causada pelo sd.cpp rodando na Vulkan da UHD 620. Decisão: vídeo na CPU por padrão, Vulkan opcional (ia_off, `sdcpp.py`); V2 cancelado e registrado como tempo Vulkan no V7.
 - Regra da fila de descarregar o Ollama (`queue_unload_ollama`) entrou desligada por padrão (beck `a6b356c`), até existir proteção pro chat em andamento.
 - Regra nova: cada um faz commit só dos próprios arquivos (`git add <caminho>`).
+- 15/10, 22h: repositório no GitHub privado do Julio (`jcbc03/nova-rota`, branch `main`). Regra: commit só dos próprios arquivos e `git push` logo depois; se recusar, `git pull --rebase` e push de novo.
