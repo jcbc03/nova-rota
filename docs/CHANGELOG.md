@@ -22,7 +22,7 @@
 
 ### Melhorado
 - Com `queue_unload_ollama` ligado, a fila não descarrega o Ollama enquanto um chat está respondendo. Ela espera até `queue_unload_wait_s` (120 s) e, se passar disso, roda o job sem descarregar. O padrão continua desligado. (beck `0a3000d`, front `7d717b1` no chat e nos documentos)
-- Chaves `wan22_model`, `wan22_t5` e `wan22_vae` pro Wan 2.2 5B, que começam vazias e aceitam `IA_OFF_WAN22_*`. A chave `video_modelo` escolhe entre `wan21` (padrão) e `wan22`. O motor e o seletor estão em andamento. (beck `f2c2c93`, `bcc2217`)
+- Chaves `wan22_model`, `wan22_t5` e `wan22_vae` pro Wan 2.2 5B, que começam vazias e aceitam `IA_OFF_WAN22_*`. A chave `video_modelo` escolhe entre `wan21` (padrão) e `wan22`. Seletor Wan 2.1/2.2 na aba Vídeo (front `497b0f6`). O motor cai no 2.1 se faltar algum arquivo do 2.2, e o 2.2 gera a 24 fps (ia_off `9ce183b`). Fases depois do último passo pelo sinal `JobQueue.phase` (ia_off `23f9c97`, doc beck `fed6825`; tela em andamento). (beck `f2c2c93`, `bcc2217`)
 - Chat rápido em conversas longas: histórico montado uma vez e tela atualizada no máximo a cada 80 ms; rolagem automática só quando você está no fim da conversa. (front `daa045d`)
 ### Corrigido
 - Depois de Cancelar, a aba Vídeo mostrava um passo a mais que não existia (ex.: "passo 4/20"). Agora a tela e a fila ignoram o progresso que ainda chega. (front `950cb26`, beck `3786502`)

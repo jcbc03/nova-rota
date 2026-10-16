@@ -38,9 +38,10 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 - **Z-Image Turbo (sd.cpp)**: escolha esse modo pra usar o Z-Image. A tela já vem com 8 passos, guidance 1 e sem negativo. **Medido no seu PC, uma imagem 512×512 leva cerca de 13 min** (uns 79 s por passo, medido 774 a 800 s, igual com a moderação ligada ou desligada). Em 768 passa de 30 min. Os caminhos ficam em Configurações (`zimage_model`, `zimage_llm`, `zimage_vae`).
 
 ## 5. Vídeo
+- **Modelo**: escolha **Wan 2.1** (padrão) ou **Wan 2.2**. O Wan 2.2 só fica disponível quando os três arquivos dele estão configurados (`wan22_model`, `wan22_t5` e `wan22_vae`, em Configurações). Ele gera a 24 quadros por segundo, e o 2.1 a 16. Medido no seu PC, um clipe de 480×272 com 9 quadros e 8 passos levou uns 25 min no Wan 2.2.
 - Escreva o prompt, escolha proporção e resolução (até 480p) e clique **Gerar vídeo**.
 - **Tempo esperado: um vídeo curto de 480×272 leva cerca de 1h30** (uns 9 min carregando, 65 min gerando e 16 min finalizando). Durante esse tempo a CPU fica toda ocupada.
-- A barra mostra o passo atual (ex.: "Passo 12/20"), o que prova que não travou. **Cancelar** para a geração.
+- A barra mostra o passo atual (ex.: "Passo 12/20"), o que prova que não travou. Depois do último passo ainda vêm as fases **Decodificando…**, **Salvando vídeo…** e **Convertendo para MP4…**, que podem levar uns 15 min. **Cancelar** para a geração.
 - O vídeo aparece na prévia (**▶ Tocar** / **⏸ Pausar**) e fica em `Vídeos\IA_Off`.
 - O padrão é a CPU; a GPU dá o mesmo tempo e fica livre pra outras coisas.
 - No vídeo, os acentos do prompt são trocados pela letra base (ex.: "ç" vira "c"), porque o motor no Windows não aceita esses caracteres. Com a tradução ligada, isso não faz diferença.
