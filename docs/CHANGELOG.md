@@ -21,7 +21,7 @@
 - Barra de progresso do vídeo contando o carregamento do modelo como passo (ia_off, `sdcpp.py`).
 - Testes V1 a V3, tempo do ampliador e Benchmark no PC (ia_off).
 - Polimento visual (DEV Front).
-- Suíte de testes em ambiente limpo, agora como conferência pós-instalação (sub2).
+- Suíte limpa aprovada: 88 ok, 1 pulado (sub2, `2d73849`).
 
 ## 2.3.1 (15/10/2026)
 - Corrigido: o app fechava sozinho ao carregar a geração de vídeo (Wan 2.1).
