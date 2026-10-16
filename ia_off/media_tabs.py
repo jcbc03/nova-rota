@@ -177,13 +177,14 @@ class QueueClient:
 
     def _q_progress(self, jid, passo, total, pct, eta_s):
         if not self._mine(jid): return
+        if jid in getattr(self, "_cancelando", ()): return  # ignora passo emitido depois do Cancelar
         if total <= 0: self.bar.setRange(0, 0); return
         self.bar.setRange(0, total); self.bar.setValue(passo)
         txt = f"Passo {passo}/{total} · {int(pct)}% · falta {fmt_eta(eta_s)}"
         self.bar.setFormat(txt); self.status.showMessage(txt)
 
     def _q_end(self, jid):
-        self._jobs.discard(jid)
+        self._jobs.discard(jid); getattr(self, "_cancelando", set()).discard(jid)
         if getattr(self, "qid", None) == jid: self.qid = None
         if not self._jobs:
             self.gen_btn.setEnabled(True); self.cancel_btn.setEnabled(False); self.bar.setRange(0, 100); self.bar.setFormat("%p%")
@@ -205,6 +206,7 @@ class QueueClient:
 
     def cancel_queue(self):
         if getattr(self, "qid", None):
+            self.__dict__.setdefault("_cancelando", set()).add(self.qid)
             self.fila.cancel(self.qid); self.status.showMessage("Cancelando… (termina o passo atual)")
             return True
         return False
