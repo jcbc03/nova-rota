@@ -232,8 +232,10 @@ class MainWindow(QMainWindow):
         cid = self.conv_id
         def job(w):
             self.client.ensure_running()
-            for c in self.client.chat_stream(model, msgs, self.options(), lambda: w.stopped):
-                w.chunk.emit(c)
+            from .job_queue import chat_em_andamento
+            with chat_em_andamento():
+                for c in self.client.chat_stream(model, msgs, self.options(), lambda: w.stopped):
+                    w.chunk.emit(c)
             return ""
         def chunk(c):
             self.answer += c; self._schedule_render()
@@ -350,8 +352,10 @@ class MainWindow(QMainWindow):
         def job(w):
             hits = self.store.search(self.client.embed(em, [q])[0], k=4)
             msgs = [{"role": "user", "content": build_prompt(q, hits)}]
-            for c in self.client.chat_stream(model, msgs, self.options()):
-                w.chunk.emit(c)
+            from .job_queue import chat_em_andamento
+            with chat_em_andamento():
+                for c in self.client.chat_stream(model, msgs, self.options()):
+                    w.chunk.emit(c)
             return citations(hits)
         def chunk(c):
             buf.append(c); self.rag_out.setHtml(f"<style>{CSS}</style>" + md_html("".join(buf)))
