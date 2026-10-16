@@ -85,5 +85,7 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - Aprovados no PC: V3 a V8 (Wan 2.2 5B, V6 longo em ~68 min), fases Decodificando/Salvando/Convertendo em vídeo, FLUX.2 e Z-Image, C1 a C4, M1 a M4, D1 a D4, I1 a I4, A1 a A3, R1 a R6, MO1 a MO6, SE1 a SE3, SE5, P1 e S1 (prioridade alta corrigida em `c2cd115` e `945402d`).
 - Etapas 1 a 3 e moderador (prazo 23/10) adiantados. Nada atrasado.
 - SE4 e menu da aba Vídeo aprovados no fim da tarde, e temporários apagados com o ok do Julio. Depende do Julio: S3 (o firewall exige administrador), o diálogo "Alterar filtro…" na tela (MO5, SE1) e trocar a senha temporária.
-- Pontas soltas: confirmar pelo log do V8 que o negativo do Wan chega legível (falha "????", ia_off) e reconferir o V4 com `950cb26` e `3786502` (sub2).
+- Falha "????" do negativo do Wan fechada, não é bug: o sd-cli recebe o texto sem acento de propósito, o .txt guarda o original em UTF-8, e os "?" são marcas do log de tokens do sd-cli (ia_off). Ponta nova pra amanhã: com negativo vazio, o .txt grava `negative:` em branco, mas o sd-cli usa o negativo padrão (ia_off, `sdcpp.py`).
+- V4: correções do Cancelar instaladas e 21 testes ok; falta um Cancelar real na tela, na próxima liberação do PC.
+- Robustez do beck (`a0c24cd`): suíte 178 ok, aguardando push. FPS da aba Vídeo (`132ee82`) no main, não instalado.
 - Próximo: etapa 4 (robustez e polimento) e versão candidata 3.0 (`docs/NOTAS_3.0_RC.md`).
