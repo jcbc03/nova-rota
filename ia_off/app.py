@@ -151,10 +151,13 @@ class MainWindow(QMainWindow):
         def job(w):
             self.client.ensure_running(); return "\n".join(self.client.list_models())
         def ok(s):
-            self.model_box.clear(); names = [n for n in s.split("\n") if n]
-            self.model_box.addItems(names)
+            allm = [n for n in s.split("\n") if n]; names = [n for n in allm if not is_embed_model(n, self.cfg)]
+            self.model_box.clear(); self.model_box.addItems(names)
             if cur in names: self.model_box.setCurrentText(cur)
-            self.status.showMessage(f"{len(names)} modelo(s) no Ollama", 5000)
+            elif names:
+                pick = self.cfg.get("model") if self.cfg.get("model") in names else names[0]
+                self.model_box.setCurrentText(pick); self.cfg["model"] = pick; config.save(self.cfg)
+            self.status.showMessage(f"{len(names)} modelo(s) de chat no Ollama", 5000)
         run_bg(self, job, on_done=ok, on_error=lambda m: self.status.showMessage("Ollama indisponível: " + m))
 
     def reload_convs(self):
@@ -529,6 +532,15 @@ class MainWindow(QMainWindow):
         self.client = OllamaClient(self.cfg["ollama_url"], self.cfg["ollama_exe"])
         self.emb_label.setText(f"Modelo de embeddings: {self.cfg['embed_model']}")
         self.status.showMessage("Configurações salvas.", 4000); self.refresh_models()
+
+EMBED_HINTS = ("embed", "bge-", "bge:", "minilm", "e5-", "gte-", "arctic-embed", "paraphrase")
+
+def is_embed_model(name, cfg=None):
+    """Modelos só de embeddings não conversam (Ollama responde 400)."""
+    n = name.lower(); base = n.split(":")[0]
+    emb = ((cfg or {}).get("embed_model") or "").lower()
+    if emb and (n == emb or base == emb.split(":")[0]): return True
+    return any(h in n for h in EMBED_HINTS)
 
 def log_line(msg):
     try:
