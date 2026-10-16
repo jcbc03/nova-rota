@@ -188,6 +188,8 @@ class QueueClient:
         if not self._mine(jid) or jid in getattr(self, "_cancelando", ()): return
         txt = {"decodificando": "Decodificando…", "salvando": "Salvando vídeo…", "convertendo": "Convertendo para MP4…"}.get(fase, fase)
         self.bar.setRange(0, 0); self.bar.setFormat(txt); self.status.showMessage(txt)
+        lg = getattr(self, "log", None)
+        if lg is not None: lg.appendPlainText(f"[fase] {txt}")
 
     def _q_end(self, jid):
         self._jobs.discard(jid); getattr(self, "_cancelando", set()).discard(jid)
