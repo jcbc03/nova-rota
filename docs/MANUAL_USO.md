@@ -8,7 +8,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 - As abas são: **Chat**, **Documentos**, **Imagem**, **Vídeo**, **Voz** e **Configurações**.
 
 ## 2. Chat
-- Escolha o modelo no seletor do topo (ex.: `qwen3-30b-a3b`, o mais capaz; carrega em ~30 s na primeira mensagem e responde a ~11 palavras-pedaço por segundo). **Atualizar** recarrega a lista.
+- Escolha o modelo no seletor do topo (ex.: `qwen3-30b-a3b`, o mais capaz; carrega em ~30 s na primeira mensagem e responde a uns 11 tokens por segundo). **Atualizar** recarrega a lista.
 - Escreva e clique **Enviar** (ou Ctrl+Enter). **Parar** interrompe a resposta.
 - **+ Nova conversa**, **Renomear** e **Excluir** ficam na barra lateral; as conversas ficam salvas.
 - **Copiar última resposta** copia o texto da IA.
