@@ -154,11 +154,11 @@ def engines():
 
 class _Job:
     __slots__ = ("id", "tipo", "params", "estado", "passo", "total", "pct", "eta_s",
-                 "resultado", "erro", "criado", "inicio", "fim", "cancel_flag")
+                 "resultado", "erro", "criado", "inicio", "fim", "cancel_flag", "fase")
 
     def __init__(self, jid, tipo, params):
         self.id, self.tipo, self.params = jid, tipo, dict(params or {})
-        self.estado = NA_FILA; self.passo = 0; self.total = 0; self.pct = 0.0; self.eta_s = -1.0
+        self.estado = NA_FILA; self.passo = 0; self.total = 0; self.pct = 0.0; self.eta_s = -1.0; self.fase = ""
         self.resultado = None; self.erro = None
         self.criado = time.time(); self.inicio = None; self.fim = None
         self.cancel_flag = threading.Event()
@@ -177,6 +177,8 @@ class JobQueue(QObject):
     failed = Signal(str, str)                        # id, erro
     cancelled = Signal(str)
     _progress_raw = Signal(str, int, int, float, float)  # interno: worker -> thread da GUI (filtra cancelados)
+    phase = Signal(str, str)                         # id, fase ("decodificando", "salvando", "convertendo")
+    _phase_raw = Signal(str, str)
 
     def __init__(self, parent=None, engines=None, progress_interval=0.1):
         super().__init__(parent)
@@ -188,6 +190,7 @@ class JobQueue(QObject):
         self._stop = False
         self._interval = float(progress_interval)
         self._progress_raw.connect(self._relay_progress, Qt.QueuedConnection)
+        self._phase_raw.connect(self._relay_phase, Qt.QueuedConnection)
         self._worker = threading.Thread(target=self._run, name="ia_off-job-queue", daemon=True)
         self._worker.start()
 
@@ -266,6 +269,12 @@ class JobQueue(QObject):
             return
         self.progress.emit(jid, passo, total, pct, eta)
 
+    def _relay_phase(self, jid, fase):
+        job = self._jobs.get(jid)
+        if job is None or job.cancel_flag.is_set():
+            return
+        self.phase.emit(jid, fase)
+
     # ---------- worker ----------
     def _engine(self, tipo):
         return self._local_engines.get(tipo) or engines().get(tipo)
@@ -323,6 +332,14 @@ class JobQueue(QObject):
             if now - last[0] >= self._interval or (total > 0 and passo >= total):
                 last[0] = now
                 self._progress_raw.emit(job.id, passo, total, float(pct), float(eta))
+
+        def on_phase(fase):
+            """Opcional p/ motores: getattr(on_progress, "phase", None)(fase). Etapa sem passos (ex.: VAE)."""
+            if job.cancel_flag.is_set() or job.estado != RODANDO:
+                return
+            job.fase = str(fase)
+            self._phase_raw.emit(job.id, str(fase))
+        on_progress.phase = on_phase
 
         try:
             res = self._engine(job.tipo)(dict(job.params), on_progress, job.cancel_flag)

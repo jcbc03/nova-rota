@@ -38,6 +38,9 @@ def cli_safe(text, what="prompt"):
     return re.sub(r"\s{2,}", " ", t).strip()
 
 PROG_RE = re.compile(r"\|\s*(\d+)/(\d+)\s*-")
+# Depois da amostragem o sd-cli decodifica o VAE e grava o arquivo sem barra de progresso.
+PHASE_DECODE, PHASE_SAVE = "decodificando", "salvando"
+PHASE_RES = ((re.compile(r"decod", re.I), PHASE_DECODE), (re.compile(r"\bsav(e|ing)\b", re.I), PHASE_SAVE))
 
 def default_dir():
     from .config import APP_DIR
@@ -83,7 +86,7 @@ def ensure_binary(folder, variant="cpu", progress=lambda d, t: None, cancelled=l
 
 def run_with_fallback(folder, variant, build_args, on_line=lambda s: None, cancelled=None,
                       log=lambda s: None, progress=lambda d, t: None, ensure=None,
-                      progress_cb=None, cancel_flag=None):
+                      progress_cb=None, cancel_flag=None, phase_cb=None):
     """Executa com a variante pedida (ex.: vulkan); se falhar (e não foi cancelado), repete na CPU.
     `progress` é o do download do binário; `progress_cb(step, total)` é o dos passos da geração."""
     from .engine_api import Cancelled, make_cancel_check
@@ -93,7 +96,7 @@ def run_with_fallback(folder, variant, build_args, on_line=lambda s: None, cance
         try:
             b = ensure(folder, "vulkan", progress, check)
             log(f"sd.cpp: usando GPU Vulkan ({b})")
-            run(build_args(b), on_line, check, progress_cb=progress_cb)
+            run(build_args(b), on_line, check, progress_cb=progress_cb, phase_cb=phase_cb)
             return "vulkan"
         except Exception as e:
             if check() or isinstance(e, Cancelled):
@@ -103,7 +106,7 @@ def run_with_fallback(folder, variant, build_args, on_line=lambda s: None, cance
     if check():
         raise Cancelled()
     log(f"sd.cpp: usando CPU ({b})")
-    run(build_args(b), on_line, check, progress_cb=progress_cb)
+    run(build_args(b), on_line, check, progress_cb=progress_cb, phase_cb=phase_cb)
     return "cpu"
 
 def video_variant(cfg, vulkan_ok=None):
@@ -226,9 +229,10 @@ def kill_tree(p, timeout=5.0):
         except Exception:
             p.kill()
 
-def run(args, on_line=lambda s: None, cancelled=None, progress_cb=None, cancel_flag=None):
+def run(args, on_line=lambda s: None, cancelled=None, progress_cb=None, cancel_flag=None, phase_cb=None):
     """Roda o sd-cli. progress_cb(step, total) recebe as linhas "3/20"; cancel_flag (is_set()) ou
-    cancelled() encerram a árvore de processos e levantam Cancelled."""
+    cancelled() encerram a árvore de processos e levantam Cancelled. phase_cb(fase), opcional, recebe
+    "decodificando" logo após o último passo (N/N) e "salvando" se o log indicar a gravação."""
     from .engine_api import Cancelled, make_cancel_check
     check = make_cancel_check(cancel_flag, cancelled)
     if check():
@@ -245,16 +249,34 @@ def run(args, on_line=lambda s: None, cancelled=None, progress_cb=None, cancel_f
             if check() and p.poll() is None:
                 killed.append(1); kill_tree(p); return
     threading.Thread(target=watch, daemon=True, name="sdcpp-cancel").start()
-    last = [None]
+    last = [None]; fase = [None]; sampling = [False]
     want = expected_steps(args)
+    def set_phase(f):
+        if phase_cb is not None and f != fase[0]:
+            fase[0] = f
+            try:
+                phase_cb(f)
+            except Exception:
+                pass
     def line(s):
         on_line(s)
-        if progress_cb is not None:
-            pr = parse_progress(s)
-            if pr and want is not None and pr[1] != want:
-                pr = None  # barra de carregamento de tensores, não passo de geração
-            if pr and pr != last[0]:
-                last[0] = pr; progress_cb(*pr)
+        if progress_cb is None and phase_cb is None:
+            return
+        pr = parse_progress(s)
+        if pr and want is not None and pr[1] != want:
+            pr = None  # barra de carregamento de tensores, não passo de geração
+        if pr:
+            sampling[0] = True
+            if pr != last[0]:
+                last[0] = pr
+                if progress_cb is not None:
+                    progress_cb(*pr)
+                if pr[0] >= pr[1]:
+                    set_phase(PHASE_DECODE)
+        elif sampling[0]:  # só depois da amostragem: "vae"/"decode" também aparecem no carregamento
+            for rx, f in PHASE_RES:
+                if rx.search(s):
+                    set_phase(f); break
     try:
         _read_loop(p, line, tail)
     except BaseException:

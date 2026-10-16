@@ -165,11 +165,15 @@ def gerar_video(params, on_progress, cancel_flag):
                                      f"modelo: {modelo}\nframes: {frames}\nsteps: {steps}\ncfg: {cfgs}\nfps: {fps}\n", encoding="utf-8")
     mk = lambda b: sdcpp.build_wan_args(b, cfg, prompt, avi, neg, w, h, frames, steps, cfgs, seed, fps,
                                         float(p.get("flow_shift", d.get("flow_shift", 3.0))), modelo)
+    phase = getattr(on_progress, "phase", None)  # opcional (JobQueue): fase sem passos, ex. decodificação VAE
+    kw = {"phase_cb": phase} if phase is not None else {}
     sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), sdcpp.video_variant(cfg), mk,
-                            progress_cb=on_progress, cancel_flag=cancel_flag)
+                            progress_cb=on_progress, cancel_flag=cancel_flag, **kw)
     if cancel_flag is not None and cancel_flag.is_set():
         raise Cancelled()
     mp4 = out / f"{stem}.mp4"
+    if phase is not None:
+        phase("convertendo")
     try:
         sdcpp.to_mp4(avi, mp4, fps); avi.unlink(missing_ok=True); return str(mp4)
     except Exception:
