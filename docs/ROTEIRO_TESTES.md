@@ -88,12 +88,12 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 9. Moderador e senha (prazo 23/10)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| MO1 | Moderação desligada: comparar o comando do `sd-cli` e o prompt do chat com e sem o hook | Idênticos; listas nem carregadas; nenhum bloqueio | ⏳ |
-| MO2 | Ligar em Leve, Médio e Rígido com o mesmo conjunto de prompts | Rígido bloqueia tudo do Médio, e o Médio tudo do Leve | ⏳ |
-| MO3 | Prompts normais em PT-BR em todos os níveis | Nenhum bloqueio falso (checagem por palavra inteira) | ⏳ |
-| MO4 | Burla com acento, maiúsculas e letras separadas por espaço | Bloqueado; "e a" ou "o e" não colam em bloqueio falso | ⏳ |
+| MO1 | Moderação desligada: comparar o comando do `sd-cli` e o prompt do chat com e sem o hook | Idênticos; listas nem carregadas; nenhum bloqueio | ✅ box (mo_pc_check, ca17c6d); PC pendente |
+| MO2 | Ligar em Leve, Médio e Rígido com o mesmo conjunto de prompts | Rígido bloqueia tudo do Médio, e o Médio tudo do Leve | ✅ box (mo_pc_check, ca17c6d); PC pendente |
+| MO3 | Prompts normais em PT-BR em todos os níveis | Nenhum bloqueio falso (checagem por palavra inteira) | ✅ box (mo_pc_check, ca17c6d); PC pendente |
+| MO4 | Burla com acento, maiúsculas e letras separadas por espaço | Bloqueado; "e a" ou "o e" não colam em bloqueio falso | ✅ box (mo_pc_check, ca17c6d); PC pendente |
 | MO5 | Prompt bloqueado em imagem, vídeo e Falar | `PromptBloqueado` com motivo na tela, sem carregar modelo | ⏳ |
-| MO6 | `moderacao.json` ausente ou com erro de sintaxe | Usa o padrão embutido, avisa no log e não derruba o app | ⏳ |
+| MO6 | `moderacao.json` ausente ou com erro de sintaxe | Usa o padrão embutido, avisa no log e não derruba o app | ✅ box (mo_pc_check, ca17c6d); PC pendente |
 | SE1 | Primeira vez em "Alterar filtro…" | Pede pra criar a senha e confirmar; arquivo guarda só hash PBKDF2 com salt | ⏳ |
 | SE2 | Senha errada | Nada muda e aparece aviso | ⏳ |
 | SE3 | Senha certa | Liga, desliga e troca o nível | ⏳ |
