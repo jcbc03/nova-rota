@@ -130,7 +130,7 @@ def _fake_ollama(monkeypatch, calls, down=False, cfg=None):
             raise OSError("400 does not support generate")
         return _Resp()
     monkeypatch.setattr(jq.urllib.request, "urlopen", urlopen)
-    base = {"ollama_url": "http://h:1"}; base.update(cfg or {})
+    base = {"ollama_url": "http://h:1", "queue_unload_ollama": True}; base.update(cfg or {})
     monkeypatch.setattr(jq, "_cfg", lambda: dict(base))
 
 def _run_one(app, tipo):
@@ -165,3 +165,12 @@ def test_unload_custom_types(app, monkeypatch):
 def test_ollama_down_tolerated(app, monkeypatch):
     calls = []; _fake_ollama(monkeypatch, calls, down=True)
     assert "finished" in _run_one(app, "ampliar") and len(calls) == 1
+
+def test_unload_off_by_default(app, monkeypatch):
+    calls = []
+    def urlopen(req, timeout=None):
+        calls.append(req); return _Resp()
+    monkeypatch.setattr(jq.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(jq, "_cfg", lambda: {"ollama_url": "http://h:1"})
+    _run_one(app, "video")
+    assert calls == []

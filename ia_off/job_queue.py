@@ -225,7 +225,7 @@ class JobQueue(QObject):
         """Gancho antes do motor (na thread de trabalho). Nunca falha a tarefa."""
         try:
             cfg = _cfg()
-            if not cfg.get("queue_unload_ollama", True):
+            if not cfg.get("queue_unload_ollama", False):
                 return
             tipos = cfg.get("queue_unload_types")
             tipos = set(DEFAULT_UNLOAD_TYPES if tipos is None else tipos)
