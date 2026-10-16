@@ -86,6 +86,7 @@ def run_with_fallback(folder, variant, build_args, on_line=lambda s: None, cance
     """Executa com a variante pedida (ex.: vulkan); se falhar (e não foi cancelado), repete na CPU.
     `progress` é o do download do binário; `progress_cb(step, total)` é o dos passos da geração."""
     from .engine_api import Cancelled, make_cancel_check
+    from . import runtime_dlls
     ensure = ensure or ensure_binary
     check = make_cancel_check(cancel_flag, cancelled)
     if variant == "vulkan":
@@ -210,7 +211,7 @@ def run(args, on_line=lambda s: None, cancelled=None, progress_cb=None, cancel_f
     win = sys.platform == "win32"
     kw = dict(creationflags=0x08000000 | 0x00000200) if win else dict(start_new_session=True)  # NO_WINDOW|NEW_PROCESS_GROUP
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                         cwd=str(Path(args[0]).parent), **kw)
+                         cwd=str(Path(args[0]).parent), env=runtime_dlls.env_para_exe(args[0]), **kw)
     import threading
     tail = []; killed = []
     stop = threading.Event()
