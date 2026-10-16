@@ -210,12 +210,20 @@ class MainWindow(QMainWindow):
         if not text or self.worker: return
         if not model:
             QMessageBox.information(self, "Modelo", "Nenhum modelo selecionado. Clique em Atualizar ou importe um GGUF."); return
+        from . import moderador as mod
+        sys_prompt = self.cfg["system_prompt"]
+        if mod.ativa(self.cfg):
+            try: mod.checar_prompt(text, "chat", self.cfg)
+            except mod.PromptBloqueado as e:
+                QMessageBox.warning(self, "Prompt bloqueado pela moderação", e.motivo); return
+            extra = mod.instrucoes_chat(self.cfg)
+            if extra: sys_prompt = sys_prompt + "\n" + extra
         if not self.conv_id:
             self.conv_id = self.db.new_conv(text[:40]); self.reload_convs()
         elif not self.db.messages(self.conv_id):
             self.db.rename(self.conv_id, text[:40]); self.reload_convs()
         self.db.add_msg(self.conv_id, "user", text); self.input.clear()
-        msgs = [{"role": "system", "content": self.cfg["system_prompt"]}] + self.db.messages(self.conv_id)
+        msgs = [{"role": "system", "content": sys_prompt}] + self.db.messages(self.conv_id)
         self.cfg["model"] = model; config.save(self.cfg)
         self.answer = ""; self._hist_cid = None; self.render("")
         cid = self.conv_id
