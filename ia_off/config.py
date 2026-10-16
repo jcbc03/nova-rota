@@ -40,6 +40,7 @@ DEFAULTS = {
     "wan_t5": _M("video", "wan2.1-t2v-1.3b", "umt5-xxl-encoder-Q4_K_M.gguf"),
     "wan_vae": _M("video", "wan2.1-t2v-1.3b", "wan_2.1_vae.safetensors"),
     # Wan 2.2 TI2V 5B: nomes de arquivo ainda indefinidos -> vazio (= não configurado); envs IA_OFF_WAN22_* sobrepõem
+    "video_modelo": os.environ.get("IA_OFF_VIDEO_MODELO") or "wan21",  # wan21 | wan22
     "wan22_model": os.environ.get("IA_OFF_WAN22_MODEL") or "",
     "wan22_t5": os.environ.get("IA_OFF_WAN22_T5") or "",
     "wan22_vae": os.environ.get("IA_OFF_WAN22_VAE") or "",
