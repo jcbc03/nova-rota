@@ -197,13 +197,38 @@ def ampliar(params, on_progress, cancel_flag):
     return upscaler.ampliar(params, on_progress, cancel_flag)
 
 
+def moderado(fn, contexto, campo="prompt", negativo=False, neg_padrao=None):
+    """Envolve um motor: checa o texto (moderador.checar_prompt) ANTES de qualquer carga de modelo e,
+    com `negativo`, completa params['negative']. Moderação desligada => chama fn com os mesmos params
+    (mesmo objeto, nada lido além do config). PromptBloqueado propaga intacta: a fila mostra
+    "PromptBloqueado: <motivo>"."""
+    def wrapper(params, on_progress, cancel_flag):
+        from . import moderador as mod
+        cfg = _cfg(params)
+        if not mod.ativa(cfg):
+            return fn(params, on_progress, cancel_flag)
+        mod.checar_prompt(str(params.get(campo) or ""), contexto, cfg)
+        if negativo:
+            params = dict(params)
+            base = params.get("negative", "") or (neg_padrao() if neg_padrao else "")
+            params["negative"] = mod.completar_negativo(base, cfg)
+        return fn(params, on_progress, cancel_flag)
+    wrapper.__name__ = getattr(fn, "__name__", "motor"); wrapper.__wrapped__ = fn
+    return wrapper
+
+
+def _wan_neg():
+    from . import sdcpp
+    return sdcpp.WAN_NEG
+
+
 def register_all(queue=None):
     """Registra 'imagem', 'video', 'transcrever', 'falar' e 'ampliar'. Com `queue`, só naquela fila; sem, no registro global do job_queue."""
     reg = queue.register_engine if queue is not None else __import__(
         "ia_off.job_queue", fromlist=["register_engine"]).register_engine
-    reg("imagem", gerar_imagem)
-    reg("video", gerar_video)
+    reg("imagem", moderado(gerar_imagem, "imagem", negativo=True))
+    reg("video", moderado(gerar_video, "video", negativo=True, neg_padrao=_wan_neg))  # cli_safe em build_wan_args
     reg("transcrever", transcrever)
-    reg("falar", falar)
+    reg("falar", moderado(falar, "voz", campo="texto"))
     reg("ampliar", ampliar)
     return queue

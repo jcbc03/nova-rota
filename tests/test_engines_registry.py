@@ -121,7 +121,7 @@ def test_register_all_na_fila(app, tmp_path, fake_engine):
         assert fin and fin[0][1] == jid and os.path.isfile(fin[0][2])
         last = [e for e in ev if e[0] == "progress"][-1]
         assert last[2:4] == (3, 3) and last[4] == 100.0
-        assert q._engine("video") is er.gerar_video
+        assert getattr(q._engine("video"), "__wrapped__", None) is er.gerar_video
     finally:
         q.shutdown(wait=True, timeout=5)
 
@@ -129,8 +129,9 @@ def test_register_all_na_fila(app, tmp_path, fake_engine):
 def test_register_all_global(monkeypatch):
     monkeypatch.setattr(jq, "_ENGINES", {})
     er.register_all()
-    assert jq.engines() == {"imagem": er.gerar_imagem, "video": er.gerar_video,
-                            "transcrever": er.transcrever, "falar": er.falar, "ampliar": er.ampliar}
+    got = {k: getattr(v, "__wrapped__", v) for k, v in jq.engines().items()}
+    assert got == {"imagem": er.gerar_imagem, "video": er.gerar_video,
+                   "transcrever": er.transcrever, "falar": er.falar, "ampliar": er.ampliar}
 
 
 def test_register_all_inclui_ampliar():
