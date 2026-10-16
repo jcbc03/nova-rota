@@ -59,7 +59,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 |---|---|---|---|
 | U1 | Ampliar 2x e 4x uma imagem da galeria | Usa o modelo de IA (sem `_lanczos`); anotar o tempo no i5 | ✅ 15/10 (fila, 512→, onnxruntime, modelo 4x realesr-general-x4v3): 2x 3,8 s (1024²), 4x 3,9 s (2048²); nomes `_x2`/`_x4` sem `_lanczos`. ⚠ o tipo `ampliar` não estava no register_all (corrigido em b8b39bf; no teste foi registrado à mão) |
 | U2 | Cancelar no meio | Para entre um bloco e outro | ✅ 15/10: cancelado 0,9 s após o pedido (3 eventos de progresso) |
-| U3 | Tirar o modelo do lugar e ampliar | Cai no Lanczos e a tela avisa | ✅ 15/10 (headless, modelo inexistente via cfg_override): 0,1 s, `_x2_lanczos.png`, metadado e log avisam. Aviso na tela não verificado |
+| U3 | Tirar o modelo do lugar e ampliar | Cai no Lanczos e a tela avisa | ✅ 15/10 (headless, modelo inexistente via cfg_override): 0,1 s, `_x2_lanczos.png`, metadado e log avisam. 16/10 18h: aviso na tela ✅ (DEV Front, janela diz que o modelo não foi achado e como instalar) |
 
 ## 6. Voz (após o ia_off, prazo 23/10)
 | ID | Passos | Esperado | Status |
@@ -73,7 +73,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 |---|---|---|---|
 | S1 | Ligar/desligar modo turbo | Uso de núcleos muda | ✅ PC 16/10: núcleos ok (8 turbo, 2 com 2 threads); BUG prioridade alta nunca aplicada: perf.set_high_priority sem restype no GetCurrentProcess (SetPriorityClass erro 6, silencioso) → corrigido em c2cd115 (instalado 15:30): prioridade Alta (128) com turbo, 8 threads (~7,3 núcleos) vs 2 com turbo desligado; texto do log corrigido em 945402d (suíte 173 ok) |
 | S2 | Rodar Benchmark CPU x GPU (OpenVINO) | Resultado registrado aqui | ✅ 15/10 SD 1.5 + LCM, 512x512, 4 passos (após aquecimento): PyTorch CPU 36,1 s · OpenVINO CPU 29,3 s · OpenVINO GPU (UHD 620) 17,5 s/imagem. Aquecimento/exportação: 35 s / 135 s / 95 s |
-| S3 | Desligar a internet e usar todas as abas | Tudo funciona offline | ⏳ fica pro Julio: desligar a internet derruba o acesso do ia_off ao PC |
+| S3 | Desligar a internet e usar todas as abas | Tudo funciona offline | ⏳ fica pro Julio: desligar a internet derruba o acesso do ia_off ao PC. 16/10 18h: regra de firewall exige admin; comando enviado ao Julio |
 
 ## 8. Regra de centralização (antes da entrega)
 | ID | Passos | Esperado | Status |
@@ -97,7 +97,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | SE1 | Primeira vez em "Alterar filtro…" | Pede pra criar a senha e confirmar; arquivo guarda só hash PBKDF2 com salt | ✅ PC 16/10 (92b5253 = código do bcc2217): senha temporária criada; arquivo só com hash PBKDF2 (240k iterações) e salt; fora dos logs (clique real fica pro Julio) |
 | SE2 | Senha errada | Nada muda e aparece aviso | ✅ PC 16/10 (92b5253 = código do bcc2217): senha errada recusa e nada muda |
 | SE3 | Senha certa | Liga, desliga e troca o nível | ✅ PC 16/10 (92b5253 = código do bcc2217): senha certa libera; desligar também pede senha |
-| SE4 | Apagar o arquivo da senha | App pede senha nova | ⏳ não testado: depende de apagar o `moderacao_senha.json`, só com o ok do Julio |
+| SE4 | Apagar o arquivo da senha | App pede senha nova | ✅ PC 16/10 18h (ok do Julio): sem o json o app pede senha nova; arquivo restaurado do backup senha_1744.json e a temporária voltou a valer |
 | SE5 | "Trocar senha…" (0111f92) | Senha atual errada não muda nada; atual certa + nova confirmada troca | ✅ PC 16/10 (senha atual errada não muda nada) |
 
 ## Registro de falhas
@@ -112,11 +112,9 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
 
 
-## Checklist do Julio (o que só ele pode fazer)
+## Checklist do Julio
 
-1. **S3**: desligar a internet e usar todas as abas (Chat, Imagem, Vídeo, Documentos, Voz). Tudo tem que funcionar.
-2. **Menu Vídeo**: na aba Vídeo, abrir o menu Modelo e ver o Wan 2.1 e o Wan 2.2. Gerar um vídeo curto e ver "Decodificando…" depois do último passo.
-3. **SE1 e troca de senha**: em Configurações > Moderação, usar "Trocar senha…" pra trocar a temporária (`C:\IA\dados\SENHA_TEMPORARIA.txt`). Em "Alterar filtro…", testar com a senha errada (nada muda) e depois com a certa.
-4. **MO5**: com a moderação ligada, mandar um prompt proibido em Imagem, Vídeo e Falar e ver a mensagem de bloqueio com o motivo. No fim, desligar a moderação.
-5. **SE4** (só se quiser): apagar o `moderacao_senha.json` e ver o app pedir uma senha nova.
-6. **Limpeza**: dar o ok (ou não) pra apagar o `SENHA_TEMPORARIA.txt` e os temporários.
+A lista oficial é o passo a passo de `docs/NOTAS_3.0_RC.md` (sib1). Situação em 16/10 18h:
+
+- Feito: SE4, limpeza dos temporários e menu Modelo da aba Vídeo (Wan 2.1 1.3B e Wan 2.2 5B, por automação; DEV Front também na tela).
+- Falta: S3 (rodar como admin o comando do firewall), trocar a senha temporária, "Alterar filtro…" na tela (senha errada e certa), MO5 com clique real e um Cancelar real de vídeo (V4).
