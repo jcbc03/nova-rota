@@ -1,3 +1,4 @@
+import zlib
 import os, tempfile, numpy as np
 os.environ.setdefault("IA_OFF_HOME", tempfile.mkdtemp())
 from ia_off.rag import chunk_text, VectorStore, index_file, build_prompt, citations
@@ -8,7 +9,7 @@ def fake_embed(texts):
     out = []
     for t in texts:
         v = np.zeros(64)
-        for w in t.lower().split(): v[hash(w) % 64] += 1
+        for w in t.lower().split(): v[zlib.crc32(w.encode()) % 64] += 1
         out.append(v.tolist())
     return out
 
