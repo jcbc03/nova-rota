@@ -15,7 +15,7 @@ DEFAULTS = {
     "temperature": 0.7,
     "system_prompt": "Você é um assistente útil. Responda em português do Brasil.",
     "model": "qwen2.5:3b",
-    "embed_model": "nomic-embed-text",
+    "embed_model": "embeddinggemma-2:740m",
     "translate_model": "qwen2.5:3b",
     # --- RAG (rag.py): pasta do índice vetorial; env IA_OFF_RAG_DIR sobrepõe ---
     "rag_dir": os.environ.get("IA_OFF_RAG_DIR") or r"C:\IA\dados\rag",
