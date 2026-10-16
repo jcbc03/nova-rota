@@ -26,8 +26,13 @@ def set_high_priority(on=True):
     try:
         import ctypes
         HIGH, NORMAL = 0x00000080, 0x00000020
-        h = ctypes.windll.kernel32.GetCurrentProcess()
-        return bool(ctypes.windll.kernel32.SetPriorityClass(h, HIGH if on else NORMAL))
+        k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        k32.GetCurrentProcess.restype = ctypes.c_void_p  # handle de 64 bits (antes era cortado em int)
+        k32.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+        ok = bool(k32.SetPriorityClass(k32.GetCurrentProcess(), HIGH if on else NORMAL))
+        if not ok:
+            print(f"[perf] SetPriorityClass falhou: erro {ctypes.get_last_error()}", file=sys.stderr)
+        return ok
     except Exception:
         return False
 
