@@ -41,6 +41,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 - A barra mostra o passo atual (ex.: "Passo 12/20"), o que prova que não travou. **Cancelar** para a geração.
 - O vídeo aparece na prévia (**▶ Tocar** / **⏸ Pausar**) e fica em `Vídeos\IA_Off`.
 - O padrão é a CPU; a GPU dá o mesmo tempo e fica livre pra outras coisas.
+- No vídeo, os acentos do prompt são trocados pela letra base (ex.: "ç" vira "c"), porque o motor no Windows não aceita esses caracteres. Com a tradução ligada, isso não faz diferença.
 
 ## 6. Voz
 - **Transcrever**: **Escolher áudio…**, clique **Transcrever**; o texto aparece na tela e **Copiar texto** copia.
