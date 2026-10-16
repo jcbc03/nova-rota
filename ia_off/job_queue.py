@@ -22,7 +22,7 @@ import time
 import traceback
 from collections import deque
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Qt, Signal
 
 NA_FILA, RODANDO, CONCLUIDA, FALHOU, CANCELADA = "na_fila", "rodando", "concluida", "falhou", "cancelada"
 
@@ -176,6 +176,7 @@ class JobQueue(QObject):
     finished = Signal(str, str)                      # id, caminho_resultado
     failed = Signal(str, str)                        # id, erro
     cancelled = Signal(str)
+    _progress_raw = Signal(str, int, int, float, float)  # interno: worker -> thread da GUI (filtra cancelados)
 
     def __init__(self, parent=None, engines=None, progress_interval=0.1):
         super().__init__(parent)
@@ -186,6 +187,7 @@ class JobQueue(QObject):
         self._ids = itertools.count(1)
         self._stop = False
         self._interval = float(progress_interval)
+        self._progress_raw.connect(self._relay_progress, Qt.QueuedConnection)
         self._worker = threading.Thread(target=self._run, name="ia_off-job-queue", daemon=True)
         self._worker.start()
 
@@ -256,6 +258,14 @@ class JobQueue(QObject):
         if wait and self._worker.is_alive() and threading.current_thread() is not self._worker:
             self._worker.join(timeout)
 
+    def _relay_progress(self, jid, passo, total, pct, eta):
+        """Na thread da GUI: descarta progresso enfileirado de tarefa cujo cancelamento já foi pedido.
+        (Progresso de tarefa concluída/falha chega antes de finished/failed: mesma ordem do worker.)"""
+        job = self._jobs.get(jid)
+        if job is None or job.cancel_flag.is_set():
+            return
+        self.progress.emit(jid, passo, total, pct, eta)
+
     # ---------- worker ----------
     def _engine(self, tipo):
         return self._local_engines.get(tipo) or engines().get(tipo)
@@ -302,6 +312,8 @@ class JobQueue(QObject):
         last = [0.0]
 
         def on_progress(passo, total):
+            if job.cancel_flag.is_set() or job.estado != RODANDO:
+                return  # cancelamento pedido / já terminou: nada de passo fantasma
             passo, total = int(passo), int(total)
             now = time.time()
             pct = (100.0 * passo / total) if total > 0 else 0.0
@@ -310,7 +322,7 @@ class JobQueue(QObject):
             job.passo, job.total, job.pct, job.eta_s = passo, total, pct, eta
             if now - last[0] >= self._interval or (total > 0 and passo >= total):
                 last[0] = now
-                self.progress.emit(job.id, passo, total, float(pct), float(eta))
+                self._progress_raw.emit(job.id, passo, total, float(pct), float(eta))
 
         try:
             res = self._engine(job.tipo)(dict(job.params), on_progress, job.cancel_flag)

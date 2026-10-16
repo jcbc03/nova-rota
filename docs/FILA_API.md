@@ -23,6 +23,8 @@ Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
 - `id` é `str` ("job-1", ...). `enqueue` levanta `ValueError` se o tipo não tiver motor.
 - `cancel(id) -> bool`; `list_jobs()` / `get(id)` devolvem dicts: id, tipo, estado, passo, total, pct, eta_s, resultado, erro, criado, inicio, fim, params.
 - `progress`: pct 0–100 (float), eta_s em segundos (-1 = desconhecido); limitado a 1 emissão/`progress_interval` s (o último passo sempre sai).
+- Depois de `cancel(id)` nenhum `progress` daquela tarefa é emitido (o worker ignora on_progress e a thread da GUI descarta
+  sinais já enfileirados); nunca sai `progress` após `cancelled`/`finished`/`failed`.
 - `shutdown(wait=True, timeout=None)`: cancela tudo e para o worker — chamar no `closeEvent`/`aboutToQuit`.
 - **Libera RAM antes de tarefas pesadas**: no worker, logo após `started(id)` e antes do motor, se o tipo está em
   `queue_unload_types` (padrão `["video", "imagem", "ampliar"]`) e `queue_unload_ollama` (padrão `false`, desligada até existir proteção pro chat em andamento), a fila faz

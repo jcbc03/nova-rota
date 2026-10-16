@@ -234,3 +234,37 @@ def test_chat_ativo_sem_unload_padrao_intocado(app, monkeypatch, chat_limpo):
     with jq.chat_em_andamento():
         t0 = time.time(); names = _run_one(app, "video")
     assert "finished" in names and calls == [] and time.time() - t0 < 2
+
+
+def test_sem_progresso_fantasma_apos_cancelar(app):
+    cont = threading.Event(); chegou3 = threading.Event()
+    def eng(params, on_progress, cancel_flag):
+        for p in range(1, 21):
+            on_progress(p, 20)
+            if p == 3:
+                chegou3.set(); cont.wait(3)
+                on_progress(4, 20)   # motor ainda reporta depois do cancelamento
+                return None
+        return "x"
+    q = jq.JobQueue(engines={"video": eng}, progress_interval=0); r = Rec(q)
+    jid = q.enqueue("video", {})
+    assert chegou3.wait(3)
+    assert pump(app, lambda: any(e[0] == "progress" and e[2] == 3 for e in r.ev))
+    q.cancel(jid); cont.set()
+    assert pump(app, lambda: "cancelled" in r.names(jid))
+    pump(app, lambda: False, timeout=0.2)
+    passos = [e[2] for e in r.ev if e[0] == "progress" and e[1] == jid]
+    assert 4 not in passos and passos and max(passos) == 3
+    i = [e[0] for e in r.ev if e[1] == jid]
+    assert "progress" not in i[i.index("cancelled"):]
+    q.shutdown()
+
+def test_progresso_atrasado_descartado_na_gui(app):
+    q = jq.JobQueue(engines={"video": steps_engine(50, 0.02)}); r = Rec(q)
+    jid = q.enqueue("video", {})
+    assert pump(app, lambda: "started" in r.names(jid))
+    q._progress_raw.emit(jid, 4, 20, 20.0, 1.0)   # já na fila de eventos da GUI
+    q.cancel(jid)                                  # cancelado antes da entrega
+    assert pump(app, lambda: "cancelled" in r.names(jid))
+    assert not any(e[0] == "progress" and e[2] == 4 and e[3] == 20 for e in r.ev if e[1] == jid)
+    q.shutdown()
