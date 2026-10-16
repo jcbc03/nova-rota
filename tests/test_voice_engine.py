@@ -140,3 +140,15 @@ def test_queue_adapters(tmp_path, monkeypatch):
     for fn, bad in ((er.transcrever, {}), (er.falar, {"texto": " "})):
         with pytest.raises(ValueError):
             fn(bad, lambda s, n: None, threading.Event())
+
+
+def test_espeak_data_dir_copia_quando_caminho_tem_acento(tmp_path):
+    from ia_off import voice_engine as ve
+    src = tmp_path / "Área" / "espeak-ng-data"; src.mkdir(parents=True); (src / "phontab").write_bytes(b"x")
+    voz = tmp_path / "voz"; voz.mkdir()
+    d = ve.espeak_data_dir(voz / "v.onnx", src=src)
+    if not str(voz).isascii():
+        return
+    assert d == voz / "espeak-ng-data" and (d / "phontab").read_bytes() == b"x"
+    ok = tmp_path / "ascii"; ok.mkdir()
+    assert ve.espeak_data_dir(voz / "v.onnx", src=ok) is None

@@ -89,11 +89,36 @@ def split_sentences(text, max_len=400):
     return out
 
 
+def espeak_data_dir(onnx, src=None):
+    """O espeak-ng (C) do piper não abre a pasta de dados se o caminho tem acento (ex.: "Área de Trabalho"):
+    procura o caminho de compilação, falha e derruba o processo. Nesse caso copia os dados (uma vez)
+    para uma pasta só ASCII ao lado da voz (ou no TEMP). None = usar o padrão do piper."""
+    import shutil, tempfile
+    if src is None:
+        try:
+            from piper.phonemize_espeak import ESPEAK_DATA_DIR as src
+        except Exception:
+            return None
+    src = Path(src)
+    if str(src).isascii() or not src.is_dir():
+        return None
+    for base in (Path(onnx).parent, Path(tempfile.gettempdir()) / "ia_off"):
+        dst = base / "espeak-ng-data"
+        if not str(dst).isascii():
+            continue
+        if not (dst / "phontab").is_file():
+            shutil.copytree(src, dst, dirs_exist_ok=True)
+        return dst
+    return None
+
+
 def _load_piper(onnx):
     with _lock:
         if str(onnx) not in _piper_cache:
             from piper import PiperVoice
-            _piper_cache[str(onnx)] = PiperVoice.load(str(onnx))
+            d = espeak_data_dir(onnx)
+            _piper_cache[str(onnx)] = (PiperVoice.load(str(onnx), espeak_data_dir=str(d)) if d
+                                       else PiperVoice.load(str(onnx)))
         return _piper_cache[str(onnx)]
 
 
