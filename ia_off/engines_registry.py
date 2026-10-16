@@ -110,7 +110,8 @@ def _flux2(p, cfg, out, prompt, w, h, steps, batch, seed, guidance, stamp, meta,
         mk = lambda b, fp=fp, s=s: sdcpp.build_flux2_args(b, cfg, prompt, fp, w, h, steps, s, guidance,
                                                           p.get("init_image") or None)
         cb = lambda st, tot, i=i: on_progress(i * tot + st, batch * tot)
-        variant = sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), variant, mk, progress_cb=cb, cancel_flag=cancel_flag)
+        variant = sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), variant, mk, progress_cb=cb, cancel_flag=cancel_flag,
+                                             **({"phase_cb": getattr(on_progress, "phase", None)} if getattr(on_progress, "phase", None) else {}))
         try:
             from PIL import Image
             with Image.open(fp) as im0: im = im0.copy()
@@ -135,7 +136,8 @@ def _zimage(p, cfg, out, prompt, w, h, steps, batch, seed, guidance, stamp, meta
             b, cfg, prompt, fp, w, h, steps, s, guidance, p.get("negative", ""),
             bool(cfg.get("zimage_diffusion_fa")), bool(cfg.get("zimage_offload_to_cpu")))
         cb = lambda st, tot, i=i: on_progress(i * tot + st, batch * tot)
-        variant = sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), variant, mk, progress_cb=cb, cancel_flag=cancel_flag)
+        variant = sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), variant, mk, progress_cb=cb, cancel_flag=cancel_flag,
+                                             **({"phase_cb": getattr(on_progress, "phase", None)} if getattr(on_progress, "phase", None) else {}))
         try:
             from PIL import Image
             with Image.open(fp) as im0: im = im0.copy()
