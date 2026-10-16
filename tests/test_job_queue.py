@@ -108,3 +108,60 @@ def test_shutdown_cancels_running(app):
     a = q.enqueue("video"); assert pump(app, lambda: "started" in r.names(a))
     q.shutdown(timeout=3); assert not q._worker.is_alive() and q.get(a)["estado"] == "cancelada"
     with pytest.raises(RuntimeError): q.enqueue("video")
+
+
+# ---------- descarregar Ollama antes de tarefas pesadas ----------
+class _Resp:
+    def __init__(self, body=b"{}"): self.body = body
+    def read(self): return self.body
+    def __enter__(self): return self
+    def __exit__(self, *a): return False
+
+def _fake_ollama(monkeypatch, calls, down=False, cfg=None):
+    import json as _j
+    def urlopen(req, timeout=None):
+        url = req if isinstance(req, str) else req.full_url
+        body = None if isinstance(req, str) else _j.loads(req.data)
+        calls.append((url, body, timeout))
+        if down: raise OSError("connection refused")
+        if url.endswith("/api/ps"):
+            return _Resp(_j.dumps({"models": [{"name": "qwen3:30b"}, {"name": "nomic-embed-text"}]}).encode())
+        if url.endswith("/api/generate") and body["model"] == "nomic-embed-text":
+            raise OSError("400 does not support generate")
+        return _Resp()
+    monkeypatch.setattr(jq.urllib.request, "urlopen", urlopen)
+    base = {"ollama_url": "http://h:1"}; base.update(cfg or {})
+    monkeypatch.setattr(jq, "_cfg", lambda: dict(base))
+
+def _run_one(app, tipo):
+    q = jq.JobQueue(engines={tipo: steps_engine(2, 0)}); r = Rec(q)
+    jid = q.enqueue(tipo, {"name": "a"})
+    assert pump(app, lambda: "finished" in r.names(jid) or "failed" in r.names(jid))
+    q.shutdown(); return r.names(jid)
+
+def test_unload_heavy(app, monkeypatch):
+    calls = []; _fake_ollama(monkeypatch, calls)
+    assert "finished" in _run_one(app, "imagem")
+    urls = [(u, b and b.get("model")) for u, b, _ in calls]
+    assert urls[0] == ("http://h:1/api/ps", None)
+    assert ("http://h:1/api/generate", "qwen3:30b") in urls
+    assert ("http://h:1/api/embed", "nomic-embed-text") in urls
+    assert all(t and t <= 5 for _, _, t in calls)
+    assert all(b["keep_alive"] == 0 for _, b, _ in calls if b)
+
+def test_no_unload_light(app, monkeypatch):
+    calls = []; _fake_ollama(monkeypatch, calls)
+    assert "finished" in _run_one(app, "falar") and calls == []
+
+def test_unload_disabled(app, monkeypatch):
+    calls = []; _fake_ollama(monkeypatch, calls, cfg={"queue_unload_ollama": False})
+    assert "finished" in _run_one(app, "video") and calls == []
+
+def test_unload_custom_types(app, monkeypatch):
+    calls = []; _fake_ollama(monkeypatch, calls, cfg={"queue_unload_types": ["falar"]})
+    assert "finished" in _run_one(app, "falar") and calls
+    calls.clear(); assert "finished" in _run_one(app, "video") and calls == []
+
+def test_ollama_down_tolerated(app, monkeypatch):
+    calls = []; _fake_ollama(monkeypatch, calls, down=True)
+    assert "finished" in _run_one(app, "ampliar") and len(calls) == 1

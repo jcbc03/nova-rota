@@ -24,6 +24,12 @@ Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
 - `cancel(id) -> bool`; `list_jobs()` / `get(id)` devolvem dicts: id, tipo, estado, passo, total, pct, eta_s, resultado, erro, criado, inicio, fim, params.
 - `progress`: pct 0–100 (float), eta_s em segundos (-1 = desconhecido); limitado a 1 emissão/`progress_interval` s (o último passo sempre sai).
 - `shutdown(wait=True, timeout=None)`: cancela tudo e para o worker — chamar no `closeEvent`/`aboutToQuit`.
+- **Libera RAM antes de tarefas pesadas**: no worker, logo após `started(id)` e antes do motor, se o tipo está em
+  `queue_unload_types` (padrão `["video", "imagem", "ampliar"]`) e `queue_unload_ollama` (padrão `true`), a fila faz
+  `GET {ollama_url}/api/ps` e, para cada modelo carregado, `POST /api/generate {"model": nome, "keep_alive": 0}`
+  (embedding: `POST /api/embed {..., "keep_alive": 0}`). Timeout 3 s por chamada; Ollama desligado/erro só vai pro log, nunca
+  falha a tarefa. Nenhum sinal novo (API compatível). Função avulsa: `job_queue.unload_ollama_models(host) -> [nomes]`.
+  O chat recarrega o modelo sozinho na próxima mensagem (Qwen 30B: ~30 s de recarga).
 
 ## Registro de motores (ia_off pluga sem editar job_queue.py)
 ```python

@@ -17,6 +17,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | V3 | Durante a geração, trocar de aba e mexer na janela | Interface continua respondendo | ⏳ |
 | V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ⏳ |
 | V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ⏳ |
+| V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ⏳ |
 | V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | ⏳ |
 
 ## 2. Chat (Ollama)
@@ -85,4 +86,4 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | Data | ID | Versão | O que aconteceu | Responsável | Status |
 |---|---|---|---|---|---|
 | 15/10 | V2 | 3.0 | Barra foi a 242/242 em 8 s: carregamento do modelo contado como passo | ia_off (sdcpp.py) | aberto |
-| 15/10 | V2 | 3.0 | ~200 s por passo em 480x272 (20 passos, cerca de 1h10), acima do esperado; conferir se a CPU foi dividida com outro teste | ia_off | investigando |
+| 15/10 | V2 | 3.0 | ~200 s por passo em 480x272 (20 passos, cerca de 1h10), acima do esperado; causa: vídeo rodando pela versão Vulkan na UHD 620; correção = CPU por padrão no sdcpp.py | ia_off | em correção |

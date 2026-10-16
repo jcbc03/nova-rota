@@ -14,6 +14,9 @@
     register_engine("imagem", gerar_imagem)
 """
 import itertools
+import json
+import logging
+import urllib.request
 import threading
 import time
 import traceback
@@ -22,6 +25,58 @@ from collections import deque
 from PySide6.QtCore import QObject, Signal
 
 NA_FILA, RODANDO, CONCLUIDA, FALHOU, CANCELADA = "na_fila", "rodando", "concluida", "falhou", "cancelada"
+
+_log = logging.getLogger(__name__)
+
+# Antes destes tipos, a fila descarrega os modelos do Ollama para liberar RAM (config: queue_unload_*).
+DEFAULT_UNLOAD_TYPES = ("video", "imagem", "ampliar")
+UNLOAD_TIMEOUT_S = 3.0
+
+
+def _cfg():
+    try:
+        from ia_off import config
+        return config.load()
+    except Exception as e:
+        _log.warning("fila: config indisponível (%s); usando padrões", e)
+        return {}
+
+
+def _post(url, payload, timeout):
+    req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST",
+                                 headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        r.read()
+
+
+def unload_ollama_models(host, timeout=UNLOAD_TIMEOUT_S):
+    """GET /api/ps e, para cada modelo carregado, keep_alive=0. Nunca levanta; devolve nomes descarregados."""
+    host = str(host or "").rstrip("/")
+    done = []
+    try:
+        with urllib.request.urlopen(host + "/api/ps", timeout=timeout) as r:
+            models = json.loads(r.read().decode() or "{}").get("models") or []
+    except Exception as e:
+        _log.info("fila: Ollama indisponível em %s (%s); seguindo sem descarregar", host, e)
+        return done
+    for m in models:
+        name = m.get("name") or m.get("model")
+        if not name:
+            continue
+        try:
+            _post(host + "/api/generate", {"model": name, "keep_alive": 0}, timeout)
+        except Exception as e:
+            # modelos de embedding não aceitam /api/generate: descarrega via /api/embed
+            try:
+                _post(host + "/api/embed", {"model": name, "input": "", "keep_alive": 0}, timeout)
+            except Exception as e2:
+                _log.warning("fila: falha ao descarregar %s (%s / %s)", name, e, e2)
+                continue
+        done.append(name)
+    if done:
+        _log.info("fila: modelos do Ollama descarregados: %s", ", ".join(done))
+    return done
+
 
 _ENGINES = {}
 _ENGINES_LOCK = threading.Lock()
@@ -163,7 +218,22 @@ class JobQueue(QObject):
                     continue
                 job.estado = RODANDO; job.inicio = time.time()
             self.started.emit(job.id)
+            self._pre_job(job)
             self._execute(job)
+
+    def _pre_job(self, job):
+        """Gancho antes do motor (na thread de trabalho). Nunca falha a tarefa."""
+        try:
+            cfg = _cfg()
+            if not cfg.get("queue_unload_ollama", True):
+                return
+            tipos = cfg.get("queue_unload_types")
+            tipos = set(DEFAULT_UNLOAD_TYPES if tipos is None else tipos)
+            if job.tipo not in tipos or job.cancel_flag.is_set():
+                return
+            unload_ollama_models(cfg.get("ollama_url") or "http://localhost:11434")
+        except Exception as e:
+            _log.warning("fila: gancho pré-tarefa ignorado (%s)", e)
 
     def _execute(self, job):
         last = [0.0]
