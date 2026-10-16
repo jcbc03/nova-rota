@@ -1,6 +1,7 @@
 """Integração com stable-diffusion.cpp (sd-cli) para Wan 2.1 (vídeo), FLUX.2 Klein e Z-Image Turbo (imagem)."""
 import os, re, subprocess, sys, zipfile, shutil
 from pathlib import Path
+from . import runtime_dlls
 
 RELEASE_TAG = "master-964-1d0a58a"
 ASSET_WIN_CPU = "sd-master-1d0a58a-bin-win-cpu-x64.zip"
@@ -86,7 +87,6 @@ def run_with_fallback(folder, variant, build_args, on_line=lambda s: None, cance
     """Executa com a variante pedida (ex.: vulkan); se falhar (e não foi cancelado), repete na CPU.
     `progress` é o do download do binário; `progress_cb(step, total)` é o dos passos da geração."""
     from .engine_api import Cancelled, make_cancel_check
-    from . import runtime_dlls
     ensure = ensure or ensure_binary
     check = make_cancel_check(cancel_flag, cancelled)
     if variant == "vulkan":
