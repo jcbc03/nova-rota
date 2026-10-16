@@ -39,6 +39,10 @@ DEFAULTS = {
     "flux2_model": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\flux2-klein-4b\flux-2-klein-4b-Q4_0.gguf",
     "flux2_vae": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\shared\flux2-vae.safetensors",
     "flux2_llm": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\shared\Qwen3-4B-Q4_K_M.gguf",
+    # --- Z-Image Turbo (sd.cpp): vazio = não configurado; aponte pros arquivos em C:\IA\modelos\imagem ---
+    "zimage_model": os.environ.get("IA_OFF_ZIMAGE_MODEL") or "",
+    "zimage_llm": os.environ.get("IA_OFF_ZIMAGE_LLM") or "",
+    "zimage_vae": os.environ.get("IA_OFF_ZIMAGE_VAE") or "",
     # --- Voz (voice_engine.py): modelos em <voz_dir>\whisper\faster-whisper-<modelo> e <voz_dir>\piper\<voz>.onnx ---
     "voz_dir": os.environ.get("IA_OFF_VOZ_DIR") or r"C:\IA\modelos\voz",
     "whisper_model": "small",  # small | base | caminho de uma pasta CTranslate2
@@ -65,6 +69,9 @@ MEDIA_PATH_KEYS = [
     ("flux2_model", "FLUX.2 Klein 4B (GGUF)", "file"),
     ("flux2_vae", "FLUX.2: VAE", "file"),
     ("flux2_llm", "FLUX.2: codificador Qwen3-4B (GGUF)", "file"),
+    ("zimage_model", "Z-Image Turbo (GGUF)", "file"),
+    ("zimage_llm", "Z-Image: codificador Qwen3-4B (GGUF)", "file"),
+    ("zimage_vae", "Z-Image: VAE", "file"),
 ]
 
 def output_dir(kind):
