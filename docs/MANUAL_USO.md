@@ -34,7 +34,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 - Clique **Gerar**. A barra mostra "Na fila", "Carregando modelo" e depois o passo, a porcentagem e o tempo restante. **Cancelar** para a qualquer momento.
 - O resultado aparece no centro e na **Galeria** à direita (`Imagens\IA_Off`). **Usar como entrada** reaproveita uma imagem; **Abrir pasta** abre a pasta.
 - **Ampliar com IA** (2x ou 4x) amplia a imagem selecionada na galeria em cerca de 4 s. Se aparecer o aviso de modelo não encontrado, a ampliação foi feita sem IA (arquivo com `_lanczos` no nome).
-- **Recomendação**: use a GPU Intel (OpenVINO) em **Configurações**. Medido no seu PC, uma imagem 512 com 4 passos leva **17,5 s na GPU**, 29 s no OpenVINO CPU e 36 s no PyTorch CPU.
+- **Recomendação**: use a GPU Intel (OpenVINO) em **Configurações**. Medido no seu PC, uma imagem 512 com 4 passos leva **17,5 s na GPU**, 29 s no OpenVINO CPU e 36 s no PyTorch CPU. Nos outros modos, medido no app em 16/10: Imagem → Imagem levou 25 s, Inpaint 147 s e Editar por instrução 53 s.
 - **Z-Image Turbo (sd.cpp)**: escolha esse modo pra usar o Z-Image. A tela já vem com 8 passos, guidance 1 e sem negativo. **Medido no seu PC, uma imagem 512×512 leva cerca de 13 min** (uns 79 s por passo, medido 774 a 800 s, igual com a moderação ligada ou desligada). Em 768 passa de 30 min. Os caminhos ficam em Configurações (`zimage_model`, `zimage_llm`, `zimage_vae`).
 
 ## 5. Vídeo
