@@ -6,7 +6,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 0. Pré-teste
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| P1 | Abrir pelo atalho "IA Off" | Janela abre em < 15 s, 6 abas visíveis | ⏳ |
+| P1 | Abrir pelo atalho "IA Off" | Janela abre em < 15 s, 6 abas visíveis | ✅ PC 16/10 (0111223): atalho abre em 1,7 s, 6 abas |
 | P2 | Rodar `pytest tests/` na ia_off_v3, num ambiente limpo só com o requirements.txt | Todos passam | ✅ 16/10 9h, commit 0a3000d: 158 ok e 3 pulados (2 sem modelo tiny, 1 sem `optimum.intel`). Antes: 15/10, 2d73849, 88 ok e 1 pulado |
 
 ## 1. Vídeo (Wan 2.1) — prioridade, testar primeiro
@@ -18,7 +18,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ✅ PC 16/10 (Wan 2.2 5B 480x272): cancelou em 0,6 s no passo 3/20, ~107 s/passo. Bug: "passo 4/20" falso após Cancelar, corrigido na tela em 950cb26 (beck também na fila); reconferir |
 | V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ✅ PC 16/10 (Wan 2.2 5B 480x272, 9 frames, 8 passos): 1494 s, ~67 s/passo, ETA ok. Bug: após 8/8 ainda 14,5 min de decode VAE/mp4 (~11,5 GB RAM) sem aviso; falta fase "Decodificando…" (ia_off, sdcpp.py) |
 | V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ✅ 15/10 (mesmo vídeo do V2). Vulkan (UHD 620): ~200 s/passo (11/20 em ~2535 s; carga ~9 min). CPU (-t 4): carga+texto ~9 min, amostragem ~65 min (~170–245 s/passo, média ~197 s), decodificação VAE ~16 min, total ~90 min (5405 s). CPU ≈ Vulkan na amostragem, não mais rápida; CPU fica padrão (bb21e2d) por usar pouca GPU/RAM compartilhada |
-| V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ✅ PC 16/10: 4111 s; fase decodificando/salvando/convertendo confirmada no Wan pela JobQueue (decode ~4m44). Bug: FLUX.2 e Z-Image não emitem fase (_flux2/_zimage sem phase_cb) |
+| V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ✅ PC 16/10: 4111 s; fase decodificando/salvando/convertendo confirmada no Wan pela JobQueue (decode ~4m44). fase no Z-Image ok após 0111223 (256 px, 2 passos, 69 s) |
 | V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | ✅ PC 16/10 (Wan 2.2 5B 480x272, 17 frames, 20 passos): 4062 s (~67,7 min), 10:15–11:23; `Videos\IA_Off\20261016_101555_wan_1234.mp4` |
 
 ## 2. Chat (Ollama)
@@ -44,7 +44,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | D1 | Importar PDF, DOCX e TXT | Os três indexados | ✅ box (9506c28) + PC 16/10 (130143f) |
 | D2 | Perguntar algo de cada um | Resposta correta com citação da fonte | ✅ PC 16/10 tarde: pdf, docx e txt com fonte e citação certas (falha anterior era do script) |
 | D3 | Reindexar após a busca vetorial do beck | Conclui; anotar tempo | ✅ PC 16/10 tarde: 3 trechos em 0,2 s, progresso 3/3 |
-| D4 | Mesmas perguntas de D2 com a busca nova | Respostas iguais ou melhores | ⏳ |
+| D4 | Mesmas perguntas de D2 com a busca nova | Respostas iguais ou melhores | ✅ PC 16/10 (0111223): FAISS = numpy (mesmas fontes e notas), 4,1 s |
 
 ## 5. Imagem
 | ID | Passos | Esperado | Status |
@@ -64,23 +64,23 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 6. Voz (após o ia_off, prazo 23/10)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| A1 | Gravar/transcrever áudio em português (Whisper) | Texto correto | ⏳ |
-| A2 | Sintetizar texto (Piper) | Áudio claro, sem internet | ⏳ |
+| A1 | Gravar/transcrever áudio em português (Whisper) | Texto correto | ✅ PC 16/10 (0111223): Whisper small 100% no áudio do Piper, 7,0 s; microfone não testado |
+| A2 | Sintetizar texto (Piper) | Áudio claro, sem internet | ✅ PC 16/10 (0111223): Piper faber 3,4 s de áudio em 7,3 s, offline |
 | A3 | Cancelar a transcrição de um áudio longo | Para sem travar | ✅ 15/10 com d798d2c (testado no PC sem instalar, módulo carregado pelo script): áudio de 108 s, transcrição completa 117 s; cancelar aos 4 s (carregando o modelo) e aos 25 s (decodificando) → job cancelado em 0,1 s; a thread auxiliar termina o trecho de 10 s em andamento em segundo plano. Antes: 88 s |
 
 ## 7. Configurações e desempenho
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| S1 | Ligar/desligar modo turbo | Uso de núcleos muda | ⏳ |
+| S1 | Ligar/desligar modo turbo | Uso de núcleos muda | 🟡 PC 16/10: núcleos ok (8 turbo, 2 com 2 threads); BUG prioridade alta nunca aplicada: perf.set_high_priority sem restype no GetCurrentProcess (SetPriorityClass erro 6, silencioso) |
 | S2 | Rodar Benchmark CPU x GPU (OpenVINO) | Resultado registrado aqui | ✅ 15/10 SD 1.5 + LCM, 512x512, 4 passos (após aquecimento): PyTorch CPU 36,1 s · OpenVINO CPU 29,3 s · OpenVINO GPU (UHD 620) 17,5 s/imagem. Aquecimento/exportação: 35 s / 135 s / 95 s |
-| S3 | Desligar a internet e usar todas as abas | Tudo funciona offline | ⏳ |
+| S3 | Desligar a internet e usar todas as abas | Tudo funciona offline | ⏳ fica pro Julio: desligar a internet derruba o acesso do ia_off ao PC |
 
 ## 8. Regra de centralização (antes da entrega)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | R1 | `rg -n -i 'C:\\\\|C:/' ia_off --glob '!config.py'` | Nenhum caminho fixo fora do `config.py` (15/10: ✅ limpo) | ✅ 16/10 (0a3000d): só a docstring do `rag.py` cita o padrão `C:\\IA\\dados\\rag` |
 | R2 | Conferir `OLLAMA_MODELS` e `HF_HOME` no PC | Apontam pra `C:\IA\modelos\ollama` e `\huggingface` | ✅ PC 16/10: OLLAMA_MODELS = C:\IA\modelos\ollama, HF_HOME = C:\IA\modelos\huggingface |
-| R3 | Índice de documentos após a busca vetorial | Gravado em `C:\IA\dados\rag` | ⏳ |
+| R3 | Índice de documentos após a busca vetorial | Gravado em `C:\IA\dados\rag` | ✅ PC 16/10 (0111223): índice em C:\IA\dados\rag (FAISS) |
 | R4 | Abrir LivreStudio, EngenhariaIA e estudio_local | Continuam achando os modelos | ✅ PC 16/10 (130143f): LivreStudio e EngenhariaIA abrem; estudio_local acha os modelos |
 | R5 | `rg -n "OneDrive|C:\\\\" ia_off --glob "!config.py"` e conferir padrões de Wan/FLUX.2/Z-Image no `config.py` | Nenhum caminho de modelo fixo fora do `config.py`; padrões vêm de `C:\IA\modelos`/variáveis, sem OneDrive; o `config.json` do Julio continua achando os arquivos | ✅ (ac06c3a) |
 | R6 | Novos modelos (Qwen3.8 27B, Z-Image, Wan 2.2 5B) | Aparecem nos seletores sem caminho fixo, geram um teste, tempo registrado, moderador ligado/desligado ok | 🟡 Z-Image desligado 774 s e ligado 786 s; Qwen3.8 1,47 e 1,41 tok/s, ok com moderação desligada e ligada; Wan 2.2 V5 ok; falta motor/seletor video_modelo |
