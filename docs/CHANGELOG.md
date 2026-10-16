@@ -1,6 +1,6 @@
 # Registro de versões – IA Off
 
-## 3.0 (instalada no PC do Julio em 15/10/2026, em testes; entrega prevista 30/10/2026)
+## 3.0 (instalada no PC do Julio em 15/10/2026; versão atual no PC: `130143f`, instalada em 16/10 às 11h45, backup em `C:\IA\backup\v3head_20261016_1145`; em testes; entrega prevista 30/10/2026)
 ### Novo
 - Busca em documentos com índice vetorial local FAISS (`faiss-cpu`, com fallback numpy); índice em `rag_dir` do `config.py` (padrão `C:\IA\dados\rag`). Documentos antigos são reindexados uma vez na abertura, com andamento na barra de status. (beck `8bf11e9`, front `fde8c1b`)
 - Fila de tarefas de imagem e vídeo (`job_queue.py`): uma tarefa por vez, sinais `started`, `progress`, `finished`, `failed`, `cancelled`. (beck `51aeff4`)
