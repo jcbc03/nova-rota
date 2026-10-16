@@ -19,7 +19,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ✅ PC 16/10 (Wan 2.2 5B 480x272, 9 frames, 8 passos): 1494 s, ~67 s/passo, ETA ok. Bug: após 8/8 ainda 14,5 min de decode VAE/mp4 (~11,5 GB RAM) sem aviso; falta fase "Decodificando…" (ia_off, sdcpp.py) |
 | V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ✅ 15/10 (mesmo vídeo do V2). Vulkan (UHD 620): ~200 s/passo (11/20 em ~2535 s; carga ~9 min). CPU (-t 4): carga+texto ~9 min, amostragem ~65 min (~170–245 s/passo, média ~197 s), decodificação VAE ~16 min, total ~90 min (5405 s). CPU ≈ Vulkan na amostragem, não mais rápida; CPU fica padrão (bb21e2d) por usar pouca GPU/RAM compartilhada |
 | V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ⏳ liberado; roda por último, depois do V6 |
-| V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | ⏳ liberado (Julio 8:12); roda depois do bloco do moderador |
+| V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | 🟡 rodando no PC (Wan 2.2 5B 480x272, 17 frames, 20 passos, ~113 s/passo); resultado previsto 11:20–11:30 |
 
 ## 2. Chat (Ollama)
 | ID | Passos | Esperado | Status |
@@ -79,25 +79,26 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | R1 | `rg -n -i 'C:\\\\|C:/' ia_off --glob '!config.py'` | Nenhum caminho fixo fora do `config.py` (15/10: ✅ limpo) | ✅ 16/10 (0a3000d): só a docstring do `rag.py` cita o padrão `C:\\IA\\dados\\rag` |
-| R2 | Conferir `OLLAMA_MODELS` e `HF_HOME` no PC | Apontam pra `C:\IA\modelos\ollama` e `\huggingface` | ⏳ |
+| R2 | Conferir `OLLAMA_MODELS` e `HF_HOME` no PC | Apontam pra `C:\IA\modelos\ollama` e `\huggingface` | ✅ PC 16/10: OLLAMA_MODELS = C:\IA\modelos\ollama, HF_HOME = C:\IA\modelos\huggingface |
 | R3 | Índice de documentos após a busca vetorial | Gravado em `C:\IA\dados\rag` | ⏳ |
-| R4 | Abrir LivreStudio, EngenhariaIA e estudio_local | Continuam achando os modelos | ⏳ |
+| R4 | Abrir LivreStudio, EngenhariaIA e estudio_local | Continuam achando os modelos | 🟡 atalhos e pastas existem; falta abrir os três apps |
 | R5 | `rg -n "OneDrive|C:\\\\" ia_off --glob "!config.py"` e conferir padrões de Wan/FLUX.2/Z-Image no `config.py` | Nenhum caminho de modelo fixo fora do `config.py`; padrões vêm de `C:\IA\modelos`/variáveis, sem OneDrive; o `config.json` do Julio continua achando os arquivos | ✅ (ac06c3a) |
-| R6 | Novos modelos (Qwen3.8 27B, Z-Image, Wan 2.2 5B) | Aparecem nos seletores sem caminho fixo, geram um teste, tempo registrado, moderador ligado/desligado ok | 🟡 Z-Image 800 s/512 e Qwen3.8 1,61 tok/s medidos; sd-cli acha vcomp140 sozinho (b0eb083); falta teste no app reaberto e moderador; Wan 2.2 pausado |
+| R6 | Novos modelos (Qwen3.8 27B, Z-Image, Wan 2.2 5B) | Aparecem nos seletores sem caminho fixo, geram um teste, tempo registrado, moderador ligado/desligado ok | 🟡 Z-Image desligado 774 s e ligado 786 s; Qwen3.8 1,47 e 1,41 tok/s, ok com moderação desligada e ligada; Wan 2.2 V5 ok; falta motor/seletor video_modelo |
 
 ## 9. Moderador e senha (prazo 23/10)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| MO1 | Moderação desligada: comparar o comando do `sd-cli` e o prompt do chat com e sem o hook | Idênticos; listas nem carregadas; nenhum bloqueio | ✅ box (mo_pc_check, ca17c6d); PC pendente |
-| MO2 | Ligar em Leve, Médio e Rígido com o mesmo conjunto de prompts | Rígido bloqueia tudo do Médio, e o Médio tudo do Leve | ✅ box (mo_pc_check, ca17c6d); PC pendente |
-| MO3 | Prompts normais em PT-BR em todos os níveis | Nenhum bloqueio falso (checagem por palavra inteira) | ✅ box (mo_pc_check, ca17c6d); PC pendente |
-| MO4 | Burla com acento, maiúsculas e letras separadas por espaço | Bloqueado; "e a" ou "o e" não colam em bloqueio falso | ✅ box (mo_pc_check, ca17c6d); PC pendente |
-| MO5 | Prompt bloqueado em imagem, vídeo e Falar | `PromptBloqueado` com motivo na tela, sem carregar modelo | ⏳ |
-| MO6 | `moderacao.json` ausente ou com erro de sintaxe | Usa o padrão embutido, avisa no log e não derruba o app | ✅ box (mo_pc_check, ca17c6d); PC pendente |
-| SE1 | Primeira vez em "Alterar filtro…" | Pede pra criar a senha e confirmar; arquivo guarda só hash PBKDF2 com salt | ⏳ |
-| SE2 | Senha errada | Nada muda e aparece aviso | ⏳ |
-| SE3 | Senha certa | Liga, desliga e troca o nível | ⏳ |
-| SE4 | Apagar o arquivo da senha | App pede senha nova | ⏳ |
+| MO1 | Moderação desligada: comparar o comando do `sd-cli` e o prompt do chat com e sem o hook | Idênticos; listas nem carregadas; nenhum bloqueio | ✅ PC 16/10 (92b5253 = código do bcc2217), mo_pc_check |
+| MO2 | Ligar em Leve, Médio e Rígido com o mesmo conjunto de prompts | Rígido bloqueia tudo do Médio, e o Médio tudo do Leve | ✅ PC 16/10 (92b5253 = código do bcc2217), mo_pc_check |
+| MO3 | Prompts normais em PT-BR em todos os níveis | Nenhum bloqueio falso (checagem por palavra inteira) | ✅ PC 16/10 (92b5253 = código do bcc2217), mo_pc_check |
+| MO4 | Burla com acento, maiúsculas e letras separadas por espaço | Bloqueado; "e a" ou "o e" não colam em bloqueio falso | ✅ PC 16/10 (92b5253 = código do bcc2217), mo_pc_check |
+| MO5 | Prompt bloqueado em imagem, vídeo e Falar | `PromptBloqueado` com motivo na tela, sem carregar modelo | ✅ PC 16/10 (92b5253 = código do bcc2217): Imagem, Vídeo e Falar bloqueiam com motivo, sem carregar modelo nem sd-cli (pelo código; clique real fica pro Julio) |
+| MO6 | `moderacao.json` ausente ou com erro de sintaxe | Usa o padrão embutido, avisa no log e não derruba o app | ✅ PC 16/10 (92b5253 = código do bcc2217), mo_pc_check |
+| SE1 | Primeira vez em "Alterar filtro…" | Pede pra criar a senha e confirmar; arquivo guarda só hash PBKDF2 com salt | ✅ PC 16/10 (92b5253 = código do bcc2217): senha temporária criada; arquivo só com hash PBKDF2 (240k iterações) e salt; fora dos logs (clique real fica pro Julio) |
+| SE2 | Senha errada | Nada muda e aparece aviso | ✅ PC 16/10 (92b5253 = código do bcc2217): senha errada recusa e nada muda |
+| SE3 | Senha certa | Liga, desliga e troca o nível | ✅ PC 16/10 (92b5253 = código do bcc2217): senha certa libera; desligar também pede senha |
+| SE4 | Apagar o arquivo da senha | App pede senha nova | ⏳ não testado: depende de apagar o `moderacao_senha.json`, só com o ok do Julio |
+| SE5 | "Trocar senha…" (0111f92) | Senha atual errada não muda nada; atual certa + nova confirmada troca | ✅ PC 16/10 (senha atual errada não muda nada) |
 
 ## Registro de falhas
 | Data | ID | Versão | O que aconteceu | Responsável | Status |
