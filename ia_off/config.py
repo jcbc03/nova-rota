@@ -4,6 +4,8 @@ from pathlib import Path
 APP_DIR = Path(os.environ.get("IA_OFF_HOME") or (Path(os.environ.get("APPDATA", Path.home())) / "IA_Off_v1"))
 APP_DIR.mkdir(parents=True, exist_ok=True)
 CFG_FILE = APP_DIR / "config.json"
+# Pasta de dados do usuário; env IA_OFF_DADOS_DIR sobrepõe
+DADOS_DIR = os.environ.get("IA_OFF_DADOS_DIR") or r"C:\IA\dados"
 
 DEFAULTS = {
     "ollama_url": "http://localhost:11434",
@@ -43,6 +45,11 @@ DEFAULTS = {
     "whisper_lang": "pt",
     "piper_voice": "pt_BR-faber-medium",  # nome em <voz_dir>\piper ou caminho do .onnx
     "piper_exe": "",  # vazio = pacote python piper-tts; senão caminho do piper.exe
+    # --- Moderação (moderador.py): desligada = nenhum filtro; envs IA_OFF_MODERACAO_ARQUIVO / IA_OFF_MODERACAO_SENHA sobrepõem ---
+    "moderacao_ativa": False,
+    "moderacao_nivel": "medio",  # leve | medio | rigido
+    "moderacao_arquivo": os.environ.get("IA_OFF_MODERACAO_ARQUIVO") or os.path.join(DADOS_DIR, "moderacao.json"),
+    "moderacao_senha_arquivo": os.environ.get("IA_OFF_MODERACAO_SENHA") or os.path.join(DADOS_DIR, "moderacao_senha.json"),
 }
 
 MEDIA_PATH_KEYS = [
