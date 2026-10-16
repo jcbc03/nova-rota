@@ -13,6 +13,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 - **+ Nova conversa**, **Renomear** e **Excluir** ficam na barra lateral; as conversas ficam salvas.
 - **Copiar última resposta** copia o texto da IA.
 - A rolagem automática só acontece se você estiver no fim da conversa, então dá pra ler o começo enquanto a IA responde.
+- **`qwen3.8-27b-aggressive`** (o modelo sem recusas): medido no seu PC, responde a **1,6 tokens por segundo** (umas 8x mais lento que o `qwen3-30b-a3b`) e leva uns 19 s pra carregar. Uma resposta de um parágrafo pode levar alguns minutos.
 - **Importar GGUF…** cadastra no Ollama um modelo baixado em `.gguf`. Coloque o arquivo em `C:\IA\modelos\texto` antes.
 
 ## 3. Documentos
@@ -34,6 +35,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 - O resultado aparece no centro e na **Galeria** à direita (`Imagens\IA_Off`). **Usar como entrada** reaproveita uma imagem; **Abrir pasta** abre a pasta.
 - **Ampliar com IA** (2x ou 4x) amplia a imagem selecionada na galeria em cerca de 4 s. Se aparecer o aviso de modelo não encontrado, a ampliação foi feita sem IA (arquivo com `_lanczos` no nome).
 - **Recomendação**: use a GPU Intel (OpenVINO) em **Configurações**. Medido no seu PC, uma imagem 512 com 4 passos leva **17,5 s na GPU**, 29 s no OpenVINO CPU e 36 s no PyTorch CPU.
+- **Z-Image Turbo (sd.cpp)**: escolha esse modo pra usar o Z-Image. A tela já vem com 8 passos, guidance 1 e sem negativo. **Medido no seu PC, uma imagem 512×512 leva cerca de 13 min** (uns 79 s por passo). Em 768 passa de 30 min. Os caminhos ficam em Configurações (`zimage_model`, `zimage_llm`, `zimage_vae`).
 
 ## 5. Vídeo
 - Escreva o prompt, escolha proporção e resolução (até 480p) e clique **Gerar vídeo**.

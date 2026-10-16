@@ -16,11 +16,14 @@
 - Polimento visual: barra de progresso, foco, hover, grupos, rolagem e barra de status. (front `6b581cc`)
 - Moderação opcional, desligada por padrão, com os níveis Leve, Médio e Rígido, listas editáveis em `moderacao.json` e senha guardada só como hash pra alterar o filtro: o módulo é do DEV beck (`eba4fd9`, ajuste do Médio em `d7c13f1`), a tela é do DEV Front (`820ae78`) a ligação nos motores é do ia_off (`a80196b`) e a do chat é do DEV Front (`6a4e4a2`). Transcrever e Ampliar ficam sem checagem. Instalado no PC em 16/10, à 1h09 (`3179726`, backup em `C:\IA\backup\mod_20261016_0109`).
 
-- Modo de imagem "Z-Image Turbo (sd.cpp)", com 8 passos e guidance 1, e caminhos nas chaves `zimage_model`, `zimage_llm` e `zimage_vae`. O modelo ainda está sendo baixado e a velocidade não foi medida. (beck `0136c70`, front `d165531`, ia_off `f190de5`)
+- Modo de imagem "Z-Image Turbo (sd.cpp)", com 8 passos e guidance 1, e caminhos nas chaves `zimage_model`, `zimage_llm` e `zimage_vae`. Instalado no PC em 16/10 (`ac06c3a`). Medido em 512×512 com 8 passos: cerca de 13 min (800 s). (beck `0136c70`, front `d165531`, ia_off `f190de5`)
+
+- Modelo de chat `qwen3.8-27b-aggressive` (Qwen3.8-27B abliterated, IQ4_XS, 15,7 GB) no Ollama. Medido: 1,6 tokens/s e 19 s pra carregar. (ia_off, 16/10)
 
 ### Melhorado
 - Chat rápido em conversas longas: histórico montado uma vez e tela atualizada no máximo a cada 80 ms; rolagem automática só quando você está no fim da conversa. (front `daa045d`)
 ### Corrigido
+- O `sd-cli` não abria fora do app (erro 0xC0000135, faltava a `vcomp140.dll`). Por enquanto a DLL foi copiada pra `%APPDATA%\IA_Off_v1\sdcpp` e `sdcpp\vulkan` (ia_off, 16/10). A correção definitiva, com o código montando o PATH sozinho, está em andamento (beck e ia_off).
 - Nenhum caminho de modelo fica mais fixo no código, e nenhum aponta pro OneDrive. Os padrões vêm de `MODELOS_DIR` (`C:\IA\modelos`, que pode ser trocada por `IA_OFF_MODELOS_DIR`), e o `ollama_exe` usa `%LOCALAPPDATA%`. (beck `d4c9b83`)
 - O seletor de modelo do chat listava modelos de embeddings (como `embeddinggemma-2:740m`), que davam "Erro 400: does not support chat". Agora eles ficam fora da lista, e um modelo salvo que não serve pra conversa volta pra um modelo de chat. (front `25b048e`, aguardando a suíte e a instalação)
 - `atualizar_v3.bat` não copiava a pasta `models/` (modelo do ampliador). (ia_off `fc16923`)
