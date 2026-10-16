@@ -11,6 +11,7 @@
 - Aba Voz: transcrever um áudio (texto na tela com botão de copiar) e falar um texto (toca na hora, com ouvir de novo), com barra de progresso e Cancelar. (front `9b17af5`)
 - Botão Ampliar (2x/4x) embaixo da galeria da aba Imagem, pela fila, com aviso quando cai no Lanczos. (front `0fac9a7`)
 - Pacote de atualização `atualizar_v3.bat` (~665 MB), com backup e versões travadas. (ia_off `7b613cf`)
+- Opção da fila pra liberar da RAM os modelos do Ollama antes de tarefas pesadas (`queue_unload_ollama`, desligada por padrão). (beck `a6b356c`)
 ### Melhorado
 - Chat rápido em conversas longas: histórico montado uma vez e tela atualizada no máximo a cada 80 ms; rolagem automática só quando você está no fim da conversa. (front `daa045d`)
 ### Corrigido
@@ -18,7 +19,7 @@
 - Documentos importados na 2.x sumiam: a 3.0 agora copia o índice antigo de `%APPDATA%\IA_Off_v1\rag` pra `C:\IA\dados\rag` na primeira abertura, sem apagar o antigo, e migra. (front `6ee483e`)
 
 ### Em andamento
-- Barra de progresso do vídeo contando o carregamento do modelo como passo (ia_off, `sdcpp.py`).
+- Vídeo na CPU por padrão (estava na GPU Vulkan, muito lenta) e barra de progresso sem contar o carregamento como passo (ia_off, `sdcpp.py`).
 - Testes V1 a V3, tempo do ampliador e Benchmark no PC (ia_off).
 - Polimento visual (DEV Front).
 - Suíte limpa aprovada: 88 ok, 1 pulado (sub2, `2d73849`).

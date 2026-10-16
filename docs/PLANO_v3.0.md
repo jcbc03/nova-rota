@@ -54,3 +54,6 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - Qwen3-30B: o GGUF em `C:\IA\modelos\texto` virou hard link pra cópia do Ollama (conteúdo conferido); 18 GB liberados, C: com 147 GB livres.
 - 15/10, 21h: 3.0 instalada no PC do Julio antes da suíte limpa (exceção). Regra reafirmada pelo Gerente: na próxima instalação, primeiro a suíte verde, depois o PC.
 - 15/10, 21h03: suíte limpa verde (88 ok, 1 pulado, commit `2d73849`); instalação no PC conferida. Falha conhecida: barra do vídeo indo a 242/242 no carregamento (ia_off corrige no `sdcpp.py`).
+- 15/10, 21h44: lentidão do vídeo (V2, ~200 s/passo) causada pelo sd.cpp rodando na Vulkan da UHD 620. Decisão: vídeo na CPU por padrão, Vulkan opcional (ia_off, `sdcpp.py`); V2 cancelado e registrado como tempo Vulkan no V7.
+- Regra da fila de descarregar o Ollama (`queue_unload_ollama`) entrou desligada por padrão (beck `a6b356c`), até existir proteção pro chat em andamento.
+- Regra nova: cada um faz commit só dos próprios arquivos (`git add <caminho>`).
