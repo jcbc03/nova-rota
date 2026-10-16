@@ -71,7 +71,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 7. Configurações e desempenho
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| S1 | Ligar/desligar modo turbo | Uso de núcleos muda | 🟡 PC 16/10: núcleos ok (8 turbo, 2 com 2 threads); BUG prioridade alta nunca aplicada: perf.set_high_priority sem restype no GetCurrentProcess (SetPriorityClass erro 6, silencioso) |
+| S1 | Ligar/desligar modo turbo | Uso de núcleos muda | ✅ PC 16/10: núcleos ok (8 turbo, 2 com 2 threads); BUG prioridade alta nunca aplicada: perf.set_high_priority sem restype no GetCurrentProcess (SetPriorityClass erro 6, silencioso) → corrigido em c2cd115 (instalado 15:30): prioridade Alta (128) com turbo, 8 threads (~7,3 núcleos) vs 2 com turbo desligado; texto do log corrigido em 945402d (suíte 173 ok) |
 | S2 | Rodar Benchmark CPU x GPU (OpenVINO) | Resultado registrado aqui | ✅ 15/10 SD 1.5 + LCM, 512x512, 4 passos (após aquecimento): PyTorch CPU 36,1 s · OpenVINO CPU 29,3 s · OpenVINO GPU (UHD 620) 17,5 s/imagem. Aquecimento/exportação: 35 s / 135 s / 95 s |
 | S3 | Desligar a internet e usar todas as abas | Tudo funciona offline | ⏳ fica pro Julio: desligar a internet derruba o acesso do ia_off ao PC |
 
