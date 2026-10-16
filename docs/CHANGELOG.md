@@ -1,6 +1,6 @@
 # Registro de versões – IA Off
 
-## 3.0 (em desenvolvimento, entrega prevista 30/10/2026)
+## 3.0 (instalada no PC do Julio em 15/10/2026, em testes; entrega prevista 30/10/2026)
 ### Novo
 - Busca em documentos com índice vetorial local FAISS (`faiss-cpu`, com fallback numpy); índice em `rag_dir` do `config.py` (padrão `C:\IA\dados\rag`). Documentos antigos são reindexados uma vez na abertura, com andamento na barra de status. (beck `8bf11e9`, front `fde8c1b`)
 - Fila de tarefas de imagem e vídeo (`job_queue.py`): uma tarefa por vez, sinais `started`, `progress`, `finished`, `failed`, `cancelled`. (beck `51aeff4`)
@@ -13,11 +13,15 @@
 - Pacote de atualização `atualizar_v3.bat` (~665 MB), com backup e versões travadas. (ia_off `7b613cf`)
 ### Melhorado
 - Chat rápido em conversas longas: histórico montado uma vez e tela atualizada no máximo a cada 80 ms; rolagem automática só quando você está no fim da conversa. (front `daa045d`)
+### Corrigido
+- `atualizar_v3.bat` não copiava a pasta `models/` (modelo do ampliador). (ia_off `fc16923`)
+- Documentos importados na 2.x sumiam: a 3.0 agora copia o índice antigo de `%APPDATA%\IA_Off_v1\rag` pra `C:\IA\dados\rag` na primeira abertura, sem apagar o antigo, e migra. (front `6ee483e`)
+
 ### Em andamento
+- Barra de progresso do vídeo contando o carregamento do modelo como passo (ia_off, `sdcpp.py`).
+- Testes V1 a V3, tempo do ampliador e Benchmark no PC (ia_off).
 - Polimento visual (DEV Front).
-- Suíte de testes em ambiente limpo (sub2).
-- Pacote único de instalação no PC do Julio: `faiss-cpu`, `onnxruntime`, modelos de voz e do ampliador (ia_off, após aprovação do sub2).
-- Benchmark CPU x GPU Intel (ia_off).
+- Suíte de testes em ambiente limpo, agora como conferência pós-instalação (sub2).
 
 ## 2.3.1 (15/10/2026)
 - Corrigido: o app fechava sozinho ao carregar a geração de vídeo (Wan 2.1).

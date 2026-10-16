@@ -52,3 +52,4 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - **Nenhum caminho de modelo fixo no código**: tudo vem do `config.py` e dessas variáveis. Modelo novo entra direto na subpasta certa. O sub2 checa isso antes da entrega.
 - Dados gerados (não modelos) ficam fora de `C:\IA\modelos`: índice vetorial dos documentos em `C:\IA\dados\rag`, caminho no `config.py`.
 - Qwen3-30B: o GGUF em `C:\IA\modelos\texto` virou hard link pra cópia do Ollama (conteúdo conferido); 18 GB liberados, C: com 147 GB livres.
+- 15/10, 21h: 3.0 instalada no PC do Julio antes da suíte limpa (exceção). Regra reafirmada pelo Gerente: na próxima instalação, primeiro a suíte verde, depois o PC.
