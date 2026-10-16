@@ -116,3 +116,6 @@ register_engine("imagem", motor_imagem)   # também: fila.register_engine(...) s
   padrão = pasta do áudio), `cfg_override`. Retorna o caminho do `.txt` com o texto (ler o arquivo no `finished`).
 - Fila `"falar"`: `texto` (obrigatório), `voz` (padrão do config), `arquivo` (caminho .wav) ou `saida` (pasta; padrão Música\IA_Off),
   `cfg_override`. Retorna o caminho do `.wav`.
+
+## Sinal `phase(id, fase)` (desde 23f9c97)
+Etapas sem passos depois do último passo (`"decodificando"`, `"salvando"`, `"convertendo"`). Motor chama `getattr(on_progress, "phase", None)(fase)`; fica em `job.fase`. Descartado se o job foi cancelado ou não está RODANDO. `progress` não muda.
