@@ -409,7 +409,8 @@ class MainWindow(QMainWindow):
         f.addRow(QLabel("<b>Moderação</b>"))
         self.mod_lbl = QLabel(); self.mod_lbl.setWordWrap(True)
         mb = QPushButton("Alterar filtro…"); mb.clicked.connect(self.change_moderation)
-        h = QHBoxLayout(); h.addWidget(self.mod_lbl, 1); h.addWidget(mb); f.addRow("Filtro:", h)
+        pb = QPushButton("Trocar senha…"); pb.clicked.connect(self.change_mod_password)
+        h = QHBoxLayout(); h.addWidget(self.mod_lbl, 1); h.addWidget(mb); h.addWidget(pb); f.addRow("Filtro:", h)
         mn = QLabel("Desligado, o app não aplica filtro nenhum. Alterar o filtro exige senha "
                     "(criada na primeira vez).", objectName="hint"); mn.setWordWrap(True); f.addRow(mn)
         self._update_mod_ui()
@@ -459,6 +460,25 @@ class MainWindow(QMainWindow):
         if dlg.exec() != QDialog.Accepted: return
         self.set_cfg(moderacao_ativa=chk.isChecked(), moderacao_nivel=lv.currentData())
         self._update_mod_ui(); self.status.showMessage("Filtro de moderação atualizado.", 4000)
+
+    def change_mod_password(self):
+        from . import moderador as mod
+        if not mod.senha_definida(self.cfg):
+            QMessageBox.information(self, "Senha", "Ainda não há senha. Use \"Alterar filtro…\" para criar a primeira."); return
+        dlg = QDialog(self); dlg.setWindowTitle("Trocar senha da moderação"); f = QFormLayout(dlg)
+        cur, new1, new2 = (QLineEdit() for _ in range(3))
+        for le in (cur, new1, new2): le.setEchoMode(QLineEdit.Password)
+        f.addRow("Senha atual:", cur); f.addRow("Nova senha:", new1); f.addRow("Confirme a nova:", new2)
+        bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel); f.addRow(bb)
+        def ok():
+            if not new1.text(): QMessageBox.warning(dlg, "Senha", "A nova senha não pode ficar vazia."); return
+            if new1.text() != new2.text(): QMessageBox.warning(dlg, "Senha", "As duas senhas novas não conferem."); return
+            try: done = mod.trocar_senha(cur.text(), new1.text(), self.cfg)
+            except Exception as e: QMessageBox.warning(dlg, "Senha", str(e)); return
+            if not done: QMessageBox.warning(dlg, "Senha", "Senha atual incorreta. Nada foi alterado."); cur.clear(); return
+            dlg.accept()
+        bb.accepted.connect(ok); bb.rejected.connect(dlg.reject)
+        if dlg.exec() == QDialog.Accepted: self.status.showMessage("Senha da moderação trocada.", 4000)
 
     def run_benchmark(self):
         from . import perf
