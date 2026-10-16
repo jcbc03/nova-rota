@@ -82,8 +82,8 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | R2 | Conferir `OLLAMA_MODELS` e `HF_HOME` no PC | Apontam pra `C:\IA\modelos\ollama` e `\huggingface` | ⏳ |
 | R3 | Índice de documentos após a busca vetorial | Gravado em `C:\IA\dados\rag` | ⏳ |
 | R4 | Abrir LivreStudio, EngenhariaIA e estudio_local | Continuam achando os modelos | ⏳ |
-| R5 | `rg -n "OneDrive|C:\\\\" ia_off --glob "!config.py"` e conferir padrões de Wan/FLUX.2/Z-Image no `config.py` | Nenhum caminho de modelo fixo fora do `config.py`; padrões vêm de `C:\IA\modelos`/variáveis, sem OneDrive; o `config.json` do Julio continua achando os arquivos | ⏳ |
-| R6 | Novos modelos (Qwen3.8 27B, Z-Image, Wan 2.2 5B) | Aparecem nos seletores sem caminho fixo, geram um teste, tempo registrado, moderador ligado/desligado ok | ⏳ |
+| R5 | `rg -n "OneDrive|C:\\\\" ia_off --glob "!config.py"` e conferir padrões de Wan/FLUX.2/Z-Image no `config.py` | Nenhum caminho de modelo fixo fora do `config.py`; padrões vêm de `C:\IA\modelos`/variáveis, sem OneDrive; o `config.json` do Julio continua achando os arquivos | ✅ (ac06c3a) |
+| R6 | Novos modelos (Qwen3.8 27B, Z-Image, Wan 2.2 5B) | Aparecem nos seletores sem caminho fixo, geram um teste, tempo registrado, moderador ligado/desligado ok | 🟡 Z-Image 800 s/512 e Qwen3.8 1,61 tok/s medidos; sd-cli acha vcomp140 sozinho (b0eb083); falta teste no app reaberto e moderador; Wan 2.2 pausado |
 
 ## 9. Moderador e senha (prazo 23/10)
 | ID | Passos | Esperado | Status |
