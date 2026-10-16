@@ -194,7 +194,9 @@ class QueueClient:
     def _q_failed(self, jid, err):
         if not self._mine(jid): return
         self._q_end(jid); self.bar.setValue(0); self.status.showMessage(err, 8000)
-        if err != "Cancelado.": QMessageBox.warning(self, "Erro na geração", err)
+        if err != "Cancelado.":
+            blk = "bloque" in err.lower() or "PromptBloqueado" in err
+            QMessageBox.warning(self, "Prompt bloqueado pela moderação" if blk else "Erro na geração", err)
 
     def _q_cancelled(self, jid):
         if not self._mine(jid): return

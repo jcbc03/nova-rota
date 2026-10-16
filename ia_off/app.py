@@ -395,9 +395,59 @@ class MainWindow(QMainWindow):
                    "Qualquer erro na GPU volta automaticamente para a CPU. Ollama (chat/tradução) roda na CPU com as "
                    "threads acima — o Ollama não acelera GPUs Intel integradas oficialmente.", objectName="hint")
         n.setWordWrap(True); f.addRow(n)
+        f.addRow(QLabel("<b>Moderação</b>"))
+        self.mod_lbl = QLabel(); self.mod_lbl.setWordWrap(True)
+        mb = QPushButton("Alterar filtro…"); mb.clicked.connect(self.change_moderation)
+        h = QHBoxLayout(); h.addWidget(self.mod_lbl, 1); h.addWidget(mb); f.addRow("Filtro:", h)
+        mn = QLabel("Desligado, o app não aplica filtro nenhum. Alterar o filtro exige senha "
+                    "(criada na primeira vez).", objectName="hint"); mn.setWordWrap(True); f.addRow(mn)
+        self._update_mod_ui()
         b = QPushButton("Salvar"); b.clicked.connect(self.save_settings); f.addRow(b)
         f.addRow(QLabel(f"Dados salvos em: {config.APP_DIR}", objectName="hint"))
         return w
+
+    MOD_NIVEIS = [("leve", "Leve"), ("medio", "Médio"), ("rigido", "Rígido")]
+
+    def _update_mod_ui(self):
+        on = bool(self.cfg.get("moderacao_ativa", False))
+        nv = dict(self.MOD_NIVEIS).get(self.cfg.get("moderacao_nivel", "medio"), "Médio")
+        if hasattr(self, "mod_lbl"):
+            self.mod_lbl.setText(f"Ligado, nível {nv}" if on else "Desligado (sem filtro)")
+        if not hasattr(self, "mod_status"):
+            self.mod_status = QLabel(objectName="hint"); self.status.addPermanentWidget(self.mod_status)
+        self.mod_status.setText(f"Moderação: {nv}" if on else ""); self.mod_status.setVisible(on)
+
+    def change_moderation(self):
+        from . import moderador as mod
+        from PySide6.QtWidgets import QCheckBox
+        first = not mod.senha_definida(self.cfg)
+        dlg = QDialog(self); dlg.setWindowTitle("Alterar filtro de moderação"); f = QFormLayout(dlg)
+        if first:
+            f.addRow(QLabel("Crie a senha que vai proteger o filtro.", objectName="hint"))
+        pw = QLineEdit(); pw.setEchoMode(QLineEdit.Password)
+        pw2 = QLineEdit(); pw2.setEchoMode(QLineEdit.Password)
+        f.addRow("Nova senha:" if first else "Senha:", pw)
+        if first: f.addRow("Confirme a senha:", pw2)
+        chk = QCheckBox("Ligar moderação"); chk.setChecked(bool(self.cfg.get("moderacao_ativa", False)))
+        lv = QComboBox(); [lv.addItem(t, k) for k, t in self.MOD_NIVEIS]
+        lv.setCurrentIndex(max(0, lv.findData(self.cfg.get("moderacao_nivel", "medio"))))
+        lv.setEnabled(chk.isChecked()); chk.toggled.connect(lv.setEnabled)
+        f.addRow(chk); f.addRow("Nível:", lv)
+        bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel); f.addRow(bb)
+        def ok():
+            s = pw.text()
+            if first:
+                if not s: QMessageBox.warning(dlg, "Senha", "A senha não pode ficar vazia."); return
+                if s != pw2.text(): QMessageBox.warning(dlg, "Senha", "As duas senhas não conferem."); return
+                try: mod.definir_senha(s, self.cfg)
+                except Exception as e: QMessageBox.warning(dlg, "Senha", str(e)); return
+            elif not mod.verificar_senha(s, self.cfg):
+                QMessageBox.warning(dlg, "Senha", "Senha incorreta. Nada foi alterado."); pw.clear(); return
+            dlg.accept()
+        bb.accepted.connect(ok); bb.rejected.connect(dlg.reject)
+        if dlg.exec() != QDialog.Accepted: return
+        self.set_cfg(moderacao_ativa=chk.isChecked(), moderacao_nivel=lv.currentData())
+        self._update_mod_ui(); self.status.showMessage("Filtro de moderação atualizado.", 4000)
 
     def run_benchmark(self):
         from . import perf
