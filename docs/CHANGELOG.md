@@ -28,8 +28,6 @@
 
 ### Em andamento
 - Prompt negativo padrão do vídeo Wan chegando como "????" no Windows (ia_off).
-- Polimento visual (DEV Front).
-- Suíte limpa aprovada: 88 ok, 1 pulado (sub2, `2d73849`).
 
 ## 2.3.1 (15/10/2026)
 - Corrigido: o app fechava sozinho ao carregar a geração de vídeo (Wan 2.1).
