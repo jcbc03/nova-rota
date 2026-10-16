@@ -31,6 +31,54 @@ _log = logging.getLogger(__name__)
 # Antes destes tipos, a fila descarrega os modelos do Ollama para liberar RAM (config: queue_unload_*).
 DEFAULT_UNLOAD_TYPES = ("video", "imagem", "ampliar")
 UNLOAD_TIMEOUT_S = 3.0
+UNLOAD_WAIT_S = 120.0   # padrão de queue_unload_wait_s
+CHAT_POLL_S = 0.1
+
+# ---------- marcador "chat em andamento" (contador, thread-safe) ----------
+_chat_cond = threading.Condition()
+_chat_n = 0
+
+
+def chat_iniciado():
+    """Marca início de uma resposta do chat (pode aninhar / várias threads)."""
+    global _chat_n
+    with _chat_cond:
+        _chat_n += 1
+
+
+def chat_terminado():
+    """Marca fim de uma resposta do chat (nunca fica negativo)."""
+    global _chat_n
+    with _chat_cond:
+        _chat_n = max(0, _chat_n - 1)
+        _chat_cond.notify_all()
+
+
+def chat_ativo():
+    with _chat_cond:
+        return _chat_n > 0
+
+
+class chat_em_andamento:
+    """with chat_em_andamento(): ...  — a fila não descarrega o Ollama enquanto ativo."""
+    def __enter__(self):
+        chat_iniciado(); return self
+    def __exit__(self, *exc):
+        chat_terminado(); return False
+
+
+def esperar_chat_livre(timeout, cancel_flag=None, poll=CHAT_POLL_S):
+    """True se não há chat ativo (já ou após esperar); False em timeout ou cancelamento."""
+    fim = time.monotonic() + max(0.0, float(timeout))
+    with _chat_cond:
+        while _chat_n > 0:
+            if cancel_flag is not None and cancel_flag.is_set():
+                return False
+            resta = fim - time.monotonic()
+            if resta <= 0:
+                return False
+            _chat_cond.wait(min(poll, resta))
+        return True
 
 
 def _cfg():
@@ -142,6 +190,12 @@ class JobQueue(QObject):
         self._worker.start()
 
     # ---------- API pública (chamar da thread da GUI) ----------
+    # atalhos do marcador de chat (o estado é global do módulo, vale para todas as filas)
+    chat_iniciado = staticmethod(chat_iniciado)
+    chat_terminado = staticmethod(chat_terminado)
+    chat_ativo = staticmethod(chat_ativo)
+    chat_em_andamento = chat_em_andamento
+
     def register_engine(self, tipo, fn):
         """Registro só desta fila (sobrepõe o global)."""
         self._local_engines[str(tipo)] = fn
@@ -231,6 +285,15 @@ class JobQueue(QObject):
             tipos = set(DEFAULT_UNLOAD_TYPES if tipos is None else tipos)
             if job.tipo not in tipos or job.cancel_flag.is_set():
                 return
+            if chat_ativo():
+                espera = cfg.get("queue_unload_wait_s", UNLOAD_WAIT_S)
+                espera = UNLOAD_WAIT_S if espera is None else float(espera)
+                _log.info("fila: chat em andamento; aguardando até %.0f s para liberar o Ollama", espera)
+                if not esperar_chat_livre(espera, job.cancel_flag):
+                    if not job.cancel_flag.is_set():
+                        _log.warning("fila: chat ainda em andamento após %.0f s; descarga do Ollama "
+                                     "pulada e a tarefa %s roda mesmo assim", espera, job.id)
+                    return
             unload_ollama_models(cfg.get("ollama_url") or "http://localhost:11434")
         except Exception as e:
             _log.warning("fila: gancho pré-tarefa ignorado (%s)", e)

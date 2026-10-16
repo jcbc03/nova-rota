@@ -30,6 +30,17 @@ Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
   (embedding: `POST /api/embed {..., "keep_alive": 0}`). Timeout 3 s por chamada; Ollama desligado/erro só vai pro log, nunca
   falha a tarefa. Nenhum sinal novo (API compatível). Função avulsa: `job_queue.unload_ollama_models(host) -> [nomes]`.
   O chat recarrega o modelo sozinho na próxima mensagem (Qwen 30B: ~30 s de recarga).
+- **Proteção do chat em andamento**: marcador global (contador, thread-safe, aninhável) em `job_queue`:
+  `chat_iniciado()`, `chat_terminado()`, `chat_ativo() -> bool` e o context manager `chat_em_andamento()`
+  (também como `JobQueue.chat_*`). Se a descarga do Ollama for rodar com chat ativo, o worker espera (respeitando o
+  `cancel_flag` da tarefa) até o chat acabar ou `queue_unload_wait_s` (padrão 120 s); no timeout pula a descarga
+  (warning no log) e roda a tarefa assim mesmo. Nunca descarrega com chat ativo. Com `queue_unload_ollama` false nada muda.
+  Uso no app (em volta da requisição/stream do chat):
+  ```python
+  from ia_off.job_queue import chat_em_andamento
+  with chat_em_andamento():
+      for pedaco in ollama.chat_stream(...): ...
+  ```
 
 ## Registro de motores (ia_off pluga sem editar job_queue.py)
 ```python

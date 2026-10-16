@@ -59,6 +59,8 @@ DEFAULTS = {
     "moderacao_senha_arquivo": os.environ.get("IA_OFF_MODERACAO_SENHA") or os.path.join(DADOS_DIR, "moderacao_senha.json"),
     # --- runtime_dlls.py: pasta extra com vcomp140.dll (MSVC OpenMP) p/ sd-cli; vazio = busca automática; env IA_OFF_VCRUNTIME_DIR sobrepõe ---
     "vcruntime_dir": os.environ.get("IA_OFF_VCRUNTIME_DIR") or "",
+    # --- Fila (job_queue.py): com chat em andamento, espera até N s antes de descarregar o Ollama; depois pula a descarga ---
+    "queue_unload_wait_s": 120,
 }
 
 MEDIA_PATH_KEYS = [

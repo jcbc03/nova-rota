@@ -174,3 +174,63 @@ def test_unload_off_by_default(app, monkeypatch):
     monkeypatch.setattr(jq, "_cfg", lambda: {"ollama_url": "http://h:1"})
     _run_one(app, "video")
     assert calls == []
+
+
+# ---------- proteção do chat em andamento ----------
+@pytest.fixture
+def chat_limpo():
+    while jq.chat_ativo(): jq.chat_terminado()
+    yield
+    while jq.chat_ativo(): jq.chat_terminado()
+
+def test_chat_contador_aninhado(chat_limpo):
+    assert not jq.chat_ativo()
+    with jq.chat_em_andamento():
+        with jq.JobQueue.chat_em_andamento():
+            assert jq.chat_ativo()
+        assert jq.chat_ativo()
+    assert not jq.chat_ativo()
+    jq.chat_terminado(); assert not jq.chat_ativo()   # nunca negativo
+    jq.chat_iniciado(); assert jq.chat_ativo(); jq.chat_terminado()
+    ts = [threading.Thread(target=lambda: [jq.chat_iniciado() or jq.chat_terminado() for _ in range(500)]) for _ in range(8)]
+    [t.start() for t in ts]; [t.join() for t in ts]
+    assert not jq.chat_ativo()
+
+def test_unload_espera_chat_e_depois_descarrega(app, monkeypatch, chat_limpo):
+    calls = []; _fake_ollama(monkeypatch, calls, cfg={"queue_unload_wait_s": 10})
+    q = jq.JobQueue(engines={"imagem": steps_engine(2, 0)}); r = Rec(q)
+    jq.chat_iniciado()
+    jid = q.enqueue("imagem", {})
+    pump(app, lambda: False, timeout=0.4)
+    assert calls == [] and "finished" not in r.names(jid)   # não descarrega com chat ativo
+    jq.chat_terminado()
+    assert pump(app, lambda: "finished" in r.names(jid))
+    assert calls and calls[0][0].endswith("/api/ps")
+    q.shutdown()
+
+def test_unload_timeout_pula_e_roda(app, monkeypatch, chat_limpo, caplog):
+    import logging
+    calls = []; _fake_ollama(monkeypatch, calls, cfg={"queue_unload_wait_s": 0.3})
+    with jq.chat_em_andamento(), caplog.at_level(logging.WARNING):
+        names = _run_one(app, "video")
+    assert "finished" in names and calls == []
+    assert any("pulada" in rec.message for rec in caplog.records)
+
+def test_cancel_durante_espera(app, monkeypatch, chat_limpo):
+    calls = []; _fake_ollama(monkeypatch, calls, cfg={"queue_unload_wait_s": 30})
+    q = jq.JobQueue(engines={"imagem": steps_engine(3, 0.01)}); r = Rec(q)
+    with jq.chat_em_andamento():
+        jid = q.enqueue("imagem", {})
+        assert pump(app, lambda: "started" in r.names(jid))
+        t0 = time.time(); q.cancel(jid)
+        assert pump(app, lambda: "cancelled" in r.names(jid), timeout=3)
+        assert time.time() - t0 < 2 and calls == []
+    q.shutdown()
+
+def test_chat_ativo_sem_unload_padrao_intocado(app, monkeypatch, chat_limpo):
+    calls = []
+    monkeypatch.setattr(jq.urllib.request, "urlopen", lambda *a, **k: calls.append(a))
+    monkeypatch.setattr(jq, "_cfg", lambda: {"ollama_url": "http://h:1"})
+    with jq.chat_em_andamento():
+        t0 = time.time(); names = _run_one(app, "video")
+    assert "finished" in names and calls == [] and time.time() - t0 < 2
