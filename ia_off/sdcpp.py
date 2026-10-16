@@ -119,10 +119,35 @@ def wan_frames(n):
     n = max(5, int(n))
     return n if (n - 1) % 4 == 0 else ((n - 1) // 4) * 4 + 1
 
+WAN_KEYS = {"wan21": ("wan_model", "wan_t5", "wan_vae"), "wan22": ("wan22_model", "wan22_t5", "wan22_vae")}
+# Wan2.2 TI2V 5B conforme docs/wan.md do sd.cpp (T2V): -M vid_gen --diffusion-model ... --vae wan2.2_vae
+# --t5xxl umt5 --cfg-scale 6.0 --sampling-method euler --flow-shift 3.0 (mesma forma do Wan 2.1; só o VAE muda).
+# fps: o 5B foi treinado a 24 fps (o doc não fixa --fps); o Wan 2.1 segue com 16.
+WAN22_DEFAULTS = {"cfg_scale": 6.0, "sampling_method": "euler", "flow_shift": 3.0, "steps": 20, "fps": 24}
+
+def wan_modelo(cfg, log=None):
+    """'wan22' se cfg['video_modelo'] == 'wan22' e os três arquivos wan22_* existirem; senão 'wan21'
+    (com aviso no log se o 2.2 foi pedido mas falta arquivo)."""
+    if str(cfg.get("video_modelo") or "wan21").strip().lower() != "wan22":
+        return "wan21"
+    falta = [k for k in WAN_KEYS["wan22"] if not str(cfg.get(k) or "").strip() or not os.path.isfile(str(cfg[k]))]
+    if not falta:
+        return "wan22"
+    import logging
+    msg = "Wan 2.2 pedido mas arquivo(s) ausente(s): " + ", ".join(falta) + "; usando Wan 2.1."
+    logging.getLogger(__name__).warning(msg)
+    if log:
+        log(msg)
+    return "wan21"
+
+def wan_keys(cfg, log=None):
+    return WAN_KEYS[wan_modelo(cfg, log)]
+
 def build_wan_args(binary, cfg, prompt, out_path, negative="", width=480, height=272, frames=17,
-                   steps=20, cfg_scale=6.0, seed=-1, fps=16, flow_shift=3.0):
+                   steps=20, cfg_scale=6.0, seed=-1, fps=16, flow_shift=3.0, modelo=None):
+    km, kt, kv = WAN_KEYS[modelo] if modelo else wan_keys(cfg)
     return [str(binary), "-M", "vid_gen",
-            "--diffusion-model", cfg["wan_model"], "--vae", cfg["wan_vae"], "--t5xxl", cfg["wan_t5"],
+            "--diffusion-model", cfg[km], "--vae", cfg[kv], "--t5xxl", cfg[kt],
             "-p", cli_safe(prompt), "-n", cli_safe(negative or WAN_NEG, "negativo"),
             "--cfg-scale", str(cfg_scale), "--sampling-method", "euler", "--steps", str(int(steps)),
             "-W", str(int(width)), "-H", str(int(height)), "--video-frames", str(wan_frames(frames)),

@@ -147,23 +147,24 @@ def _zimage(p, cfg, out, prompt, w, h, steps, batch, seed, guidance, stamp, meta
 
 
 def gerar_video(params, on_progress, cancel_flag):
-    """Wan 2.1 via sd.cpp. Retorna o .mp4 (ou o .avi se a conversão falhar)."""
+    """Wan 2.1 / 2.2 (cfg video_modelo) via sd.cpp. Retorna o .mp4 (ou o .avi se a conversão falhar)."""
     from . import sdcpp, perf
     p = dict(params)
     prompt = str(p.get("prompt") or "").strip()
     if not prompt:
         raise ValueError("params['prompt'] é obrigatório.")
-    cfg = _cfg(p); _require(cfg, ("wan_model", "wan_t5", "wan_vae"))
+    cfg = _cfg(p); modelo = sdcpp.wan_modelo(cfg); _require(cfg, sdcpp.WAN_KEYS[modelo])
+    d = sdcpp.WAN22_DEFAULTS if modelo == "wan22" else {}
     out = _out_dir(p, "videos")
     w, h = int(p.get("width", 480)), int(p.get("height", 272))
-    frames, steps = sdcpp.wan_frames(p.get("frames", 17)), int(p.get("steps", 20))
-    cfgs, fps, seed = float(p.get("cfg_scale", 6.0)), int(p.get("fps", 16)), _seed(p.get("seed"))
+    frames, steps = sdcpp.wan_frames(p.get("frames", 17)), int(p.get("steps", d.get("steps", 20)))
+    cfgs, fps, seed = float(p.get("cfg_scale", d.get("cfg_scale", 6.0))), int(p.get("fps", d.get("fps", 16))), _seed(p.get("seed"))
     neg = p.get("negative", ""); stem = f"{time.strftime('%Y%m%d_%H%M%S')}_wan_{seed}"
     avi = out / f"{stem}.avi"
     (out / f"{stem}.txt").write_text(f"prompt: {prompt}\nnegative: {neg}\nseed: {seed}\nsize: {w}x{h}\n"
-                                     f"frames: {frames}\nsteps: {steps}\ncfg: {cfgs}\nfps: {fps}\n", encoding="utf-8")
+                                     f"modelo: {modelo}\nframes: {frames}\nsteps: {steps}\ncfg: {cfgs}\nfps: {fps}\n", encoding="utf-8")
     mk = lambda b: sdcpp.build_wan_args(b, cfg, prompt, avi, neg, w, h, frames, steps, cfgs, seed, fps,
-                                        float(p.get("flow_shift", 3.0)))
+                                        float(p.get("flow_shift", d.get("flow_shift", 3.0))), modelo)
     sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), sdcpp.video_variant(cfg), mk,
                             progress_cb=on_progress, cancel_flag=cancel_flag)
     if cancel_flag is not None and cancel_flag.is_set():
