@@ -108,13 +108,11 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | 15/10 | U1 | 3.0 | Tipo `ampliar` não registrado na fila (botão Ampliar com IA: "Nenhum motor registrado") | ia_off | corrigido em b8b39bf (instalado no PC 15/10 23:38; fila real ok) |
 | 15/10 | A2/A3 | 3.0 | Piper derrubava o processo: espeak-ng não abre dados no caminho com "Área de Trabalho" | ia_off | corrigido em 1755162 (aplicado no PC) |
 | 15/10 | A3 | 3.0 | Cancelar transcrição demorou 88 s | ia_off (voice_engine) | corrigido em d798d2c (trechos de 10 s numa thread; falta instalar no PC) |
-| 15/10 | V2 | 3.0 | Negativo padrão do Wan chega ao sd-cli como "????" (página de código do Windows) | ia_off (sdcpp) | aberto |
+| 15/10 | V2 | 3.0 | Negativo padrão do Wan chega ao sd-cli como "????" (página de código do Windows) | ia_off (sdcpp) | fechado 16/10: não é bug (cli_safe manda ASCII de propósito; .txt guarda UTF-8; os "?" são do log de tokens do sd-cli) |
 | 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
+| 16/10 | V8 | 3.0 | Negativo vazio: .txt grava "negative:" em branco, mas o sd-cli recebe o negativo padrão do Wan | ia_off (sdcpp) | aberto (amanhã) |
 
 
 ## Checklist do Julio
 
-A lista oficial é o passo a passo de `docs/NOTAS_3.0_RC.md` (sib1). Situação em 16/10 18h:
-
-- Feito: SE4, limpeza dos temporários e menu Modelo da aba Vídeo (Wan 2.1 1.3B e Wan 2.2 5B, por automação; DEV Front também na tela).
-- Falta: S3 (rodar como admin o comando do firewall), trocar a senha temporária, "Alterar filtro…" na tela (senha errada e certa), MO5 com clique real e um Cancelar real de vídeo (V4).
+A lista única do Julio é o passo a passo de [`docs/NOTAS_3.0_RC.md`](NOTAS_3.0_RC.md).
