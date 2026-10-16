@@ -19,6 +19,7 @@
 ### Melhorado
 - Chat rápido em conversas longas: histórico montado uma vez e tela atualizada no máximo a cada 80 ms; rolagem automática só quando você está no fim da conversa. (front `daa045d`)
 ### Corrigido
+- O seletor de modelo do chat listava modelos de embeddings (como `embeddinggemma-2:740m`), que davam "Erro 400: does not support chat". Agora eles ficam fora da lista, e um modelo salvo que não serve pra conversa volta pra um modelo de chat. (front `25b048e`, aguardando a suíte e a instalação)
 - `atualizar_v3.bat` não copiava a pasta `models/` (modelo do ampliador). (ia_off `fc16923`)
 - Documentos importados na 2.x sumiam: a 3.0 agora copia o índice antigo de `%APPDATA%\IA_Off_v1\rag` pra `C:\IA\dados\rag` na primeira abertura, sem apagar o antigo, e migra. (front `6ee483e`)
 
