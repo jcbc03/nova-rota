@@ -58,3 +58,4 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - Regra da fila de descarregar o Ollama (`queue_unload_ollama`) entrou desligada por padrão (beck `a6b356c`), até existir proteção pro chat em andamento.
 - Regra nova: cada um faz commit só dos próprios arquivos (`git add <caminho>`).
 - 15/10, 22h: repositório no GitHub privado do Julio (`jcbc03/nova-rota`, branch `main`). Regra: commit só dos próprios arquivos e `git push` logo depois; se recusar, `git pull --rebase` e push de novo.
+- 15/10, 23h46: suíte limpa verde (101 ok, 1 pulado, `7c31986`); correções do Wan (`076a2d5`) e da transcrição (`d798d2c`) instaladas no PC, backup em `C:\IA\backup\hotfix_20261015_2346`. Lista de bugs zerada. Pendente: V8 (vídeo curto real, ~90 min) e revisão final antes de 30/10.
