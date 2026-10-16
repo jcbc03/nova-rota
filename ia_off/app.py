@@ -44,6 +44,7 @@ class MainWindow(QMainWindow):
         self.client = OllamaClient(self.cfg["ollama_url"], self.cfg["ollama_exe"])
         self.db = Storage(config.APP_DIR / "conversas.db")
         self.store = VectorStore()  # pasta vem do rag_dir do config.py
+        self._import_old_rag()
         self.fila = JobQueue(self)  # criada na thread da tela; a interface só escuta os sinais
         from .engines_registry import register_all; register_all(self.fila)
         self.conv_id = None; self.worker = None; self.answer = ""
@@ -70,6 +71,21 @@ class MainWindow(QMainWindow):
                 self.status.showMessage(f"Índice de documentos convertido: {n} trechos", 8000)
             except Exception as ex:
                 QMessageBox.warning(self, "Documentos", f"Não consegui converter o índice antigo: {ex}")
+
+    def _import_old_rag(self):
+        """2.x guardava o índice em APP_DIR/rag. Se a pasta nova está vazia e a antiga tem documentos,
+        copia (sem apagar a antiga) e recarrega; a migração de formato roda logo depois."""
+        import shutil
+        old = config.APP_DIR / "rag"
+        try:
+            if self.store.meta or not (old / "meta.json").exists() or old.resolve() == self.store.folder.resolve():
+                return
+            for n in ("meta.json", "vecs.npy", "index.faiss", "manifest.json"):
+                if (old / n).exists(): shutil.copy2(old / n, self.store.folder / n)
+            self.store = VectorStore(self.store.folder)
+            log_line(f"Índice RAG antigo copiado de {old} para {self.store.folder}")
+        except Exception as ex:
+            log_line(f"Falha ao copiar índice RAG antigo: {ex}")
 
     # ---------- Chat ----------
     def _chat_tab(self):
