@@ -1,4 +1,4 @@
-"""Integração com stable-diffusion.cpp (sd-cli) para Wan 2.1 (vídeo) e FLUX.2 Klein (imagem)."""
+"""Integração com stable-diffusion.cpp (sd-cli) para Wan 2.1 (vídeo), FLUX.2 Klein e Z-Image Turbo (imagem)."""
 import os, re, subprocess, sys, zipfile, shutil
 from pathlib import Path
 
@@ -136,6 +136,28 @@ def build_flux2_args(binary, cfg, prompt, out_path, width=512, height=512, steps
          "-t", str(int(cfg.get("threads", 4))), "-o", str(out_path), "-v"]
     if ref_image:
         a += ["-r", str(ref_image)]
+    return a
+
+ZIMAGE_KEYS = (("zimage_model", "Z-Image Turbo (GGUF)"), ("zimage_vae", "Z-Image: VAE"),
+               ("zimage_llm", "Z-Image: codificador Qwen3-4B (GGUF)"))
+
+def build_zimage_args(binary, cfg, prompt, out_path, width=512, height=512, steps=8, seed=-1,
+                      cfg_scale=1.0, negative="", diffusion_fa=False, offload_to_cpu=False):
+    """Z-Image-Turbo, conforme docs/z_image.md do sd.cpp: --diffusion-model, --vae, --llm, -p,
+    --cfg-scale 1.0, --steps 8, -H/-W. Sem negativo por padrão; -n só se `negative` vier preenchido."""
+    empty = [f"{k} ({label})" for k, label in ZIMAGE_KEYS if not str(cfg.get(k) or "").strip()]
+    if empty:
+        raise ValueError("Z-Image: preencha em Configurações (ou IA_OFF_ZIMAGE_*): " + "; ".join(empty))
+    a = [str(binary), "--diffusion-model", str(cfg["zimage_model"]), "--vae", str(cfg["zimage_vae"]),
+         "--llm", str(cfg["zimage_llm"]), "-p", cli_safe(prompt)]
+    if negative:
+        a += ["-n", cli_safe(negative, "negativo")]
+    a += ["--cfg-scale", str(cfg_scale), "--steps", str(int(steps)), "-H", str(int(height)), "-W", str(int(width)),
+          "-s", str(int(seed)), "-t", str(int(cfg.get("threads", 4))), "-o", str(out_path), "-v"]
+    if diffusion_fa:
+        a.append("--diffusion-fa")
+    if offload_to_cpu:
+        a.append("--offload-to-cpu")
     return a
 
 def parse_progress(line):

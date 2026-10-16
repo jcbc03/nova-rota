@@ -10,7 +10,8 @@ from pathlib import Path
 
 from .engine_api import Cancelled
 
-IMAGE_MODES = ("txt2img", "img2img", "inpaint", "pix2pix", "flux2")
+IMAGE_MODES = ("txt2img", "img2img", "inpaint", "pix2pix", "flux2", "zimage")
+SEM_NEGATIVO = ("zimage",)  # modos sem negativo: completar_negativo só se um negativo vier
 _lock = threading.Lock()
 _image_engine = [None]
 
@@ -75,6 +76,8 @@ def gerar_imagem(params, on_progress, cancel_flag, engine_factory=None):
                       "steps": steps, "guidance": guidance, "size": f"{w}x{h}", "software": "IA Off 3.0"}
     if mode == "flux2":
         return _flux2(p, cfg, out, prompt, w, h, steps, batch, seed, guidance, stamp, meta, on_progress, cancel_flag)
+    if mode == "zimage":
+        return _zimage(p, cfg, out, prompt, w, h, steps, batch, seed, guidance, stamp, meta, on_progress, cancel_flag)
     from PIL import Image
     def opened(key, conv):
         v = p.get(key)
@@ -106,6 +109,31 @@ def _flux2(p, cfg, out, prompt, w, h, steps, batch, seed, guidance, stamp, meta,
         s = seed + i; fp = out / f"{stamp}_flux2_{s}.png"
         mk = lambda b, fp=fp, s=s: sdcpp.build_flux2_args(b, cfg, prompt, fp, w, h, steps, s, guidance,
                                                           p.get("init_image") or None)
+        cb = lambda st, tot, i=i: on_progress(i * tot + st, batch * tot)
+        variant = sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), variant, mk, progress_cb=cb, cancel_flag=cancel_flag)
+        try:
+            from PIL import Image
+            with Image.open(fp) as im0: im = im0.copy()
+            _save_png(im, fp, meta(s))
+        except Exception:
+            pass
+        paths.append(fp)
+    return str(paths[0])
+
+
+def _zimage(p, cfg, out, prompt, w, h, steps, batch, seed, guidance, stamp, meta, on_progress, cancel_flag):
+    """Z-Image Turbo via sd.cpp. Caminhos só do config; CPU por padrão (Vulkan só com cfg['zimage_vulkan'])."""
+    from . import sdcpp, perf
+    sdcpp.build_zimage_args("sd-cli", cfg, prompt, "x.png")  # valida chaves vazias com erro claro
+    _require(cfg, ("zimage_model", "zimage_vae", "zimage_llm"))
+    variant = perf.sdcpp_variant(cfg) if cfg.get("zimage_vulkan") else "cpu"; paths = []
+    for i in range(batch):
+        if cancel_flag is not None and cancel_flag.is_set():
+            raise Cancelled()
+        s = seed + i; fp = out / f"{stamp}_zimage_{s}.png"
+        mk = lambda b, fp=fp, s=s: sdcpp.build_zimage_args(
+            b, cfg, prompt, fp, w, h, steps, s, guidance, p.get("negative", ""),
+            bool(cfg.get("zimage_diffusion_fa")), bool(cfg.get("zimage_offload_to_cpu")))
         cb = lambda st, tot, i=i: on_progress(i * tot + st, batch * tot)
         variant = sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), variant, mk, progress_cb=cb, cancel_flag=cancel_flag)
         try:
@@ -208,7 +236,7 @@ def moderado(fn, contexto, campo="prompt", negativo=False, neg_padrao=None):
         if not mod.ativa(cfg):
             return fn(params, on_progress, cancel_flag)
         mod.checar_prompt(str(params.get(campo) or ""), contexto, cfg)
-        if negativo:
+        if negativo and not (params.get("modo") in SEM_NEGATIVO and not params.get("negative")):
             params = dict(params)
             base = params.get("negative", "") or (neg_padrao() if neg_padrao else "")
             params["negative"] = mod.completar_negativo(base, cfg)
