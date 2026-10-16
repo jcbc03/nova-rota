@@ -16,9 +16,9 @@
 - Polimento visual: barra de progresso, foco, hover, grupos, rolagem e barra de status. (front `6b581cc`)
 - Moderação opcional, desligada por padrão, com os níveis Leve, Médio e Rígido, listas editáveis em `moderacao.json` e senha guardada só como hash pra alterar o filtro: o módulo é do DEV beck (`eba4fd9`, ajuste do Médio em `d7c13f1`), a tela é do DEV Front (`820ae78`) a ligação nos motores é do ia_off (`a80196b`) e a do chat é do DEV Front (`6a4e4a2`). Transcrever e Ampliar ficam sem checagem. O botão "Trocar senha…" pede a senha atual e a nova (front `0111f92`). A checagem MO no PC roda com `tests/mo_pc_check.py`, sem mexer na configuração (sub2 `ca17c6d`). Validado no PC em 16/10 (`92b5253`): MO1 a MO6 e SE1 a SE5 ok. A senha temporária está em `C:\IA\dados\SENHA_TEMPORARIA.txt`, e a moderação ficou desligada. Instalado no PC em 16/10, à 1h09 (`3179726`, backup em `C:\IA\backup\mod_20261016_0109`).
 
-- Modo de imagem "Z-Image Turbo (sd.cpp)", com 8 passos e guidance 1, e caminhos nas chaves `zimage_model`, `zimage_llm` e `zimage_vae`. Instalado no PC em 16/10 (`ac06c3a`). Medido em 512×512 com 8 passos: cerca de 13 min (800 s). (beck `0136c70`, front `d165531`, ia_off `f190de5`)
+- Modo de imagem "Z-Image Turbo (sd.cpp)", com 8 passos e guidance 1, e caminhos nas chaves `zimage_model`, `zimage_llm` e `zimage_vae`. Instalado no PC em 16/10 (`ac06c3a`). Medido em 512×512 com 8 passos: cerca de 13 min (774 a 800 s), igual com a moderação ligada ou desligada. (beck `0136c70`, front `d165531`, ia_off `f190de5`)
 
-- Modelo de chat `qwen3.8-27b-aggressive` (Qwen3.8-27B abliterated, IQ4_XS, 15,7 GB) no Ollama. Medido: 1,6 tokens/s e 19 s pra carregar. (ia_off, 16/10)
+- Modelo de chat `qwen3.8-27b-aggressive` (Qwen3.8-27B abliterated, IQ4_XS, 15,7 GB) no Ollama. Medido: de 1,4 a 1,6 tokens/s, com 63 a 84 s até a primeira palavra no app. (ia_off, 16/10)
 
 ### Melhorado
 - Com `queue_unload_ollama` ligado, a fila não descarrega o Ollama enquanto um chat está respondendo. Ela espera até `queue_unload_wait_s` (120 s) e, se passar disso, roda o job sem descarregar. O padrão continua desligado. (beck `0a3000d`, front `7d717b1` no chat e nos documentos)
