@@ -191,12 +191,19 @@ def falar(params, on_progress, cancel_flag):
     return voice_engine.speak(text, wav, on_progress, cancel_flag, cfg=cfg)
 
 
+def ampliar(params, on_progress, cancel_flag):
+    """Imagem -> imagem 2x/4x (upscaler.py). Retorna o caminho do PNG."""
+    from . import upscaler
+    return upscaler.ampliar(params, on_progress, cancel_flag)
+
+
 def register_all(queue=None):
-    """Registra 'imagem', 'video', 'transcrever' e 'falar'. Com `queue`, só naquela fila; sem, no registro global do job_queue."""
+    """Registra 'imagem', 'video', 'transcrever', 'falar' e 'ampliar'. Com `queue`, só naquela fila; sem, no registro global do job_queue."""
     reg = queue.register_engine if queue is not None else __import__(
         "ia_off.job_queue", fromlist=["register_engine"]).register_engine
     reg("imagem", gerar_imagem)
     reg("video", gerar_video)
     reg("transcrever", transcrever)
     reg("falar", falar)
+    reg("ampliar", ampliar)
     return queue

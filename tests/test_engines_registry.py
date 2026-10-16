@@ -130,4 +130,12 @@ def test_register_all_global(monkeypatch):
     monkeypatch.setattr(jq, "_ENGINES", {})
     er.register_all()
     assert jq.engines() == {"imagem": er.gerar_imagem, "video": er.gerar_video,
-                            "transcrever": er.transcrever, "falar": er.falar}
+                            "transcrever": er.transcrever, "falar": er.falar, "ampliar": er.ampliar}
+
+
+def test_register_all_inclui_ampliar():
+    got = {}
+    class Q:
+        def register_engine(self, tipo, fn): got[tipo] = fn
+    er.register_all(Q())
+    assert {"imagem", "video", "transcrever", "falar", "ampliar"} <= set(got)
