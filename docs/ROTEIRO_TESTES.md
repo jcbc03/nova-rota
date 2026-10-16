@@ -13,11 +13,11 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | V1 | Abrir a aba Vídeo e carregar o modelo | Não fecha nem trava (correção 2.3.1) | ✅ 15/10 no PC (ia_off) |
-| V2 | Gerar vídeo curto em baixa resolução | Termina, arquivo salvo e reproduzível | ⏳ |
-| V3 | Durante a geração, trocar de aba e mexer na janela | Interface continua respondendo | ⏳ |
+| V2 | Gerar vídeo curto em baixa resolução | Termina, arquivo salvo e reproduzível | ✅ 15/10 (fila + engines_registry, headless): 480x272, 17 quadros, 20 passos → `20261015_205851_wan_1107368692.mp4`, 32 784 B, ffprobe ok (h264 480x272, 16 fps, 17 quadros, 1,06 s). TEMPO_TOTAL 8124 s = ~45 min Vulkan (morta em 11/20) + ~90 min na CPU (recaída automática) |
+| V3 | Durante a geração, trocar de aba e mexer na janela | Interface continua respondendo | ✅ 15/10 offscreen no PC: vídeo (sd.cpp falso) na fila trocando de aba a cada 100 ms: 23–29 trocas, maior pausa da UI 0,13 s, sinais na thread principal; repetido após aplicar 6b581cc. smoke_gui ✅. stress_gui ❌ no PC (video_lines=0: o FakeEngine de imagem usa sleep(0.0005) que no Windows dura ~15 ms, o vídeo não chega a rodar antes do fechamento; problema do teste, não do app) |
 | V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ⏳ |
 | V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ⏳ |
-| V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ⏳ |
+| V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ✅ 15/10 (mesmo vídeo do V2). Vulkan (UHD 620): ~200 s/passo (11/20 em ~2535 s; carga ~9 min). CPU (-t 4): carga+texto ~9 min, amostragem ~65 min (~170–245 s/passo, média ~197 s), decodificação VAE ~16 min, total ~90 min (5405 s). CPU ≈ Vulkan na amostragem, não mais rápida; CPU fica padrão (bb21e2d) por usar pouca GPU/RAM compartilhada |
 | V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | ⏳ |
 
 ## 2. Chat (Ollama)
@@ -39,7 +39,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 4. Documentos
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| D0 | Abrir a 3.0 pela 1ª vez com os documentos da 2.x | Documentos antigos migrados e aparecendo (commit 6ee483e) | ⏳ |
+| D0 | Abrir a 3.0 pela 1ª vez com os documentos da 2.x | Documentos antigos migrados e aparecendo (commit 6ee483e) | ✅ 15/10 sem dados: `%APPDATA%\IA_Off_v1\rag` não tem meta.json (0 documentos) e `C:\IA\dados\rag` vazio → cópia/migração é no-op (0 trechos). Consulta com índice temporário + Ollama `embeddinggemma-2:740m`: 0,07 s, citou `[1] manual_teste.txt (score 0.78)`. ⚠ `embed_model` do config (`nomic-embed-text`) não está instalado no Ollama do PC (404) |
 | D1 | Importar PDF, DOCX e TXT | Os três indexados | ⏳ |
 | D2 | Perguntar algo de cada um | Resposta correta com citação da fonte | ⏳ |
 | D3 | Reindexar após a busca vetorial do beck | Conclui; anotar tempo | ⏳ |
@@ -56,22 +56,22 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 5b. Ampliador
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| U1 | Ampliar 2x e 4x uma imagem da galeria | Usa o modelo de IA (sem `_lanczos`); anotar o tempo no i5 | ⏳ |
-| U2 | Cancelar no meio | Para entre um bloco e outro | ⏳ |
-| U3 | Tirar o modelo do lugar e ampliar | Cai no Lanczos e a tela avisa | ⏳ |
+| U1 | Ampliar 2x e 4x uma imagem da galeria | Usa o modelo de IA (sem `_lanczos`); anotar o tempo no i5 | ✅ 15/10 (fila, 512→, onnxruntime, modelo 4x realesr-general-x4v3): 2x 3,8 s (1024²), 4x 3,9 s (2048²); nomes `_x2`/`_x4` sem `_lanczos`. ⚠ o tipo `ampliar` não estava no register_all (corrigido em b8b39bf; no teste foi registrado à mão) |
+| U2 | Cancelar no meio | Para entre um bloco e outro | ✅ 15/10: cancelado 0,9 s após o pedido (3 eventos de progresso) |
+| U3 | Tirar o modelo do lugar e ampliar | Cai no Lanczos e a tela avisa | ✅ 15/10 (headless, modelo inexistente via cfg_override): 0,1 s, `_x2_lanczos.png`, metadado e log avisam. Aviso na tela não verificado |
 
 ## 6. Voz (após o ia_off, prazo 23/10)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | A1 | Gravar/transcrever áudio em português (Whisper) | Texto correto | ⏳ |
 | A2 | Sintetizar texto (Piper) | Áudio claro, sem internet | ⏳ |
-| A3 | Cancelar a transcrição de um áudio longo | Para sem travar | ⏳ |
+| A3 | Cancelar a transcrição de um áudio longo | Para sem travar | ⚠ 15/10 (fila): cancelar `transcrever` levou 88 s até parar (com o vídeo na CPU em paralelo); `falar` parou em 6,9 s. Sem travar/fechar. Antes disso o Piper derrubava o processo: espeak-ng não abre dados em caminho com "Área" (corrigido em 1755162) |
 
 ## 7. Configurações e desempenho
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | S1 | Ligar/desligar modo turbo | Uso de núcleos muda | ⏳ |
-| S2 | Rodar Benchmark CPU x GPU (OpenVINO) | Resultado registrado aqui | ⏳ |
+| S2 | Rodar Benchmark CPU x GPU (OpenVINO) | Resultado registrado aqui | ✅ 15/10 SD 1.5 + LCM, 512x512, 4 passos (após aquecimento): PyTorch CPU 36,1 s · OpenVINO CPU 29,3 s · OpenVINO GPU (UHD 620) 17,5 s/imagem. Aquecimento/exportação: 35 s / 135 s / 95 s |
 | S3 | Desligar a internet e usar todas as abas | Tudo funciona offline | ⏳ |
 
 ## 8. Regra de centralização (antes da entrega)
@@ -85,5 +85,10 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## Registro de falhas
 | Data | ID | Versão | O que aconteceu | Responsável | Status |
 |---|---|---|---|---|---|
-| 15/10 | V2 | 3.0 | Barra foi a 242/242 em 8 s: carregamento do modelo contado como passo | ia_off (sdcpp.py) | aberto |
-| 15/10 | V2 | 3.0 | ~200 s por passo em 480x272 (20 passos, cerca de 1h10), acima do esperado; causa: vídeo rodando pela versão Vulkan na UHD 620; correção = CPU por padrão no sdcpp.py | ia_off | em correção |
+| 15/10 | V2 | 3.0 | Barra foi a 242/242 em 8 s: carregamento do modelo contado como passo (também 825/825 e 108 e 4 na decodificação) | ia_off (sdcpp.py) | corrigido em 0e2f431/bb21e2d (só conta barras com total == --steps) |
+| 15/10 | V2 | 3.0 | ~200 s por passo em 480x272 (20 passos, cerca de 1h10), acima do esperado; causa: vídeo rodando pela versão Vulkan na UHD 620; correção = CPU por padrão no sdcpp.py | ia_off | CPU padrão em bb21e2d; na CPU também ~197 s/passo (V7), o modelo é que é pesado pro i5 |
+| 15/10 | U1 | 3.0 | Tipo `ampliar` não registrado na fila (botão Ampliar com IA: "Nenhum motor registrado") | ia_off | corrigido em b8b39bf (falta aplicar no PC) |
+| 15/10 | A2/A3 | 3.0 | Piper derrubava o processo: espeak-ng não abre dados no caminho com "Área de Trabalho" | ia_off | corrigido em 1755162 (aplicado no PC) |
+| 15/10 | A3 | 3.0 | Cancelar transcrição demorou 88 s | ia_off (voice_engine) | aberto |
+| 15/10 | V2 | 3.0 | Negativo padrão do Wan chega ao sd-cli como "????" (página de código do Windows) | ia_off (sdcpp) | aberto |
+| 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | aberto |
