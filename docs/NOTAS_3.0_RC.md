@@ -1,6 +1,6 @@
 # IA Off 3.0: versão candidata (16/10/2026)
 
-Versão no PC: `4c6d743`, instalada em 16/10 às 15h50. Backup em `C:\IA\backup\v3head_20261016_1550`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
+Versão no PC: `4c6d743`, instalada em 16/10 às 15h50. Backup em `C:\IA\backup\v3head_20261016_1550`. Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
 
 ## O que tem de novo
 - **Moderador opcional**, desligado por padrão. Desligado, não restringe nada. Ligado, tem três níveis (leve, médio e rígido), e mudar o filtro exige senha. A senha fica guardada só como hash.
