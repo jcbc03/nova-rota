@@ -17,11 +17,14 @@ def on_main(tag):
 class FakeEngine:
     cfg = {}; last_backend = "fake"
     def generate(self, mode, prompt, steps=4, batch=1, progress_cb=None, cancel_flag=None, **kw):
-        total = 3000
-        for i in range(total):
+        # duração fixa (~1,5 s) pelo relógio, não pela soma de sleeps: no Windows o sleep
+        # mínimo é ~15 ms, e 3000 x sleep(0,0005) virava ~45 s, atrasando o vídeo.
+        total, dur = 3000, 1.5; t0 = time.monotonic(); i = 0
+        while i < total:
             if cancel_flag is not None and cancel_flag.is_set(): raise Cancelled()
-            if progress_cb: progress_cb(i + 1, total)
-            time.sleep(0.0005)
+            i = max(i + 1, min(total, int((time.monotonic() - t0) / dur * total)))
+            if progress_cb: progress_cb(i, total)
+            time.sleep(0.001)
         from PIL import Image
         return [(1, Image.new("RGB", (64, 64)))]
 
