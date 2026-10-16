@@ -74,3 +74,8 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - **Imagem (segunda opção):** Qwen-Image 2.1 "Uncensored", 9,9 GB. É o modelo original reempacotado e pode levar de 30 min a horas por imagem. Não é recomendado.
 - **Vídeo:** Wan 2.2 5B, 8,5 GB, roda no sd.cpp. Estimativa de 1 a 1,5 h por clipe. Usa outro VAE e talvez precise de um `sd-cli` mais novo.
 - Situação: aguardando o Julio aprovar o download (a sugestão é baixar texto, Z-Image e Wan 2.2, uns 32 GB). Os modelos ficam em `C:\IA\modelos`, sem caminho fixo no código. O ia_off mede a velocidade real e o sub2 valida. O manual só é atualizado depois da instalação.
+
+## Status em 16/10, 9h
+- Foco no moderador. Vídeo (V4, V5, V6 e V8) e Wan 2.2 ficam pausados até o Julio mandar retomar.
+- O Julio autorizou a equipe a cuidar do PC e criar uma senha temporária. A senha não passa pelo chat. Depois dos testes SE1 a SE4, a proposta é apagar o `moderacao_senha.json` pro Julio criar a dele, mas só com o ok dele. Ele também pode usar o botão "Trocar senha…" (`0111f92`).
+- Pendente: instalar o `0111f92` no PC, MO5 na tela, SE1 a SE4 e o resto do R6 (Z-Image e Qwen3.8 dentro do app, com o moderador ligado e desligado).
