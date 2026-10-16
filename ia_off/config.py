@@ -6,10 +6,13 @@ APP_DIR.mkdir(parents=True, exist_ok=True)
 CFG_FILE = APP_DIR / "config.json"
 # Pasta de dados do usuário; env IA_OFF_DADOS_DIR sobrepõe
 DADOS_DIR = os.environ.get("IA_OFF_DADOS_DIR") or r"C:\IA\dados"
+# Pasta raiz dos modelos; env IA_OFF_MODELOS_DIR sobrepõe
+MODELOS_DIR = os.environ.get("IA_OFF_MODELOS_DIR") or r"C:\IA\modelos"
+_M = lambda *p: os.path.join(MODELOS_DIR, *p)
 
 DEFAULTS = {
     "ollama_url": "http://localhost:11434",
-    "ollama_exe": r"C:\Users\jcbc\AppData\Local\Programs\Ollama\ollama.exe",
+    "ollama_exe": os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "Ollama", "ollama.exe"),
     "threads": os.cpu_count() or 8,
     "device": "auto",
     "max_mode": True,
@@ -22,29 +25,29 @@ DEFAULTS = {
     # --- RAG (rag.py): pasta do índice vetorial; env IA_OFF_RAG_DIR sobrepõe ---
     "rag_dir": os.environ.get("IA_OFF_RAG_DIR") or r"C:\IA\dados\rag",
     # --- Imagem (diffusers) ---
-    "sd15_path": r"C:\estudio_local\models\imagem\sd15",
-    "lcm_lora_path": r"C:\estudio_local\models\imagem\lcm-lora-sdv1-5\pytorch_lora_weights.safetensors",
-    "inpaint_path": r"C:\estudio_local\models\imagem\sd15-inpainting",
+    "sd15_path": _M("imagem", "sd15"),
+    "lcm_lora_path": _M("imagem", "lcm-lora-sdv1-5", "pytorch_lora_weights.safetensors"),
+    "inpaint_path": _M("imagem", "sd15-inpainting"),
     "pix2pix_path": "timbrooks/instruct-pix2pix",
     # --- Ampliador (upscaler.py): Real-ESRGAN ONNX; env IA_OFF_UPSCALE_MODEL sobrepõe ---
-    "upscale_model": os.environ.get("IA_OFF_UPSCALE_MODEL") or r"C:\IA\modelos\imagem\realesr-general-x4v3.onnx",
+    "upscale_model": os.environ.get("IA_OFF_UPSCALE_MODEL") or _M("imagem", "realesr-general-x4v3.onnx"),
     "upscale_backend": "auto",  # auto (onnxruntime -> openvino) | onnxruntime | openvino | lanczos
     "upscale_tile": 256,        # lado do bloco de entrada (px); menor = menos RAM
     # --- sd.cpp (Wan / FLUX.2) ---
     "video_vulkan": False,  # vídeo (Wan) usa o sd.cpp de CPU; True tenta Vulkan
     "sdcpp_dir": "",  # vazio = %APPDATA%\IA_Off_v1\sdcpp
-    "wan_model": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\wan2.1-t2v-1.3b\wan2.1_t2v_1.3b-q5_k_m.gguf",
-    "wan_t5": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\wan2.1-t2v-1.3b\umt5-xxl-encoder-Q4_K_M.gguf",
-    "wan_vae": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\wan2.1-t2v-1.3b\wan_2.1_vae.safetensors",
-    "flux2_model": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\flux2-klein-4b\flux-2-klein-4b-Q4_0.gguf",
-    "flux2_vae": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\shared\flux2-vae.safetensors",
-    "flux2_llm": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\shared\Qwen3-4B-Q4_K_M.gguf",
+    "wan_model": _M("video", "wan2.1-t2v-1.3b", "wan2.1_t2v_1.3b-q5_k_m.gguf"),
+    "wan_t5": _M("video", "wan2.1-t2v-1.3b", "umt5-xxl-encoder-Q4_K_M.gguf"),
+    "wan_vae": _M("video", "wan2.1-t2v-1.3b", "wan_2.1_vae.safetensors"),
+    "flux2_model": _M("imagem", "flux2-klein-4b", "flux-2-klein-4b-Q4_0.gguf"),
+    "flux2_vae": _M("shared", "flux2-vae.safetensors"),
+    "flux2_llm": _M("shared", "Qwen3-4B-Q4_K_M.gguf"),
     # --- Z-Image Turbo (sd.cpp): vazio = não configurado; aponte pros arquivos em C:\IA\modelos\imagem ---
     "zimage_model": os.environ.get("IA_OFF_ZIMAGE_MODEL") or "",
     "zimage_llm": os.environ.get("IA_OFF_ZIMAGE_LLM") or "",
     "zimage_vae": os.environ.get("IA_OFF_ZIMAGE_VAE") or "",
     # --- Voz (voice_engine.py): modelos em <voz_dir>\whisper\faster-whisper-<modelo> e <voz_dir>\piper\<voz>.onnx ---
-    "voz_dir": os.environ.get("IA_OFF_VOZ_DIR") or r"C:\IA\modelos\voz",
+    "voz_dir": os.environ.get("IA_OFF_VOZ_DIR") or _M("voz"),
     "whisper_model": "small",  # small | base | caminho de uma pasta CTranslate2
     "whisper_lang": "pt",
     "piper_voice": "pt_BR-faber-medium",  # nome em <voz_dir>\piper ou caminho do .onnx
@@ -86,7 +89,7 @@ def output_dir(kind):
     return d
 
 GGUF_SUGGESTIONS = [
-    ("qwen3-4b-local", r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\shared\Qwen3-4B-Q4_K_M.gguf"),
+    ("qwen3-4b-local", _M("shared", "Qwen3-4B-Q4_K_M.gguf")),
     ("qwen2.5-coder-7b-local", r"C:\EngenhariaIA-0.2.0-win-x64\models\qwen2.5-coder-7b-instruct-q4_k_m\qwen2.5-coder-7b-instruct-q4_k_m.gguf"),
 ]
 
