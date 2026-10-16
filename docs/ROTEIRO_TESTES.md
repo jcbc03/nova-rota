@@ -12,7 +12,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 1. Vídeo (Wan 2.1) — prioridade, testar primeiro
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| V1 | Abrir a aba Vídeo e carregar o modelo | Não fecha nem trava (correção 2.3.1) | ⏳ |
+| V1 | Abrir a aba Vídeo e carregar o modelo | Não fecha nem trava (correção 2.3.1) | ✅ 15/10 no PC (ia_off) |
 | V2 | Gerar vídeo curto em baixa resolução | Termina, arquivo salvo e reproduzível | ⏳ |
 | V3 | Durante a geração, trocar de aba e mexer na janela | Interface continua respondendo | ⏳ |
 | V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ⏳ |
@@ -85,3 +85,4 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | Data | ID | Versão | O que aconteceu | Responsável | Status |
 |---|---|---|---|---|---|
 | 15/10 | V2 | 3.0 | Barra foi a 242/242 em 8 s: carregamento do modelo contado como passo | ia_off (sdcpp.py) | aberto |
+| 15/10 | V2 | 3.0 | ~200 s por passo em 480x272 (20 passos, cerca de 1h10), acima do esperado; conferir se a CPU foi dividida com outro teste | ia_off | investigando |
