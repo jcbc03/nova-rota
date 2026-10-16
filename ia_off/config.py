@@ -57,6 +57,8 @@ DEFAULTS = {
     "moderacao_nivel": "medio",  # leve | medio | rigido
     "moderacao_arquivo": os.environ.get("IA_OFF_MODERACAO_ARQUIVO") or os.path.join(DADOS_DIR, "moderacao.json"),
     "moderacao_senha_arquivo": os.environ.get("IA_OFF_MODERACAO_SENHA") or os.path.join(DADOS_DIR, "moderacao_senha.json"),
+    # --- runtime_dlls.py: pasta extra com vcomp140.dll (MSVC OpenMP) p/ sd-cli; vazio = busca automática; env IA_OFF_VCRUNTIME_DIR sobrepõe ---
+    "vcruntime_dir": os.environ.get("IA_OFF_VCRUNTIME_DIR") or "",
 }
 
 MEDIA_PATH_KEYS = [
