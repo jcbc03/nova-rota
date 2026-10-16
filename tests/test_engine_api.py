@@ -122,6 +122,19 @@ def test_sdcpp_progress_cb(tmp_path):
     assert got == [(1, 4), (2, 4), (3, 4), (4, 4)]
 
 
+LOAD_THEN_SAMPLE = ("import sys\n"
+    "for i in (60,121,242):\n    sys.stdout.write(f'\\r  |===| {i}/242 - 30.0it/s'); sys.stdout.flush()\n"
+    "print('\\n[INFO] loading tensors completed')\n"
+    "for i in range(1,4):\n    sys.stdout.write(f'\\r  |==> | {i}/3 - 2.0s/it'); sys.stdout.flush()\nprint()\n")
+
+
+def test_sdcpp_progress_ignores_tensor_loading(tmp_path):
+    f = tmp_path / "cli.py"; f.write_text(LOAD_THEN_SAMPLE); got = []
+    sdcpp.run([sys.executable, str(f), "--steps", "3"], progress_cb=lambda s, t: got.append((s, t)))
+    assert got == [(1, 3), (2, 3), (3, 3)]
+    assert sdcpp.expected_steps(["x", "--steps", "20"]) == 20 and sdcpp.expected_steps(["x"]) is None
+
+
 def test_sdcpp_cancel_kills_process(tmp_path):
     f = tmp_path / "cli.py"; f.write_text(FAKE_CLI); flag = threading.Event(); got = []
     def cb(s, t):

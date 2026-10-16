@@ -111,6 +111,15 @@ def parse_progress(line):
     m = PROG_RE.search(line)
     return (int(m.group(1)), int(m.group(2))) if m else None
 
+def expected_steps(args):
+    """Valor de --steps nos argumentos (None se ausente). O sd-cli também desenha barras "n/N"
+    ao carregar tensores (ex.: 242/242, 825/825); só as de amostragem têm N == --steps."""
+    try:
+        i = list(args).index("--steps")
+        return int(args[i + 1])
+    except (ValueError, IndexError):
+        return None
+
 def kill_tree(p, timeout=5.0):
     """Encerra o processo e os filhos (Windows: taskkill /T /F; POSIX: grupo de processos)."""
     if p.poll() is not None:
@@ -158,10 +167,13 @@ def run(args, on_line=lambda s: None, cancelled=None, progress_cb=None, cancel_f
                 killed.append(1); kill_tree(p); return
     threading.Thread(target=watch, daemon=True, name="sdcpp-cancel").start()
     last = [None]
+    want = expected_steps(args)
     def line(s):
         on_line(s)
         if progress_cb is not None:
             pr = parse_progress(s)
+            if pr and want is not None and pr[1] != want:
+                pr = None  # barra de carregamento de tensores, não passo de geração
             if pr and pr != last[0]:
                 last[0] = pr; progress_cb(*pr)
     try:

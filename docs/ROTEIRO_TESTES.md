@@ -7,7 +7,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | P1 | Abrir pelo atalho "IA Off" | Janela abre em < 15 s, 6 abas visíveis | ⏳ |
-| P2 | Rodar `pytest tests/` na ia_off_v3 | Todos passam | ⏳ |
+| P2 | Rodar `pytest tests/` na ia_off_v3, num ambiente limpo só com o requirements.txt | Todos passam | ✅ 15/10, commit 2d73849: 88 ok e 1 pulado |
 
 ## 1. Vídeo (Wan 2.1) — prioridade, testar primeiro
 | ID | Passos | Esperado | Status |
@@ -38,6 +38,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 ## 4. Documentos
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
+| D0 | Abrir a 3.0 pela 1ª vez com os documentos da 2.x | Documentos antigos migrados e aparecendo (commit 6ee483e) | ⏳ |
 | D1 | Importar PDF, DOCX e TXT | Os três indexados | ⏳ |
 | D2 | Perguntar algo de cada um | Resposta correta com citação da fonte | ⏳ |
 | D3 | Reindexar após a busca vetorial do beck | Conclui; anotar tempo | ⏳ |
@@ -51,11 +52,19 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | I3 | Cada proporção e resoluções baixa/alta | Tamanho de saída correto | ⏳ |
 | I4 | Enfileirar 3 imagens | Rodam uma por vez, na ordem | ⏳ |
 
+## 5b. Ampliador
+| ID | Passos | Esperado | Status |
+|---|---|---|---|
+| U1 | Ampliar 2x e 4x uma imagem da galeria | Usa o modelo de IA (sem `_lanczos`); anotar o tempo no i5 | ⏳ |
+| U2 | Cancelar no meio | Para entre um bloco e outro | ⏳ |
+| U3 | Tirar o modelo do lugar e ampliar | Cai no Lanczos e a tela avisa | ⏳ |
+
 ## 6. Voz (após o ia_off, prazo 23/10)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | A1 | Gravar/transcrever áudio em português (Whisper) | Texto correto | ⏳ |
 | A2 | Sintetizar texto (Piper) | Áudio claro, sem internet | ⏳ |
+| A3 | Cancelar a transcrição de um áudio longo | Para sem travar | ⏳ |
 
 ## 7. Configurações e desempenho
 | ID | Passos | Esperado | Status |
