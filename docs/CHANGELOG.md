@@ -24,9 +24,10 @@
 - Botão Ampliar quebrado: tipo "ampliar" não registrado na fila. (ia_off `b8b39bf`)
 - Modelo de embeddings padrão trocado pra `embeddinggemma-2:740m`, já presente no Ollama do PC. (beck `98931fb`)
 - Teste de estresse da interface estável no Windows. (sub2 `4cfdaf7`)
+- Cancelar a transcrição levava 88 s; agora para em 0,1 s. (ia_off `d798d2c`)
 
 ### Em andamento
-- Cancelar a transcrição demorando (88 s com vídeo rodando junto) (ia_off, `voice_engine.py`).
+- Prompt negativo padrão do vídeo Wan chegando como "????" no Windows (ia_off).
 - Polimento visual (DEV Front).
 - Suíte limpa aprovada: 88 ok, 1 pulado (sub2, `2d73849`).
 
