@@ -483,6 +483,8 @@ class VideoTab(QueueClient, QWidget):
         self.steps = QSpinBox(); self.steps.setRange(4, 50); self.steps.setValue(20)
         self.cfgs = QDoubleSpinBox(); self.cfgs.setRange(1, 15); self.cfgs.setValue(6.0)
         self.fps = QSpinBox(); self.fps.setRange(4, 30); self.fps.setValue(16)
+        self.fps.setValue(24 if self.vmodel.currentData() == "wan22" else 16)
+        self.vmodel.currentIndexChanged.connect(lambda _: self.fps.setValue(24 if self.vmodel.currentData() == "wan22" else 16))
         self.seed = QSpinBox(); self.seed.setRange(-1, 2**31 - 1); self.seed.setValue(-1); self.seed.setSpecialValueText("aleatória")
         self.tr_chk = QCheckBox("Traduzir prompt para inglês"); self.tr_chk.setChecked(False)  # Wan entende PT razoavelmente
         self.tr_out = QPlainTextEdit(); self.tr_out.setReadOnly(True); self.tr_out.setMaximumHeight(55)
