@@ -161,6 +161,7 @@ class QueueClient:
         self.fila = fila; self._jobs = set()
         fila.started.connect(self._q_started); fila.progress.connect(self._q_progress)
         fila.finished.connect(self._q_finished); fila.failed.connect(self._q_failed); fila.cancelled.connect(self._q_cancelled)
+        if hasattr(fila, "phase"): fila.phase.connect(self._q_phase)
 
     def _enqueue(self, tipo, params):
         if getattr(self, "fila", None) is None:
@@ -182,6 +183,11 @@ class QueueClient:
         self.bar.setRange(0, total); self.bar.setValue(passo)
         txt = f"Passo {passo}/{total} · {int(pct)}% · falta {fmt_eta(eta_s)}"
         self.bar.setFormat(txt); self.status.showMessage(txt)
+
+    def _q_phase(self, jid, fase):
+        if not self._mine(jid) or jid in getattr(self, "_cancelando", ()): return
+        txt = {"decodificando": "Decodificando…", "salvando": "Salvando vídeo…", "convertendo": "Convertendo para MP4…"}.get(fase, fase)
+        self.bar.setRange(0, 0); self.bar.setFormat(txt); self.status.showMessage(txt)
 
     def _q_end(self, jid):
         self._jobs.discard(jid); getattr(self, "_cancelando", set()).discard(jid)
