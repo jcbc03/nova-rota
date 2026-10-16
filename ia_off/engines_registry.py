@@ -136,7 +136,7 @@ def gerar_video(params, on_progress, cancel_flag):
                                      f"frames: {frames}\nsteps: {steps}\ncfg: {cfgs}\nfps: {fps}\n", encoding="utf-8")
     mk = lambda b: sdcpp.build_wan_args(b, cfg, prompt, avi, neg, w, h, frames, steps, cfgs, seed, fps,
                                         float(p.get("flow_shift", 3.0)))
-    sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), perf.sdcpp_variant(cfg), mk,
+    sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), sdcpp.video_variant(cfg), mk,
                             progress_cb=on_progress, cancel_flag=cancel_flag)
     if cancel_flag is not None and cancel_flag.is_set():
         raise Cancelled()

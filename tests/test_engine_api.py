@@ -166,3 +166,9 @@ def test_run_with_fallback_cancel_and_progress(tmp_path):
         sdcpp.run_with_fallback(None, "vulkan", lambda b: [sys.executable, str(f), "3", "0"],
                                 ensure=ensure, cancel_flag=Flag(True))
     assert calls == ["vulkan"]  # não cai para a CPU após cancelar
+
+
+def test_video_variant_defaults_to_cpu():
+    assert sdcpp.video_variant({"device": "auto"}, vulkan_ok=True) == "cpu"
+    assert sdcpp.video_variant({"device": "auto", "video_vulkan": True}, vulkan_ok=True) == "vulkan"
+    assert sdcpp.video_variant({"device": "auto", "video_vulkan": True}, vulkan_ok=False) == "cpu"

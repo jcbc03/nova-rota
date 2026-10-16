@@ -82,6 +82,14 @@ def run_with_fallback(folder, variant, build_args, on_line=lambda s: None, cance
     run(build_args(b), on_line, check, progress_cb=progress_cb)
     return "cpu"
 
+def video_variant(cfg, vulkan_ok=None):
+    """Variante do sd.cpp para vídeo (Wan). Padrão: CPU. No i5-8365U/UHD 620 o Vulkan fez ~200 s/passo
+    em 480x272 (pior que a CPU); só usa Vulkan se cfg["video_vulkan"] for verdadeiro."""
+    from . import perf
+    if not cfg.get("video_vulkan"):
+        return "cpu"
+    return perf.sdcpp_variant(cfg, vulkan_ok)
+
 def wan_frames(n):
     """Wan exige 4k+1 quadros."""
     n = max(5, int(n))

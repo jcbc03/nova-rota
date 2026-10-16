@@ -29,6 +29,7 @@ DEFAULTS = {
     "upscale_backend": "auto",  # auto (onnxruntime -> openvino) | onnxruntime | openvino | lanczos
     "upscale_tile": 256,        # lado do bloco de entrada (px); menor = menos RAM
     # --- sd.cpp (Wan / FLUX.2) ---
+    "video_vulkan": False,  # vídeo (Wan) usa o sd.cpp de CPU; True tenta Vulkan
     "sdcpp_dir": "",  # vazio = %APPDATA%\IA_Off_v1\sdcpp
     "wan_model": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\wan2.1-t2v-1.3b\wan2.1_t2v_1.3b-q5_k_m.gguf",
     "wan_t5": r"C:\Users\jcbc\OneDrive\Documentos 1\ChatGPT\IA_Off\data\models\wan2.1-t2v-1.3b\umt5-xxl-encoder-Q4_K_M.gguf",
