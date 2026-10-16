@@ -29,9 +29,8 @@ Faça um de cada vez, com o app aberto.
 3. **Ligar o filtro (MO5).** Em "Alterar filtro…", com a senha certa, ligue a moderação no nível médio.
 4. **Bloqueio.** Na aba Imagem, mande um prompt proibido. Tem que aparecer a mensagem de bloqueio, sem gerar nada.
 5. **Desligar.** Volte em "Alterar filtro…" e desligue a moderação. Mande o mesmo prompt de novo: agora não pode haver bloqueio.
-6. **Menu do vídeo.** Na aba Vídeo, abra o menu Modelo e confira se aparece "Wan 2.2". Gere um vídeo curto (5 quadros, 2 passos) e veja a barra mostrar "Decodificando…" depois do último passo. Leva uns 12 min.
-7. **Sem internet (S3).** Desligue o Wi-Fi ou tire o cabo. Teste uma mensagem no chat, uma imagem pequena e uma voz. Tudo tem que funcionar. Depois religue a internet. Enquanto ela estiver desligada, a equipe perde o acesso ao PC.
-8. **SE4.** Diga se pode apagar o `moderacao_senha.json`. Isso só é necessário se quiser zerar a senha, e quem apaga é a equipe, com o seu ok.
-9. **Limpeza.** Diga se pode apagar os temporários da instalação (`ad56e06.zip` e `C:\IA\tmp\ad56e06_src`).
+6. **Vídeo na tela.** O menu Modelo já foi conferido por automação: lista Wan 2.1 1.3B e Wan 2.2 5B (TI2V). Gere um vídeo curto (5 quadros, 2 passos) e veja a barra mostrar "Decodificando…" depois do último passo. Leva uns 12 min.
+7. **Sem internet (S3).** Rode como administrador o comando de firewall que o ia_off mandou, ou desligue o Wi-Fi ou tire o cabo. Teste uma mensagem no chat, uma imagem pequena e uma voz. Tudo tem que funcionar. Depois religue a internet. Enquanto ela estiver desligada, a equipe perde o acesso ao PC.
+Já feitos em 16/10, com o ok do Julio: SE4 aprovado (sem o `moderacao_senha.json` o app pede senha nova; o arquivo foi restaurado do backup e a senha temporária voltou) e os temporários da instalação apagados (os backups ficaram).
 
 Se algo falhar, mande no grupo um print e o horário.
