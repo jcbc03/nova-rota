@@ -251,6 +251,7 @@ class ImageTab(QueueClient, QWidget):
         self.info = QLabel("A primeira geração carrega o modelo (pode levar 1–2 min). CPU: ~5–20 s por passo a 512×512.",
                            objectName="hint"); self.info.setWordWrap(True); f.addRow(self.info)
         scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setWidget(left)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff); scroll.setMinimumWidth(left.sizeHint().width() + 24)
         mid = QWidget(); mv = QVBoxLayout(mid)
         self.painter = MaskPainter(); mv.addWidget(QLabel("Entrada / máscara:")); mv.addWidget(self.painter, 1)
         self.result = QLabel("Resultado aparecerá aqui"); self.result.setAlignment(Qt.AlignCenter); self.result.setMinimumSize(320, 320)
@@ -266,7 +267,7 @@ class ImageTab(QueueClient, QWidget):
         self.up_scale.setCurrentIndex(1); self.up_btn = QPushButton("Ampliar com IA")
         self.up_btn.setToolTip("Amplia a imagem selecionada na galeria (ou escolha um arquivo) com Real-ESRGAN na CPU")
         self.up_btn.clicked.connect(self.upscale_image); ab.addWidget(self.up_btn); ab.addWidget(self.up_scale); rv.addLayout(ab)
-        sp.addWidget(scroll); sp.addWidget(mid); sp.addWidget(right); sp.setSizes([380, 520, 300])
+        sp.addWidget(scroll); sp.addWidget(mid); sp.addWidget(right); sp.setSizes([460, 460, 280])
         self.load_gallery(); self._mode_changed()
 
     def _mode_changed(self, *_):

@@ -24,8 +24,23 @@ QListWidget, QTextBrowser, QPlainTextEdit, QLineEdit, QComboBox, QSpinBox, QDoub
   background: #2a2c33; border: 1px solid #3a3d46; border-radius: 6px; padding: 4px; }
 QListWidget::item:selected { background: #3b5bdb; }
 QLabel#hint { color: #9aa0aa; }
+QTabBar::tab:hover:!selected { background: #343741; }
+QPushButton#danger:hover { background: #e03131; }
+QPushButton:pressed { background: #364fc7; }
+QListWidget:focus, QTextBrowser:focus, QPlainTextEdit:focus, QLineEdit:focus, QComboBox:focus, QSpinBox:focus,
+QDoubleSpinBox:focus { border: 1px solid #4c6ef5; }
+QProgressBar { background: #2a2c33; border: 1px solid #3a3d46; border-radius: 6px; text-align: center; min-height: 20px; }
+QProgressBar::chunk { background: #2f9e44; border-radius: 5px; }
+QGroupBox { border: 1px solid #3a3d46; border-radius: 8px; margin-top: 14px; padding-top: 8px; }
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 4px; color: #9aa0aa; }
+QScrollBar:vertical { background: transparent; width: 10px; } QScrollBar::handle:vertical { background: #3a3d46; border-radius: 5px; min-height: 30px; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QSplitter::handle { background: #2a2c33; } QStatusBar { background: #17181c; color: #9aa0aa; }
+QToolTip { background: #2a2c33; border: 1px solid #3a3d46; padding: 4px; }
 """
-CSS = "body{color:#e6e6e6} pre{background:#111;padding:6px} code{background:#111} .u{color:#8ab4ff} .a{color:#9be9a8}"
+CSS = ("body{color:#e6e6e6;line-height:140%} pre{background:#111;padding:8px;border-radius:4px} code{background:#111;padding:1px 3px}"
+       " .u{color:#8ab4ff} .a{color:#9be9a8} hr{border:0;border-top:1px solid #3a3d46} table{border-collapse:collapse}"
+       " td,th{border:1px solid #3a3d46;padding:4px 8px}")
 
 def md_html(text):
     return md.markdown(text, extensions=["fenced_code", "tables"])
