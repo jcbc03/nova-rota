@@ -11,7 +11,7 @@ Janela nativa (PySide6/Qt), sem navegador. Usa o **Ollama** em `localhost:11434`
 - **Chat**: escolha o modelo (ex.: `qwen2.5:3b`), Ctrl+Enter envia, "Parar" interrompe. Conversas ficam salvas na barra lateral.
 - **Importar GGUF…**: escolha uma sugestão (Qwen3-4B ou Qwen2.5-Coder-7B), o app gera um Modelfile e roda `ollama create`. O GGUF é referenciado no lugar original.
   Obs.: o Ollama armazena os pesos internamente (em `%USERPROFILE%\.ollama\models`), ocupando espaço extra (~2,5 GB / ~4,7 GB).
-- **Documentos**: adicione PDF/TXT/DOCX/MD, depois pergunte. Precisa do modelo `nomic-embed-text` (botão "Baixar modelo de embeddings" ou `ollama pull nomic-embed-text`, ~270 MB, internet uma única vez).
+- **Documentos**: adicione PDF/TXT/DOCX/MD, depois pergunte. Usa o modelo de embeddings `embeddinggemma-2:740m` do Ollama (padrão do `config.py`, já instalado no PC do Julio). Se faltar: botão "Baixar modelo de embeddings" ou `ollama pull embeddinggemma-2:740m` (internet uma única vez).
 - **Configurações**: URL/caminho do Ollama, threads (recomendado 4), contexto, temperatura, prompt de sistema.
 
 Se o Ollama não estiver rodando, o app tenta iniciar `ollama serve` automaticamente.
