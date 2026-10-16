@@ -26,8 +26,9 @@ PADRAO = {
     },
     "medio": {
         "bloqueados": [
-            "sexo", "sexual", "porno", "pornografia", "pornografico", "porn", "porno",
-            "sex", "xxx", "nsfw", "hentai", "nudez explicita", "explicit",
+            "sexo explicito", "sexo oral", "sexo anal", "fazendo sexo", "cena de sexo",
+            "explicit sex", "having sex", "sex scene", "oral sex",
+            "porno", "pornografia", "pornografico", "porn", "xxx", "nsfw", "hentai", "nudez explicita", "explicit", "explicito", "explicita",
             "estupro", "rape", "gore", "desmembramento", "dismemberment",
             "decapitacao", "decapitation", "tortura", "torture",
         ],
@@ -36,6 +37,7 @@ PADRAO = {
     },
     "rigido": {
         "bloqueados": [
+            "sexo", "sex", "sexual",
             "nu", "nua", "nus", "nuas", "nudez", "nude", "naked", "nudity",
             "lingerie", "topless", "seminu", "seminua",
             "sangue", "sangrento", "blood", "bloody", "violencia", "violence",

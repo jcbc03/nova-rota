@@ -80,7 +80,7 @@ def test_completar_negativo_formato(tmp_path):
 
 def test_evasao(tmp_path):
     c = cfg(tmp_path, nivel="medio")
-    for t in ["SEXO", "séxo na praia", "s e x o", "S E X O agora", "s3x0", "P0RN0GR4F1A", "GÓRE"]:
+    for t in ["SEXO EXPLÍCITO", "séxo explicito na praia", "s e x o explicito", "fazendo S E X O agora", "s3x0 0r4l", "P0RN0GR4F1A", "GÓRE"]:
         assert _bloq(c, t), t
     assert _bloq(cfg(tmp_path, nivel="leve"), "Pornografia Infântil")
 
@@ -104,12 +104,12 @@ def test_json_invalido(tmp_path, caplog):
     c = cfg(tmp_path)
     (tmp_path / "moderacao.json").write_text("{nao é json", encoding="utf-8")
     with caplog.at_level(logging.WARNING):
-        assert _bloq(c, "sexo") and not _bloq(c, "bolo")
+        assert _bloq(c, "gore") and not _bloq(c, "bolo")
     assert any("moderacao" in r.message for r in caplog.records)
     caplog.clear()
     (tmp_path / "moderacao.json").write_text(json.dumps({"niveis": {"medio": {"bloqueados": "x"}}}))
     with caplog.at_level(logging.WARNING):
-        assert _bloq(c, "sexo")
+        assert _bloq(c, "gore")
     assert caplog.records
 
 
@@ -119,10 +119,10 @@ def test_arquivo_estende_e_exporta(tmp_path):
     d = json.loads(p.read_text(encoding="utf-8"))
     d["niveis"]["leve"]["bloqueados"].append("palavra proibida")
     p.write_text(json.dumps(d), encoding="utf-8")
-    assert _bloq(c, "uma Palavra Proibida aqui") and _bloq(c, "sexo")
-    assert not _bloq(cfg(tmp_path, nivel="leve"), "sexo")
+    assert _bloq(c, "uma Palavra Proibida aqui") and _bloq(c, "pornografia")
+    assert not _bloq(cfg(tmp_path, nivel="leve"), "pornografia")
     p.write_text(json.dumps({"substituir": True, "niveis": {"medio": {"bloqueados": []}}}))
-    assert not _bloq(c, "sexo") and _bloq(c, "pornografia infantil")
+    assert not _bloq(c, "pornografia") and _bloq(c, "pornografia infantil")
 
 
 def test_senha(tmp_path):
@@ -146,3 +146,14 @@ def test_senha(tmp_path):
     assert not M.senha_definida(c) and not M.verificar_senha("nova", c)
     M.definir_senha("recomeço", c)
     assert M.verificar_senha("recomeço", c)
+
+
+def test_sexo_neutro_passa_leve_medio(tmp_path):
+    for n in ("leve", "medio"):
+        c = cfg(tmp_path, nivel=n)
+        for t in ["sexo feminino", "Sexo masculino", "qual o sexo do bebê?", "sex: female"]:
+            assert not _bloq(c, t), (n, t)
+    c = cfg(tmp_path, nivel="medio")
+    for t in ["cena de sexo explícito", "pornografia", "having sex", "xxx"]:
+        assert _bloq(c, t), t
+    assert _bloq(cfg(tmp_path, nivel="rigido"), "sexo feminino")

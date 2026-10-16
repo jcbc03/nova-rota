@@ -16,8 +16,8 @@ voltam inalterados (identidade), `instrucoes_chat()` devolve `""`.
 
 Níveis são cumulativos: `rigido ⊇ medio ⊇ leve`.
 - leve: conteúdo claramente ilegal (sexual envolvendo menores).
-- medio: + sexual explícito, gore, estupro, tortura.
-- rigido: + nudez, violência, armas, drogas.
+- medio: + sexual explícito (frases como "sexo explícito"; "sexo feminino" passa), pornografia, gore, estupro, tortura.
+- rigido: + "sexo"/"sex" isolados, nudez, violência, armas, drogas.
 
 ## Funções (todas aceitam `cfg=None` → `config.load()`)
 ```python
