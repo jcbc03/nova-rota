@@ -1,15 +1,72 @@
-# Manual de uso – IA Off 3.0 (esqueleto; detalhes após o polimento da interface)
+# Manual de uso – IA Off 3.0
 
-1. Abrir o app (atalho "IA Off" na Área de Trabalho)
-2. Chat: escolher modelo, conversar, histórico, importar GGUF
-3. Documentos: importar PDF/Word/TXT, perguntar, ver a fonte citada
-4. Imagem: texto para imagem, transformar, pintar por cima, editar por instrução; proporção e resolução
-   - Recomendado: OpenVINO na GPU Intel. Imagem 512, 4 passos, no PC do Julio: GPU 17,5 s; OpenVINO CPU 29 s; PyTorch CPU 36 s.
-   - Ampliar 2x ou 4x: cerca de 4 s.
-5. Vídeo (Wan 2.1): gerar, acompanhar o progresso, cancelar
-   - Tempo esperado: um vídeo curto de 480x272 leva cerca de 1h30 (uns 9 min carregando, 65 min gerando a ~200 s por passo, 16 min decodificando). CPU e GPU dão o mesmo tempo; o padrão é CPU, que deixa a GPU livre.
-6. Fila de tarefas: o que significa cada estado
-7. Voz: transcrição (Whisper) e fala (Piper)
-8. Modo turbo e Benchmark
-9. Onde ficam os modelos e dados (`C:\IA\modelos`, `C:\IA\dados`) e como adicionar um modelo novo
-10. Problemas comuns e soluções
+App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, vídeo e voz, tudo rodando localmente. Depois de instalado, nada vai pra internet.
+
+## 1. Abrir o app
+- Dois cliques no atalho **IA Off** da Área de Trabalho.
+- O app usa o **Ollama** pro chat e pros documentos. Se ele não estiver rodando, o app tenta iniciar sozinho. Se a barra de status mostrar "Ollama indisponível", confira o caminho em **Configurações**.
+- As abas são: **Chat**, **Documentos**, **Imagem**, **Vídeo**, **Voz** e **Configurações**.
+
+## 2. Chat
+- Escolha o modelo no seletor do topo (ex.: `qwen3-30b-a3b`, o mais capaz; carrega em ~30 s na primeira mensagem e responde a ~11 palavras-pedaço por segundo). **Atualizar** recarrega a lista.
+- Escreva e clique **Enviar** (ou Ctrl+Enter). **Parar** interrompe a resposta.
+- **+ Nova conversa**, **Renomear** e **Excluir** ficam na barra lateral; as conversas ficam salvas.
+- **Copiar última resposta** copia o texto da IA.
+- A rolagem automática só acontece se você estiver no fim da conversa, então dá pra ler o começo enquanto a IA responde.
+- **Importar GGUF…** cadastra no Ollama um modelo baixado em `.gguf`. Coloque o arquivo em `C:\IA\modelos\texto` antes.
+
+## 3. Documentos
+- **Adicionar arquivos…** aceita PDF, Word (DOCX), TXT e MD.
+- Escreva a pergunta e clique **Perguntar**. A resposta cita o documento e o trecho de onde veio.
+- **Remover selecionado** tira um documento; **Limpar base** apaga todos (não apaga seus arquivos originais).
+- Usa o modelo de embeddings `embeddinggemma-2:740m` no Ollama. Se faltar, **Baixar modelo de embeddings** (precisa de internet uma única vez).
+- O índice fica em `C:\IA\dados\rag`. Documentos importados na 2.x são trazidos automaticamente na primeira abertura.
+
+## 4. Imagem
+![Aba Imagem](img/aba_imagem.png)
+
+- **Modo**: Texto → Imagem, Imagem → Imagem, Inpaint (refazer uma parte) e Editar por instrução.
+- **Prompt** e **Negativo**: pode escrever em português; com **Traduzir prompt para inglês** ligado, o texto traduzido aparece em "Em inglês" antes de gerar.
+- **Tamanho**: escolha **Proporção** (1:1, 16:9, 9:16…) e **Resolução** (até 8K). O rótulo "Final" mostra o tamanho que vai sair. Acima do tamanho nativo do modelo, a imagem é ampliada no fim.
+- **Passos**, **Guidance**, **Semente** e **Quantidade** ajustam a geração. Com **Usar LCM LoRA** ligado, 4 a 6 passos já bastam.
+- Pra Imagem → Imagem e Inpaint: **Abrir imagem de entrada…**; no Inpaint, marque **Pintar máscara**, pinte a área a refazer (ajuste o **Pincel**) e use **Limpar máscara** se errar.
+- Clique **Gerar**. A barra mostra "Na fila", "Carregando modelo" e depois o passo, a porcentagem e o tempo restante. **Cancelar** para a qualquer momento.
+- O resultado aparece no centro e na **Galeria** à direita (`Imagens\IA_Off`). **Usar como entrada** reaproveita uma imagem; **Abrir pasta** abre a pasta.
+- **Ampliar com IA** (2x ou 4x) amplia a imagem selecionada na galeria em cerca de 4 s. Se aparecer o aviso de modelo não encontrado, a ampliação foi feita sem IA (arquivo com `_lanczos` no nome).
+- **Recomendação**: use a GPU Intel (OpenVINO) em **Configurações**. Medido no seu PC, uma imagem 512 com 4 passos leva **17,5 s na GPU**, 29 s no OpenVINO CPU e 36 s no PyTorch CPU.
+
+## 5. Vídeo
+- Escreva o prompt, escolha proporção e resolução (até 480p) e clique **Gerar vídeo**.
+- **Tempo esperado: um vídeo curto de 480×272 leva cerca de 1h30** (uns 9 min carregando, 65 min gerando e 16 min finalizando). Durante esse tempo a CPU fica toda ocupada.
+- A barra mostra o passo atual (ex.: "Passo 12/20"), o que prova que não travou. **Cancelar** para a geração.
+- O vídeo aparece na prévia (**▶ Tocar** / **⏸ Pausar**) e fica em `Vídeos\IA_Off`.
+- O padrão é a CPU; a GPU dá o mesmo tempo e fica livre pra outras coisas.
+
+## 6. Voz
+- **Transcrever**: **Escolher áudio…**, clique **Transcrever**; o texto aparece na tela e **Copiar texto** copia.
+- **Falar**: escreva um texto e clique **Falar**; o áudio toca na hora e **▶ Ouvir de novo** repete.
+- Funciona sem internet (Whisper pra transcrever, Piper com voz em português pra falar).
+
+## 7. Fila de tarefas
+Imagem, vídeo, ampliar e voz passam por uma fila que roda uma tarefa pesada por vez, porque a CPU não aguenta duas ao mesmo tempo. Estados: **na fila**, **rodando**, **concluída**, **falhou** ou **cancelada**.
+
+## 8. Configurações
+- Caminho do Ollama, threads, contexto, temperatura, prompt de sistema e modelo de tradução.
+- **Desempenho**: dispositivo (Auto, CPU, GPU Intel/OpenVINO…) e **Modo máximo** (usa tudo da máquina; desligue se precisar usar o PC durante uma geração).
+- **Benchmark** compara os motores de imagem e sugere o mais rápido.
+- **Caminhos dos modelos**: tudo aponta pra `C:\IA\modelos`.
+- Clique **Salvar** depois de mudar.
+
+## 9. Onde ficam as coisas
+- Modelos: `C:\IA\modelos`, separados em `texto`, `imagem`, `video`, `shared`, `ollama` e `huggingface` (veja o `LEIA-ME.txt` lá dentro). Modelo novo vai direto na subpasta certa.
+- Dados gerados: `C:\IA\dados` (ex.: índice dos documentos em `C:\IA\dados\rag`).
+- Imagens em `Imagens\IA_Off`, vídeos em `Vídeos\IA_Off`.
+- Registros de erro: `%APPDATA%\IA_Off_v1` (`crash.log`, `erro.log`, `qt.log`).
+
+## 10. Problemas comuns
+- **"Ollama indisponível"**: confira o caminho do Ollama em Configurações e clique Salvar.
+- **Documentos sem resposta**: falta o modelo de embeddings; use **Baixar modelo de embeddings**.
+- **Vídeo parece parado**: veja o número do passo na barra; cada passo leva uns 3 minutos.
+- **PC lento durante uma geração**: desligue o **Modo máximo** em Configurações.
+- **Ampliação com `_lanczos` no nome**: o modelo do ampliador não foi encontrado; peça pro ia_off reinstalar.
+- **O app fechou sozinho**: mande os arquivos de `%APPDATA%\IA_Off_v1` pra equipe.
