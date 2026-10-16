@@ -19,7 +19,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ✅ PC 16/10 (Wan 2.2 5B 480x272, 9 frames, 8 passos): 1494 s, ~67 s/passo, ETA ok. Bug: após 8/8 ainda 14,5 min de decode VAE/mp4 (~11,5 GB RAM) sem aviso; falta fase "Decodificando…" (ia_off, sdcpp.py) |
 | V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ✅ 15/10 (mesmo vídeo do V2). Vulkan (UHD 620): ~200 s/passo (11/20 em ~2535 s; carga ~9 min). CPU (-t 4): carga+texto ~9 min, amostragem ~65 min (~170–245 s/passo, média ~197 s), decodificação VAE ~16 min, total ~90 min (5405 s). CPU ≈ Vulkan na amostragem, não mais rápida; CPU fica padrão (bb21e2d) por usar pouca GPU/RAM compartilhada |
 | V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ⏳ liberado; roda por último, depois do V6 |
-| V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | 🟡 rodando no PC (Wan 2.2 5B 480x272, 17 frames, 20 passos, ~113 s/passo); resultado previsto 11:20–11:30 |
+| V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | ✅ PC 16/10 (Wan 2.2 5B 480x272, 17 frames, 20 passos): 4062 s (~67,7 min), 10:15–11:23; `Videos\IA_Off\20261016_101555_wan_1234.mp4` |
 
 ## 2. Chat (Ollama)
 | ID | Passos | Esperado | Status |
