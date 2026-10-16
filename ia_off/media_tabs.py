@@ -462,6 +462,10 @@ class VideoTab(QueueClient, QWidget):
         warn = QLabel("⚠ Geração de vídeo na CPU é MUITO lenta: 17 quadros em 480×272 podem levar de 20 a 60+ minutos. "
                       "Comece pequeno.", objectName="hint"); warn.setWordWrap(True); warn.setStyleSheet("color:#ffb347;")
         f.addRow(warn)
+        self.cfg_set = cfg_set
+        self.vmodel = QComboBox(); self.vmodel.addItem("Wan 2.1 1.3B", "wan21"); self.vmodel.addItem("Wan 2.2 5B (TI2V)", "wan22")
+        self.vmodel.currentIndexChanged.connect(lambda _: self.cfg_set(video_modelo=self.vmodel.currentData()))
+        f.addRow("Modelo:", self.vmodel); self.refresh_vmodels()
         self.prompt = QPlainTextEdit(); self.prompt.setPlaceholderText("Descreva o vídeo (inglês funciona melhor)…"); self.prompt.setMaximumHeight(90)
         self.neg = QPlainTextEdit(); self.neg.setPlaceholderText("Negativo (vazio = padrão do Wan)"); self.neg.setMaximumHeight(50)
         from .sizing import VIDEO_RESOLUTIONS
@@ -504,6 +508,18 @@ class VideoTab(QueueClient, QWidget):
         self.list = QListWidget(); self.list.itemClicked.connect(lambda it: self.preview(it.data(Qt.UserRole))); rv.addWidget(self.list, 1)
         sp.addWidget(left); sp.addWidget(right); sp.setSizes([420, 700]); self.load_list()
 
+    @staticmethod
+    def wan22_ok(cfg):
+        return all(cfg.get(k) and Path(cfg[k]).is_file() for k in ("wan22_model", "wan22_t5", "wan22_vae"))
+
+    def refresh_vmodels(self):
+        """Wan 2.2 só fica selecionável com os três arquivos (wan22_*) presentes."""
+        cfg = self.cfg(); ok = self.wan22_ok(cfg)
+        item = self.vmodel.model().item(1); item.setEnabled(ok)
+        item.setToolTip("" if ok else "Configure wan22_model, wan22_t5 e wan22_vae nas Configurações.")
+        want = cfg.get("video_modelo", "wan21") if ok else "wan21"
+        self.vmodel.blockSignals(True); self.vmodel.setCurrentIndex(max(0, self.vmodel.findData(want))); self.vmodel.blockSignals(False)
+
     def load_list(self):
         self.list.clear()
         for p in sorted(config.output_dir("videos").glob("*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -530,8 +546,10 @@ class VideoTab(QueueClient, QWidget):
         prompt = self.prompt.toPlainText().strip()
         if not prompt:
             QMessageBox.information(self, "Vídeo", "Escreva um prompt."); return
-        cfg = self.cfg()
-        missing = [cfg[k] for k in ("wan_model", "wan_t5", "wan_vae") if not Path(cfg[k]).is_file()]
+        cfg = dict(self.cfg()); vm = self.vmodel.currentData() or "wan21"
+        if vm == "wan22" and not self.wan22_ok(cfg): vm = "wan21"
+        cfg["video_modelo"] = vm; pre = "wan22_" if vm == "wan22" else "wan_"
+        missing = [cfg.get(pre + k) or f"({pre + k} vazio)" for k in ("model", "t5", "vae") if not Path(cfg.get(pre + k) or "").is_file()]
         if missing:
             QMessageBox.warning(self, "Vídeo", "Arquivos não encontrados:\n" + "\n".join(missing)); return
         w, h = self.sizesel.plan()[:2]
