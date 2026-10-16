@@ -26,7 +26,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 |---|---|---|---|
 | C1 | Enviar pergunta curta | Resposta aparece enquanto é gerada | ⏳ |
 | C2 | Conversa longa (40+ mensagens) | Sem lentidão perceptível (correção do Front) | ⏳ |
-| C3 | Fechar e reabrir o app | Histórico preservado | ⏳ |
+| C3 | Fechar e reabrir o app | Histórico preservado | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
 | C4 | Importar um GGUF | Modelo aparece e responde | ⏳ |
 
 ## 3. Trocas de modelo (prazo 20/10)
@@ -41,9 +41,9 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | D0 | Abrir a 3.0 pela 1ª vez com os documentos da 2.x | Documentos antigos migrados e aparecendo (commit 6ee483e) | ✅ 15/10 sem dados: `%APPDATA%\IA_Off_v1\rag` não tem meta.json (0 documentos) e `C:\IA\dados\rag` vazio → cópia/migração é no-op (0 trechos). Consulta com índice temporário + Ollama `embeddinggemma-2:740m`: 0,07 s, citou `[1] manual_teste.txt (score 0.78)`. ⚠ `embed_model` do config (`nomic-embed-text`) não está instalado no Ollama do PC (404) |
-| D1 | Importar PDF, DOCX e TXT | Os três indexados | ⏳ |
-| D2 | Perguntar algo de cada um | Resposta correta com citação da fonte | ⏳ |
-| D3 | Reindexar após a busca vetorial do beck | Conclui; anotar tempo | ⏳ |
+| D1 | Importar PDF, DOCX e TXT | Os três indexados | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
+| D2 | Perguntar algo de cada um | Resposta correta com citação da fonte | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
+| D3 | Reindexar após a busca vetorial do beck | Conclui; anotar tempo | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
 | D4 | Mesmas perguntas de D2 com a busca nova | Respostas iguais ou melhores | ⏳ |
 
 ## 5. Imagem
@@ -52,7 +52,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | I1 | Texto → imagem com prompt em português | Tradução aplicada, imagem gerada | ⏳ |
 | I2 | Imagem → imagem, inpainting e edição por instrução | Os três funcionam | ⏳ |
 | I3 | Cada proporção e resoluções baixa/alta | Tamanho de saída correto | ⏳ |
-| I4 | Enfileirar 3 imagens | Rodam uma por vez, na ordem | ⏳ |
+| I4 | Enfileirar 3 imagens | Rodam uma por vez, na ordem | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
 
 ## 5b. Ampliador
 | ID | Passos | Esperado | Status |
