@@ -59,3 +59,11 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - Regra nova: cada um faz commit só dos próprios arquivos (`git add <caminho>`).
 - 15/10, 22h: repositório no GitHub privado do Julio (`jcbc03/nova-rota`, branch `main`). Regra: commit só dos próprios arquivos e `git push` logo depois; se recusar, `git pull --rebase` e push de novo.
 - 15/10, 23h46: suíte limpa verde (101 ok, 1 pulado, `7c31986`); correções do Wan (`076a2d5`) e da transcrição (`d798d2c`) instaladas no PC, backup em `C:\IA\backup\hotfix_20261015_2346`. Lista de bugs zerada. Pendente: V8 (vídeo curto real, ~90 min) e revisão final antes de 30/10.
+
+## Decisão 16/10: moderador opcional (aprovado pelo Julio)
+- Vem **desligado** por padrão. Desligado, o app fica idêntico ao de hoje: sem filtro, sem checagem, sem termos extras no negativo, e as listas nem são carregadas.
+- Ligado, tem os níveis Leve, Médio e Rígido, tudo offline e sem modelo extra. As chaves são `moderacao_ativa` e `moderacao_nivel` no `config.py`.
+- As listas ficam editáveis em `C:\IA\dados\moderacao.json`. Se o arquivo faltar ou tiver erro, o app usa o padrão embutido e registra um aviso no log. A checagem é por palavra inteira, sem acento e em minúsculas.
+- Um prompt bloqueado levanta `PromptBloqueado(motivo)` antes de carregar qualquer modelo. A checagem fica no `engines_registry`.
+- É preciso senha pra ligar, desligar ou mudar o nível. Só o hash é guardado (PBKDF2 com salt, em `C:\IA\dados`). Quem esquecer a senha apaga o arquivo e cria uma nova.
+- Responsáveis: DEV beck (módulo e senha), DEV Front (tela), ia_off (motores), sub2 (testes), sib1 (manual e changelog). Prazo: 23/10.
