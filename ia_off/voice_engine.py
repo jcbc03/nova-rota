@@ -50,8 +50,57 @@ def _load_whisper(model_dir, threads):
         return _whisper_cache[key]
 
 
-def transcribe(audio_path, progress_cb=None, cancel_flag=None, cfg=None, language=None, model_loader=None):
-    """Áudio -> texto. Progresso em segundos de áudio processados: progress_cb(seg, duração_total)."""
+CHUNK_S = 10          # trechos de ~10 s: o cancelamento é checado entre eles
+SAMPLE_RATE = 16000
+
+
+def _decode_audio(path):
+    """numpy float32 mono 16 kHz, ou None se o decodificador do faster-whisper não estiver disponível."""
+    try:
+        from faster_whisper.audio import decode_audio
+    except Exception:
+        return None
+    try:
+        return decode_audio(str(path), sampling_rate=SAMPLE_RATE)
+    except Exception:  # formato que o PyAV não abre: deixa o faster-whisper tentar/relatar com o arquivo
+        return None
+
+
+def _transcribe_work(model, audio, arr, lang, progress_cb, check):
+    if arr is None:  # sem decodificador: arquivo inteiro (cancelamento entre segmentos)
+        segments, info = model.transcribe(str(audio), language=lang, beam_size=5, vad_filter=True)
+        total = max(1, int(round(getattr(info, "duration", 0) or 0)))
+        parts = []
+        for seg in segments:
+            if check(): raise Cancelled()
+            t = seg.text.strip()
+            if t: parts.append(t)
+            if progress_cb: progress_cb(min(total, int(round(seg.end))), total)
+        return parts, total
+    n = len(arr); step = CHUNK_S * SAMPLE_RATE
+    total = max(1, int(round(n / SAMPLE_RATE))); parts = []
+    for off in range(0, max(n, 1), step):
+        if check(): raise Cancelled()
+        chunk = arr[off:off + step]
+        if len(chunk) < SAMPLE_RATE // 10:
+            break
+        prompt = " ".join(parts)[-200:] or None   # contexto do trecho anterior
+        segments, _ = model.transcribe(chunk, language=lang, beam_size=5, vad_filter=True,
+                                       initial_prompt=prompt, condition_on_previous_text=False)
+        for seg in segments:
+            if check(): raise Cancelled()
+            t = seg.text.strip()
+            if t: parts.append(t)
+        if progress_cb: progress_cb(min(total, int(round((off + len(chunk)) / SAMPLE_RATE))), total)
+    return parts, total
+
+
+def transcribe(audio_path, progress_cb=None, cancel_flag=None, cfg=None, language=None, model_loader=None,
+               audio_loader=None):
+    """Áudio -> texto. Progresso em segundos de áudio processados: progress_cb(seg, duração_total).
+    O trabalho (carregar modelo + decodificar) roda numa thread auxiliar, em trechos de ~10 s; ao cancelar,
+    esta função levanta Cancelled em até ~0,1 s e a thread para no fim do trecho atual."""
+    import threading
     cfg = _cfg(cfg); check = make_cancel_check(cancel_flag)
     audio = Path(audio_path)
     if not audio.is_file():
@@ -62,18 +111,24 @@ def transcribe(audio_path, progress_cb=None, cancel_flag=None, cfg=None, languag
             raise FileNotFoundError(f"Modelo Whisper não encontrado: {md} (rode baixar_voz.bat)")
         model_loader = _load_whisper
     if check(): raise Cancelled()
-    model = model_loader(md, cfg.get("threads"))
-    if check(): raise Cancelled()
-    segments, info = model.transcribe(str(audio), language=language or cfg.get("whisper_lang") or "pt",
-                                      beam_size=5, vad_filter=True)
-    total = max(1, int(round(getattr(info, "duration", 0) or 0)))
-    parts = []
-    for seg in segments:   # gerador: cada iteração decodifica um trecho
+    lang = language or cfg.get("whisper_lang") or "pt"
+    res = {}; done = threading.Event()
+    def work():
+        try:
+            model = model_loader(md, cfg.get("threads"))
+            if check(): raise Cancelled()
+            arr = (audio_loader or _decode_audio)(audio)
+            res["v"] = _transcribe_work(model, audio, arr, lang, progress_cb, check)
+        except BaseException as e:
+            res["e"] = e
+        finally:
+            done.set()
+    threading.Thread(target=work, daemon=True, name="whisper").start()
+    while not done.wait(0.1):
         if check(): raise Cancelled()
-        t = seg.text.strip()
-        if t: parts.append(t)
-        if progress_cb: progress_cb(min(total, int(round(seg.end))), total)
+    if "e" in res: raise res["e"]
     if check(): raise Cancelled()
+    parts, total = res["v"]
     if progress_cb: progress_cb(total, total)
     return " ".join(parts).strip()
 

@@ -152,3 +152,44 @@ def test_espeak_data_dir_copia_quando_caminho_tem_acento(tmp_path):
     assert d == voz / "espeak-ng-data" and (d / "phontab").read_bytes() == b"x"
     ok = tmp_path / "ascii"; ok.mkdir()
     assert ve.espeak_data_dir(voz / "v.onnx", src=ok) is None
+
+
+class SlowChunkWhisper:
+    """Cada trecho leva 'delay' s (como um decode de 30 s na CPU); conta trechos processados."""
+    def __init__(self, delay): self.delay = delay; self.calls = 0; self.prompts = []
+    def transcribe(self, chunk, **kw):
+        import time
+        self.calls += 1; self.prompts.append(kw.get("initial_prompt")); time.sleep(self.delay)
+        n = self.calls
+        return iter([SimpleNamespace(start=0.0, end=1.0, text=f" t{n}")]), SimpleNamespace(duration=10.0)
+
+
+def test_transcribe_em_trechos(tmp_path):
+    import numpy as np
+    fw = SlowChunkWhisper(0); got = []
+    arr = np.zeros(25 * ve.SAMPLE_RATE, dtype=np.float32)   # 25 s -> 3 trechos
+    t = ve.transcribe(audio(tmp_path), lambda s, n: got.append((s, n)), cfg=cfg(tmp_path),
+                      model_loader=lambda d, th: fw, audio_loader=lambda p: arr)
+    assert t == "t1 t2 t3" and fw.calls == 3 and fw.prompts[0] is None and fw.prompts[1] == "t1"
+    assert got == [(10, 25), (20, 25), (25, 25), (25, 25)]
+
+
+def test_transcribe_cancel_rapido_no_meio_do_trecho(tmp_path):
+    import numpy as np, time
+    fw = SlowChunkWhisper(3.0); flag = threading.Event()
+    arr = np.zeros(120 * ve.SAMPLE_RATE, dtype=np.float32)
+    threading.Timer(0.5, flag.set).start(); t0 = time.time()
+    with pytest.raises(Cancelled):
+        ve.transcribe(audio(tmp_path), cancel_flag=flag, cfg=cfg(tmp_path),
+                      model_loader=lambda d, th: fw, audio_loader=lambda p: arr)
+    assert time.time() - t0 < 1.5
+    time.sleep(3.2); assert fw.calls == 1   # a thread parou no fim do trecho em andamento
+
+
+def test_transcribe_cancel_durante_carga_do_modelo(tmp_path):
+    import time
+    flag = threading.Event(); threading.Timer(0.3, flag.set).start(); t0 = time.time()
+    with pytest.raises(Cancelled):
+        ve.transcribe(audio(tmp_path), cancel_flag=flag, cfg=cfg(tmp_path),
+                      model_loader=lambda d, th: (time.sleep(3), FakeWhisper())[1], audio_loader=lambda p: None)
+    assert time.time() - t0 < 1.5
