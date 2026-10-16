@@ -44,7 +44,8 @@ def apply(cfg, import_torch=True):
     # thread pode corromper o bloco de ambiente do CRT (access violation no Windows).
     if threading.current_thread() is threading.main_thread():
         set_thread_env(t)
-        pr = set_high_priority(bool(cfg.get("max_mode", True)))
+        alta = bool(cfg.get("max_mode", True))
+        pr = set_high_priority(alta) and alta
     else:
         pr = False
     try:
