@@ -7,7 +7,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | P1 | Abrir pelo atalho "IA Off" | Janela abre em < 15 s, 6 abas visíveis | ✅ PC 16/10 (0111223): atalho abre em 1,7 s, 6 abas |
-| P2 | Rodar `pytest tests/` na ia_off_v3, num ambiente limpo só com o requirements.txt | Todos passam | ✅ 16/10 9h, commit 0a3000d: 158 ok e 3 pulados (2 sem modelo tiny, 1 sem `optimum.intel`). Antes: 15/10, 2d73849, 88 ok e 1 pulado |
+| P2 | Rodar `pytest tests/` na ia_off_v3, num ambiente limpo só com o requirements.txt | Todos passam | ✅ 16/10 18h, af66cc4 (código = 4c6d743 instalado): 173 ok e 3 pulados, 2 rodadas. Antes: 9h, 0a3000d, 158 ok e 3 pulados (2 sem modelo tiny, 1 sem `optimum.intel`). Antes: 15/10, 2d73849, 88 ok e 1 pulado |
 
 ## 1. Vídeo (Wan 2.1) — prioridade, testar primeiro
 | ID | Passos | Esperado | Status |
@@ -15,7 +15,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | V1 | Abrir a aba Vídeo e carregar o modelo | Não fecha nem trava (correção 2.3.1) | ✅ 15/10 no PC (ia_off) |
 | V2 | Gerar vídeo curto em baixa resolução | Termina, arquivo salvo e reproduzível | ✅ 15/10 (fila + engines_registry, headless): 480x272, 17 quadros, 20 passos → `20261015_205851_wan_1107368692.mp4`, 32 784 B, ffprobe ok (h264 480x272, 16 fps, 17 quadros, 1,06 s). TEMPO_TOTAL 8124 s = ~45 min Vulkan (morta em 11/20) + ~90 min na CPU (recaída automática) |
 | V3 | Durante a geração, trocar de aba e mexer na janela | Interface continua respondendo | ✅ 15/10 offscreen no PC: vídeo (sd.cpp falso) na fila trocando de aba a cada 100 ms: 23–29 trocas, maior pausa da UI 0,13 s, sinais na thread principal; repetido após aplicar 6b581cc. smoke_gui ✅. stress_gui ❌ no PC (video_lines=0: o FakeEngine de imagem usa sleep(0.0005) que no Windows dura ~15 ms, o vídeo não chega a rodar antes do fechamento; problema do teste, não do app) → com 4cfdaf7 instalado: stress_gui ✅ e smoke_gui ✅ no PC (15/10 23:39); ✅ 16/10 no PC real (c2cd115/0111223): vídeo Wan 2.2 real 713 s, 5881 trocas de aba, maior pausa 0,41 s, app nunca travou |
-| V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ✅ PC 16/10 (Wan 2.2 5B 480x272): cancelou em 0,6 s no passo 3/20, ~107 s/passo. Bug: "passo 4/20" falso após Cancelar, corrigido na tela em 950cb26 (beck também na fila); reconferir |
+| V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ✅ PC 16/10 (Wan 2.2 5B 480x272): cancelou em 0,6 s no passo 3/20, ~107 s/passo. Bug: "passo 4/20" falso após Cancelar, corrigido na tela em 950cb26 (beck também na fila). 16/10 18h: 950cb26 (tela) e 3786502 (fila) estão no 4c6d743 instalado; 21 testes de cancelamento ok no box; falta só a confirmação visual de um Cancelar real no PC (ia_off ou Julio) |
 | V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ✅ PC 16/10 (Wan 2.2 5B 480x272, 9 frames, 8 passos): 1494 s, ~67 s/passo, ETA ok. Bug: após 8/8 ainda 14,5 min de decode VAE/mp4 (~11,5 GB RAM) sem aviso; falta fase "Decodificando…" (ia_off, sdcpp.py) |
 | V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ✅ 15/10 (mesmo vídeo do V2). Vulkan (UHD 620): ~200 s/passo (11/20 em ~2535 s; carga ~9 min). CPU (-t 4): carga+texto ~9 min, amostragem ~65 min (~170–245 s/passo, média ~197 s), decodificação VAE ~16 min, total ~90 min (5405 s). CPU ≈ Vulkan na amostragem, não mais rápida; CPU fica padrão (bb21e2d) por usar pouca GPU/RAM compartilhada |
 | V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ✅ PC 16/10: 4111 s; fase decodificando/salvando/convertendo confirmada no Wan pela JobQueue (decode ~4m44). fase no Z-Image ok após 0111223 (256 px, 2 passos, 69 s) |
@@ -110,3 +110,13 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | 15/10 | A3 | 3.0 | Cancelar transcrição demorou 88 s | ia_off (voice_engine) | corrigido em d798d2c (trechos de 10 s numa thread; falta instalar no PC) |
 | 15/10 | V2 | 3.0 | Negativo padrão do Wan chega ao sd-cli como "????" (página de código do Windows) | ia_off (sdcpp) | aberto |
 | 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
+
+
+## Checklist do Julio (o que só ele pode fazer)
+
+1. **S3**: desligar a internet e usar todas as abas (Chat, Imagem, Vídeo, Documentos, Voz). Tudo tem que funcionar.
+2. **Menu Vídeo**: na aba Vídeo, abrir o menu Modelo e ver o Wan 2.1 e o Wan 2.2. Gerar um vídeo curto e ver "Decodificando…" depois do último passo.
+3. **SE1 e troca de senha**: em Configurações > Moderação, usar "Trocar senha…" pra trocar a temporária (`C:\IA\dados\SENHA_TEMPORARIA.txt`). Em "Alterar filtro…", testar com a senha errada (nada muda) e depois com a certa.
+4. **MO5**: com a moderação ligada, mandar um prompt proibido em Imagem, Vídeo e Falar e ver a mensagem de bloqueio com o motivo. No fim, desligar a moderação.
+5. **SE4** (só se quiser): apagar o `moderacao_senha.json` e ver o app pedir uma senha nova.
+6. **Limpeza**: dar o ok (ou não) pra apagar o `SENHA_TEMPORARIA.txt` e os temporários.
