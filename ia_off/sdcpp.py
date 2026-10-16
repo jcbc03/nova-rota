@@ -9,9 +9,32 @@ BASE_URL = f"https://github.com/leejet/stable-diffusion.cpp/releases/download/{R
 RELEASE_URL = BASE_URL + ASSET_WIN_CPU
 ASSETS = {"cpu": ASSET_WIN_CPU, "vulkan": ASSET_WIN_VULKAN}
 BIN_NAMES = ("sd-cli.exe", "sd.exe", "sd-cli", "sd")
-WAN_NEG = ("色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，"
-           "JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，"
-           "手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走")
+# Negativo padrão do Wan 2.1, tradução fiel do original em chinês. Em ASCII porque o sd-cli no Windows lê
+# argv pela página de código ANSI: o texto chinês chegava como "????".
+WAN_NEG = ("vivid garish colors, overexposed, static, blurry details, subtitles, style, artwork, painting, "
+           "picture, still, overall grayish, worst quality, low quality, JPEG compression artifacts, ugly, "
+           "mutilated, extra fingers, poorly drawn hands, poorly drawn face, deformed, disfigured, "
+           "malformed limbs, fused fingers, motionless frame, cluttered background, three legs, "
+           "many people in the background, walking backwards")
+
+_PUNCT = {"\uff0c": ", ", "\u3001": ", ", "\u3002": ". ", "\uff1a": ": ", "\uff1b": "; ", "\uff01": "! ",
+          "\uff1f": "? ", "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"', "\u2013": "-",
+          "\u2014": "-", "\u2026": "...", "\u00a0": " ", "\u00ab": '"', "\u00bb": '"'}
+
+def cli_safe(text, what="prompt"):
+    """Texto seguro para argv do sd-cli: só ASCII. Acentos viram a letra base (NFKD), pontuação
+    tipográfica/CJK vira a ASCII equivalente; o que sobrar é removido com aviso no log."""
+    import logging, unicodedata
+    text = str(text or "")
+    if text.isascii():
+        return text
+    t = "".join(_PUNCT.get(c, c) for c in text)
+    t = "".join(c for c in unicodedata.normalize("NFKD", t) if not unicodedata.combining(c))
+    lost = sorted({c for c in t if not c.isascii()})
+    if lost:
+        logging.getLogger(__name__).warning("sd-cli: %s com caracteres não ASCII removidos: %s", what, "".join(lost)[:40])
+        t = "".join(c if c.isascii() else " " for c in t)
+    return re.sub(r"\s{2,}", " ", t).strip()
 
 PROG_RE = re.compile(r"\|\s*(\d+)/(\d+)\s*-")
 
@@ -99,7 +122,7 @@ def build_wan_args(binary, cfg, prompt, out_path, negative="", width=480, height
                    steps=20, cfg_scale=6.0, seed=-1, fps=16, flow_shift=3.0):
     return [str(binary), "-M", "vid_gen",
             "--diffusion-model", cfg["wan_model"], "--vae", cfg["wan_vae"], "--t5xxl", cfg["wan_t5"],
-            "-p", prompt, "-n", negative or WAN_NEG,
+            "-p", cli_safe(prompt), "-n", cli_safe(negative or WAN_NEG, "negativo"),
             "--cfg-scale", str(cfg_scale), "--sampling-method", "euler", "--steps", str(int(steps)),
             "-W", str(int(width)), "-H", str(int(height)), "--video-frames", str(wan_frames(frames)),
             "--fps", str(int(fps)), "--flow-shift", str(flow_shift), "-s", str(int(seed)),
@@ -108,7 +131,7 @@ def build_wan_args(binary, cfg, prompt, out_path, negative="", width=480, height
 def build_flux2_args(binary, cfg, prompt, out_path, width=512, height=512, steps=4, seed=-1,
                      cfg_scale=1.0, ref_image=None):
     a = [str(binary), "--diffusion-model", cfg["flux2_model"], "--vae", cfg["flux2_vae"], "--llm", cfg["flux2_llm"],
-         "-p", prompt, "--cfg-scale", str(cfg_scale), "--sampling-method", "euler", "--steps", str(int(steps)),
+         "-p", cli_safe(prompt), "--cfg-scale", str(cfg_scale), "--sampling-method", "euler", "--steps", str(int(steps)),
          "-W", str(int(width)), "-H", str(int(height)), "-s", str(int(seed)),
          "-t", str(int(cfg.get("threads", 4))), "-o", str(out_path), "-v"]
     if ref_image:

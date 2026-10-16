@@ -172,3 +172,16 @@ def test_video_variant_defaults_to_cpu():
     assert sdcpp.video_variant({"device": "auto"}, vulkan_ok=True) == "cpu"
     assert sdcpp.video_variant({"device": "auto", "video_vulkan": True}, vulkan_ok=True) == "vulkan"
     assert sdcpp.video_variant({"device": "auto", "video_vulkan": True}, vulkan_ok=False) == "cpu"
+
+
+def test_wan_neg_ascii_e_cli_safe(caplog):
+    assert sdcpp.WAN_NEG.isascii() and "worst quality" in sdcpp.WAN_NEG
+    cfg = {"wan_model": "m", "wan_vae": "v", "wan_t5": "t"}
+    a = sdcpp.build_wan_args("sd", cfg, "raposa correndo na neve, câmera lenta", "o.avi")
+    assert a[a.index("-n") + 1] == sdcpp.WAN_NEG and a[a.index("-p") + 1] == "raposa correndo na neve, camera lenta"
+    assert all(x.isascii() for x in a)
+    assert sdcpp.cli_safe("“olá” — ação…") == '"ola" - acao...'
+    assert sdcpp.cli_safe("猫，dog") == ", dog"
+    assert "não ASCII" in caplog.text
+    f = sdcpp.build_flux2_args("sd", {"flux2_model": "m", "flux2_vae": "v", "flux2_llm": "l"}, "pão de açúcar", "o.png")
+    assert f[f.index("-p") + 1] == "pao de acucar"
