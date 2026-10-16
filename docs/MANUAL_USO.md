@@ -58,6 +58,18 @@ Imagem, vídeo, ampliar e voz passam por uma fila que roda uma tarefa pesada por
 - **Caminhos dos modelos**: tudo aponta pra `C:\IA\modelos`.
 - Clique **Salvar** depois de mudar.
 
+### Moderação (opcional, vem desligada)
+Desligada, o app funciona como sempre: sem filtro nenhum, e o prompt chega ao modelo exatamente como você escreveu.
+
+- **Ligar, desligar ou mudar o nível:** em Configurações, na seção "Moderação", clique em **Alterar filtro…** e digite a senha. Na primeira vez, o app pede pra criar a senha e confirmar digitando de novo. Com a senha errada, nada muda.
+- **Níveis** (cada um bloqueia tudo o que o anterior bloqueia):
+  - **Leve:** só conteúdo claramente ilegal, como conteúdo sexual envolvendo menores.
+  - **Médio:** acrescenta sexo explícito ("cena de sexo", "sexo explícito"), pornografia, gore, estupro e tortura. "Sexo feminino" e "qual o sexo do bebê" passam.
+  - **Rígido:** acrescenta "sexo" sozinho, nudez, violência, armas e drogas. Palavras comuns como "arma" e "sangue" passam a ser bloqueadas.
+- **Prompt bloqueado:** aparece a mensagem "Prompt bloqueado pela moderação" com o motivo. Nenhum modelo é carregado, então não se perde tempo. Com a moderação ligada, a barra de status mostra o nível.
+- **Editar as listas:** em `C:\IA\dados\moderacao.json`. Os termos que você colocar somam com os do app. Com `"substituir": true` no arquivo, eles trocam as listas do app. Se o arquivo tiver erro, o app usa as listas embutidas e registra um aviso no log. A checagem é por palavra inteira, então "sexta" e "armário" passam.
+- **Esqueci a senha:** com o app fechado, apague `C:\IA\dados\moderacao_senha.json`. Ao abrir, o app pede uma senha nova. O arquivo guarda só o hash da senha, nunca a senha. A senha impede que alguém mude o filtro pela tela, mas quem tem acesso aos arquivos do PC consegue resetar.
+
 ## 9. Onde ficam as coisas
 - Modelos: `C:\IA\modelos`, separados em `texto`, `imagem`, `video`, `shared`, `ollama` e `huggingface` (veja o `LEIA-ME.txt` lá dentro). Modelo novo vai direto na subpasta certa.
 - Dados gerados: `C:\IA\dados` (ex.: índice dos documentos em `C:\IA\dados\rag`).

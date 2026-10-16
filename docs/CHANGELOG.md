@@ -14,6 +14,8 @@
 - Opção da fila pra liberar da RAM os modelos do Ollama antes de tarefas pesadas (`queue_unload_ollama`, desligada por padrão). (beck `a6b356c`)
 - Vídeo usa a CPU por padrão (Vulkan opcional via `video_vulkan`) e a barra não conta mais o carregamento como passo. (ia_off `bb21e2d`)
 - Polimento visual: barra de progresso, foco, hover, grupos, rolagem e barra de status. (front `6b581cc`)
+- Moderação opcional, desligada por padrão, com os níveis Leve, Médio e Rígido, listas editáveis em `moderacao.json` e senha guardada só como hash pra alterar o filtro: o módulo é do DEV beck (`eba4fd9`, ajuste do Médio em `d7c13f1`), a tela é do DEV Front (`820ae78`) e a ligação nos motores é do ia_off (em andamento).
+
 ### Melhorado
 - Chat rápido em conversas longas: histórico montado uma vez e tela atualizada no máximo a cada 80 ms; rolagem automática só quando você está no fim da conversa. (front `daa045d`)
 ### Corrigido
