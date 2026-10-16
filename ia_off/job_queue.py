@@ -347,12 +347,15 @@ class JobQueue(QObject):
             res = None; job.cancel_flag.set()
         except Exception as e:
             if job.cancel_flag.is_set():
+                _log.info("fila: tarefa %s cancelada; exceção do motor descartada (%s: %s)",
+                          job.id, type(e).__name__, e)
                 res = None
             else:
                 job.erro = f"{type(e).__name__}: {e}"
                 with self._cond:
                     job.estado = FALHOU; job.fim = time.time()
                 traceback.print_exc()
+                _log.error("fila: tarefa %s (%s) falhou: %s", job.id, job.tipo, job.erro)
                 self.failed.emit(job.id, job.erro)
                 return
         with self._cond:
@@ -361,6 +364,7 @@ class JobQueue(QObject):
                 job.estado = CANCELADA
             elif res is None or str(res) == "":
                 job.estado = FALHOU; job.erro = "Motor terminou sem resultado."
+                _log.warning("fila: tarefa %s (%s) terminou sem resultado", job.id, job.tipo)
             else:
                 job.estado = CONCLUIDA; job.resultado = str(res)
             estado = job.estado

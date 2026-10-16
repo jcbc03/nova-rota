@@ -1,6 +1,9 @@
 import json
+import logging
 from pathlib import Path
 import numpy as np
+
+_log = logging.getLogger(__name__)
 
 def read_file(path):
     p = Path(path); ext = p.suffix.lower()
@@ -15,6 +18,7 @@ def read_file(path):
             return [(None, p.read_text(encoding=enc))]
         except UnicodeDecodeError:
             continue
+    _log.warning("rag: codificação de %s não reconhecida; lendo com substituição de caracteres", p.name)
     return [(None, p.read_bytes().decode("utf-8", "replace"))]
 
 def chunk_text(text, size=800, overlap=150):
@@ -45,7 +49,8 @@ def chunk_text(text, size=800, overlap=150):
 # ---------------------------------------------------------------------------
 try:  # dependência opcional
     import faiss  # type: ignore
-except Exception:  # pragma: no cover - depende do ambiente
+except Exception as _e:  # pragma: no cover - depende do ambiente
+    logging.getLogger(__name__).info("rag: faiss indisponível (%s); usando backend numpy", _e)
     faiss = None
 
 FORMAT_VERSION = 2
@@ -90,6 +95,8 @@ class VectorStore:
             if self.use_faiss and fi.exists():
                 self.index = faiss.read_index(str(fi))
                 if self.index.ntotal != len(self.meta):
+                    _log.warning("rag: index.faiss (%d) difere de meta.json (%d); reconstruindo",
+                                 self.index.ntotal, len(self.meta))
                     self._build_index()
             else:
                 self._build_index()

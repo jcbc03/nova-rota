@@ -1,4 +1,4 @@
-# Fila de tarefas (job_queue.py), interface v1
+# Fila de tarefas (job_queue.py) — IA Off v3.0 (interface v1, estável)
 
 Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
 
@@ -13,6 +13,7 @@ Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
 - `finished(id, caminho_resultado)`
 - `failed(id, erro)`
 - `cancelled(id)`
+- `phase(id, fase)` — etapa sem passos (ver seção no fim)
 
 ## Contrato com os motores (ia_off)
 - Aceitam `on_progress(passo, total)`
@@ -27,7 +28,7 @@ Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
   sinais já enfileirados); nunca sai `progress` após `cancelled`/`finished`/`failed`.
 - `shutdown(wait=True, timeout=None)`: cancela tudo e para o worker — chamar no `closeEvent`/`aboutToQuit`.
 - **Libera RAM antes de tarefas pesadas**: no worker, logo após `started(id)` e antes do motor, se o tipo está em
-  `queue_unload_types` (padrão `["video", "imagem", "ampliar"]`) e `queue_unload_ollama` (padrão `false`, desligada até existir proteção pro chat em andamento), a fila faz
+  `queue_unload_types` (padrão `["video", "imagem", "ampliar"]`) e `queue_unload_ollama` (padrão `false`), a fila faz
   `GET {ollama_url}/api/ps` e, para cada modelo carregado, `POST /api/generate {"model": nome, "keep_alive": 0}`
   (embedding: `POST /api/embed {..., "keep_alive": 0}`). Timeout 3 s por chamada; Ollama desligado/erro só vai pro log, nunca
   falha a tarefa. Nenhum sinal novo (API compatível). Função avulsa: `job_queue.unload_ollama_models(host) -> [nomes]`.
@@ -35,7 +36,7 @@ Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
 - **Proteção do chat em andamento**: marcador global (contador, thread-safe, aninhável) em `job_queue`:
   `chat_iniciado()`, `chat_terminado()`, `chat_ativo() -> bool` e o context manager `chat_em_andamento()`
   (também como `JobQueue.chat_*`). Se a descarga do Ollama for rodar com chat ativo, o worker espera (respeitando o
-  `cancel_flag` da tarefa) até o chat acabar ou `queue_unload_wait_s` (padrão 120 s); no timeout pula a descarga
+  `cancel_flag` da tarefa; `esperar_chat_livre(timeout, cancel_flag=None) -> bool`) até o chat acabar ou `queue_unload_wait_s` (padrão 120 s); no timeout pula a descarga
   (warning no log) e roda a tarefa assim mesmo. Nunca descarrega com chat ativo. Com `queue_unload_ollama` false nada muda.
   Uso no app (em volta da requisição/stream do chat):
   ```python
@@ -119,3 +120,22 @@ register_engine("imagem", motor_imagem)   # também: fila.register_engine(...) s
 
 ## Sinal `phase(id, fase)` (desde 23f9c97)
 Etapas sem passos depois do último passo (`"decodificando"`, `"salvando"`, `"convertendo"`). Motor chama `getattr(on_progress, "phase", None)(fase)`; fica em `job.fase`. Descartado se o job foi cancelado ou não está RODANDO. `progress` não muda.
+
+## Cancelamento (descarte)
+- Na fila: sai de `_pending` e `cancelled(id)` é emitido na hora. Rodando: só seta `cancel_flag`; `cancelled(id)` sai quando o motor retorna.
+- Depois do cancelamento, `progress`/`phase` são descartados (no worker e na thread da GUI); retorno do motor é descartado
+  e exceção do motor vira `cancelled` (não `failed`) — registrada em nível INFO no log `ia_off.job_queue`.
+- `cancel` de tarefa já terminada/inexistente -> `False`. `shutdown()` cancela tudo; `enqueue` depois dele -> `RuntimeError`.
+
+## Config (config.py)
+| chave | padrão | descrição |
+|---|---|---|
+| `queue_unload_ollama` | `false` | descarrega o Ollama antes de tarefas pesadas |
+| `queue_unload_types` | `["video","imagem","ampliar"]` | tipos que disparam a descarga |
+| `queue_unload_wait_s` | `120` | espera máxima pelo fim do chat antes de pular a descarga |
+| `ollama_url` | `http://localhost:11434` | host do Ollama |
+
+## Log (logger `ia_off.job_queue`) — nenhum erro silencioso
+- ERROR: tarefa falhou (`id`, tipo, erro; traceback também em stderr). WARNING: motor terminou sem resultado; falha ao
+  descarregar um modelo; chat ainda ativo no timeout; gancho pré-tarefa com erro; config indisponível.
+- INFO: Ollama indisponível; modelos descarregados; exceção descartada por cancelamento.

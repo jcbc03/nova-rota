@@ -197,7 +197,8 @@ def senha_definida(cfg=None):
     try:
         d = json.loads(p.read_text(encoding="utf-8"))
         return all(k in d for k in ("salt", "hash", "iterations"))
-    except Exception:
+    except Exception as e:
+        log.warning("arquivo de senha do moderador ilegível (%s): %s", p, e)
         return False
 
 
@@ -230,7 +231,10 @@ def verificar_senha(senha, cfg=None):
         d = json.loads(p.read_text(encoding="utf-8"))
         calc = _hash(str(senha), bytes.fromhex(d["salt"]), int(d["iterations"]))
         return hmac.compare_digest(calc, bytes.fromhex(d["hash"]))
-    except Exception:
+    except FileNotFoundError:
+        return False
+    except Exception as e:
+        log.warning("verificação de senha do moderador falhou (arquivo %s inválido?): %s", p, e)
         return False
 
 

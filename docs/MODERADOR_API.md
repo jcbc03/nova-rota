@@ -1,4 +1,4 @@
-# Moderador — API (ia_off/moderador.py)
+# Moderador — API (ia_off/moderador.py) — IA Off v3.0
 
 Moderação **opcional** de prompts. Com `moderacao_ativa = False` (padrão) o app se comporta
 exatamente como antes: nenhuma lista é carregada, nenhum arquivo é lido, prompts e negativos
@@ -14,7 +14,7 @@ voltam inalterados (identidade), `instrucoes_chat()` devolve `""`.
 
 `<dados>` = `config.DADOS_DIR` = env `IA_OFF_DADOS_DIR` ou `C:\IA\dados`.
 
-Níveis são cumulativos: `rigido ⊇ medio ⊇ leve`.
+Níveis são cumulativos: `leve ⊂ medio ⊂ rigido` (bloqueados, negativos e instruções do chat acumulam).
 - leve: conteúdo claramente ilegal (sexual envolvendo menores).
 - medio: + sexual explícito (frases como "sexo explícito"; "sexo feminino" passa), pornografia, gore, estupro, tortura.
 - rigido: + "sexo"/"sex" isolados, nudez, violência, armas, drogas.
@@ -81,3 +81,8 @@ negativo = mod.completar_negativo(negativo, cfg)
 # chat: system = cfg["system_prompt"] + ("\n" + mod.instrucoes_chat(cfg) if mod.ativa(cfg) else "")
 ```
 Chame a checagem **antes** de carregar o modelo para não gastar RAM/tempo com pedidos recusados.
+
+## Log (logger `ia_off.moderador`)
+- WARNING: `moderacao.json` inválido/formato errado (usa listas embutidas); arquivo de senha existente mas
+  ilegível/corrompido (`senha_definida` e `verificar_senha` devolvem `False`, comportamento inalterado).
+- Arquivo de senha ausente não gera aviso (estado normal: sem senha). Senha errada não gera log.

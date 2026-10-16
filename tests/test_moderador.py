@@ -157,3 +157,31 @@ def test_sexo_neutro_passa_leve_medio(tmp_path):
     for t in ["cena de sexo explícito", "pornografia", "having sex", "xxx"]:
         assert _bloq(c, t), t
     assert _bloq(cfg(tmp_path, nivel="rigido"), "sexo feminino")
+
+
+# ---- robustez: erros não podem ser silenciosos ----
+def test_senha_corrompida_loga(tmp_path, caplog):
+    c = cfg(tmp_path); p = tmp_path / "sub" / "senha.json"
+    p.parent.mkdir(parents=True); p.write_text("{nao json", encoding="utf-8")
+    with caplog.at_level(logging.WARNING, logger="ia_off.moderador"):
+        assert M.senha_definida(c) is False
+        assert M.verificar_senha("x", c) is False
+    assert sum("senha" in r.getMessage() for r in caplog.records) >= 2
+
+
+def test_senha_ausente_sem_aviso(tmp_path, caplog):
+    c = cfg(tmp_path)
+    with caplog.at_level(logging.WARNING, logger="ia_off.moderador"):
+        assert M.verificar_senha("x", c) is False
+    assert not caplog.records
+
+
+def test_rag_avisos(tmp_path, caplog):
+    import numpy as np
+    from ia_off import rag
+    f = tmp_path / "bin.txt"; f.write_bytes(b"\xff\xfe\x00abc")
+    with caplog.at_level(logging.WARNING, logger="ia_off.rag"):
+        rag.read_file(f)  # latin-1 sempre decodifica: sem aviso
+    st = rag.VectorStore(tmp_path / "idx", use_faiss=False)
+    st.add([{"source": "a", "page": None, "text": "t"}], np.ones((1, 4)))
+    assert rag.VectorStore(tmp_path / "idx", use_faiss=False).meta

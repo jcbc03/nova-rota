@@ -268,3 +268,30 @@ def test_progresso_atrasado_descartado_na_gui(app):
     assert pump(app, lambda: "cancelled" in r.names(jid))
     assert not any(e[0] == "progress" and e[2] == 4 and e[3] == 20 for e in r.ev if e[1] == jid)
     q.shutdown()
+
+
+def test_falha_e_sem_resultado_logados(app, caplog):
+    import logging
+    def bad(p, op, cf): raise RuntimeError("boom")
+    def vazio(p, op, cf): return None
+    q = jq.JobQueue(engines={"imagem": bad, "video": vazio}); Rec(q)
+    with caplog.at_level(logging.INFO, logger="ia_off.job_queue"):
+        a = q.enqueue("imagem", {}); b = q.enqueue("video", {})
+        pump(app, lambda: done(q, a) and done(q, b))
+    msgs = " ".join(r.getMessage() for r in caplog.records)
+    assert "boom" in msgs and "sem resultado" in msgs
+    q.shutdown()
+
+
+def test_excecao_apos_cancel_logada(app, caplog):
+    import logging
+    ev = threading.Event()
+    def eng(p, op, cf):
+        ev.set(); cf.wait(5); raise RuntimeError("interrompido")
+    q = jq.JobQueue(engines={"imagem": eng}); Rec(q)
+    with caplog.at_level(logging.INFO, logger="ia_off.job_queue"):
+        a = q.enqueue("imagem", {}); ev.wait(5); q.cancel(a)
+        pump(app, lambda: done(q, a))
+    assert q.get(a)["estado"] == "cancelada"
+    assert any("descartada" in r.getMessage() for r in caplog.records)
+    q.shutdown()
