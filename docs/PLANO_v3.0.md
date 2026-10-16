@@ -67,3 +67,10 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - Um prompt bloqueado levanta `PromptBloqueado(motivo)` antes de carregar qualquer modelo. A checagem fica no `engines_registry`.
 - É preciso senha pra ligar, desligar ou mudar o nível. Só o hash é guardado (PBKDF2 com salt, em `C:\IA\dados`). Quem esquecer a senha apaga o arquivo e cria uma nova.
 - Responsáveis: DEV beck (módulo e senha), DEV Front (tela), ia_off (motores), sub2 (testes), sib1 (manual e changelog). Prazo: 23/10.
+
+## 16/10: modelos novos em avaliação (Julio aprovou testar só estes)
+- **Texto:** Qwen3.8-27B abliterated, GGUF pro Ollama, cerca de 16 GB. Estimativa de 1 a 1,5 palavra por segundo, uns 8x mais lento que o Qwen3-30B. Talvez precise atualizar o Ollama.
+- **Imagem:** Z-Image-Turbo, 6,7 GB, roda no sd.cpp. Estimativa de 5 a 8 min por imagem 512. Precisa de três chaves novas no `config.py` (`zimage_model`, `zimage_llm`, `zimage_vae`) e de um modo "Z-Image Turbo" na aba Imagem.
+- **Imagem (segunda opção):** Qwen-Image 2.1 "Uncensored", 9,9 GB. É o modelo original reempacotado e pode levar de 30 min a horas por imagem. Não é recomendado.
+- **Vídeo:** Wan 2.2 5B, 8,5 GB, roda no sd.cpp. Estimativa de 1 a 1,5 h por clipe. Usa outro VAE e talvez precise de um `sd-cli` mais novo.
+- Situação: aguardando o Julio aprovar o download (a sugestão é baixar texto, Z-Image e Wan 2.2, uns 32 GB). Os modelos ficam em `C:\IA\modelos`, sem caminho fixo no código. O ia_off mede a velocidade real e o sub2 valida. O manual só é atualizado depois da instalação.
