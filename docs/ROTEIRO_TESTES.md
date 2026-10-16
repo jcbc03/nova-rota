@@ -18,41 +18,41 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | V4 | Cancelar no meio (após a fila do beck) | Para em até 1 passo, sem travar | ✅ PC 16/10 (Wan 2.2 5B 480x272): cancelou em 0,6 s no passo 3/20, ~107 s/passo. Bug: "passo 4/20" falso após Cancelar, corrigido na tela em 950cb26 (beck também na fila); reconferir |
 | V5 | Barra mostra passo X de N e ETA (após DEV Front) | Números avançam e batem com o fim | ✅ PC 16/10 (Wan 2.2 5B 480x272, 9 frames, 8 passos): 1494 s, ~67 s/passo, ETA ok. Bug: após 8/8 ainda 14,5 min de decode VAE/mp4 (~11,5 GB RAM) sem aviso; falta fase "Decodificando…" (ia_off, sdcpp.py) |
 | V7 | Rodar o mesmo vídeo do V2 na CPU e na Vulkan | CPU mais rápida; CPU é o padrão; anotar os dois tempos | ✅ 15/10 (mesmo vídeo do V2). Vulkan (UHD 620): ~200 s/passo (11/20 em ~2535 s; carga ~9 min). CPU (-t 4): carga+texto ~9 min, amostragem ~65 min (~170–245 s/passo, média ~197 s), decodificação VAE ~16 min, total ~90 min (5405 s). CPU ≈ Vulkan na amostragem, não mais rápida; CPU fica padrão (bb21e2d) por usar pouca GPU/RAM compartilhada |
-| V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ⏳ liberado; roda por último, depois do V6 |
+| V8 | Vídeo curto real depois do `076a2d5` (negativo em inglês, prompt ASCII) | Log mostra o negativo legível; vídeo sem os defeitos que o negativo evita | ✅ PC 16/10 (130143f): 4111 s (~68 min), 20 passos ~113 s + ~29 min de decode; fase "decodificando" não confirmada no log |
 | V6 | Um teste longo na resolução padrão (no final) | Termina sem erro; anotar tempo | ✅ PC 16/10 (Wan 2.2 5B 480x272, 17 frames, 20 passos): 4062 s (~67,7 min), 10:15–11:23; `Videos\IA_Off\20261016_101555_wan_1234.mp4` |
 
 ## 2. Chat (Ollama)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| C1 | Enviar pergunta curta | Resposta aparece enquanto é gerada | ⏳ |
-| C2 | Conversa longa (40+ mensagens) | Sem lentidão perceptível (correção do Front) | ⏳ |
-| C3 | Fechar e reabrir o app | Histórico preservado | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
-| C4 | Importar um GGUF | Modelo aparece e responde | ⏳ |
+| C1 | Enviar pergunta curta | Resposta aparece enquanto é gerada | 🟡 PC 16/10 (130143f): ok com qwen2.5:3b (7,9 s), fora da lista aprovada; refazer com Qwen3.8 |
+| C2 | Conversa longa (40+ mensagens) | Sem lentidão perceptível (correção do Front) | ✅ PC 16/10 (130143f): 43 mensagens sem lentidão |
+| C3 | Fechar e reabrir o app | Histórico preservado | ✅ box (9506c28) + PC 16/10 (130143f) |
+| C4 | Importar um GGUF | Modelo aparece e responde | ✅ PC 16/10 (130143f): GGUF importado |
 
 ## 3. Trocas de modelo (prazo 20/10)
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| M1 | Selecionar Qwen3-30B-A3B e perguntar | Responde; anotar tempo do 1º token e tokens/s | ⏳ |
-| M2 | Trocar 30B → modelo pequeno → 30B | Sem erro, RAM liberada (ver Gerenciador de Tarefas) | ⏳ |
-| M3 | Trocar SD 1.5 ↔ FLUX.2 Klein na aba Imagem | Ambos geram; sem estouro de RAM | ⏳ |
-| M4 | Chat com 30B carregado + gerar imagem | Não trava; anotar uso de RAM | ⏳ |
+| M1 | Selecionar Qwen3-30B-A3B e perguntar | Responde; anotar tempo do 1º token e tokens/s | 🟡 PC 16/10 (130143f): 30B-A3B ~11 tok/s, fora da lista aprovada; refazer com Qwen3.8 |
+| M2 | Trocar 30B → modelo pequeno → 30B | Sem erro, RAM liberada (ver Gerenciador de Tarefas) | ✅ PC 16/10 (130143f) |
+| M3 | Trocar SD 1.5 ↔ FLUX.2 Klein na aba Imagem | Ambos geram; sem estouro de RAM | 🟡 PC 16/10 (130143f): txt2img 82 s, FLUX.2 504 s; refazer com Z-Image |
+| M4 | Chat com 30B carregado + gerar imagem | Não trava; anotar uso de RAM | ✅ PC 16/10 (130143f) |
 
 ## 4. Documentos
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
 | D0 | Abrir a 3.0 pela 1ª vez com os documentos da 2.x | Documentos antigos migrados e aparecendo (commit 6ee483e) | ✅ 15/10 sem dados: `%APPDATA%\IA_Off_v1\rag` não tem meta.json (0 documentos) e `C:\IA\dados\rag` vazio → cópia/migração é no-op (0 trechos). Consulta com índice temporário + Ollama `embeddinggemma-2:740m`: 0,07 s, citou `[1] manual_teste.txt (score 0.78)`. ⚠ `embed_model` do config (`nomic-embed-text`) não está instalado no Ollama do PC (404) |
-| D1 | Importar PDF, DOCX e TXT | Os três indexados | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
-| D2 | Perguntar algo de cada um | Resposta correta com citação da fonte | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
-| D3 | Reindexar após a busca vetorial do beck | Conclui; anotar tempo | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
+| D1 | Importar PDF, DOCX e TXT | Os três indexados | ✅ box (9506c28) + PC 16/10 (130143f) |
+| D2 | Perguntar algo de cada um | Resposta correta com citação da fonte | ❌ PC 16/10 (130143f): nenhuma fonte retornada (provável erro do script); passa no box |
+| D3 | Reindexar após a busca vetorial do beck | Conclui; anotar tempo | ❌ PC 16/10 (130143f): total=0 (provável erro do script); passa no box |
 | D4 | Mesmas perguntas de D2 com a busca nova | Respostas iguais ou melhores | ⏳ |
 
 ## 5. Imagem
 | ID | Passos | Esperado | Status |
 |---|---|---|---|
-| I1 | Texto → imagem com prompt em português | Tradução aplicada, imagem gerada | ⏳ |
-| I2 | Imagem → imagem, inpainting e edição por instrução | Os três funcionam | ⏳ |
-| I3 | Cada proporção e resoluções baixa/alta | Tamanho de saída correto | ⏳ |
-| I4 | Enfileirar 3 imagens | Rodam uma por vez, na ordem | ✅ box (test_sub2_cdi, 9506c28; dados falsos); PC pendente |
+| I1 | Texto → imagem com prompt em português | Tradução aplicada, imagem gerada | ✅ PC 16/10 (130143f): 40 s |
+| I2 | Imagem → imagem, inpainting e edição por instrução | Os três funcionam | ❌ PC 16/10 (130143f): script não passou init_image; refazer |
+| I3 | Cada proporção e resoluções baixa/alta | Tamanho de saída correto | ✅ PC 16/10 (130143f): as três proporções no tamanho certo |
+| I4 | Enfileirar 3 imagens | Rodam uma por vez, na ordem | ✅ box (9506c28) + PC 16/10 (130143f): 3 jobs em ordem |
 
 ## 5b. Ampliador
 | ID | Passos | Esperado | Status |
@@ -81,7 +81,7 @@ Ambiente: PC do Julio (i5-8365U, 32 GB, UHD 620), com a instalação feita pelo 
 | R1 | `rg -n -i 'C:\\\\|C:/' ia_off --glob '!config.py'` | Nenhum caminho fixo fora do `config.py` (15/10: ✅ limpo) | ✅ 16/10 (0a3000d): só a docstring do `rag.py` cita o padrão `C:\\IA\\dados\\rag` |
 | R2 | Conferir `OLLAMA_MODELS` e `HF_HOME` no PC | Apontam pra `C:\IA\modelos\ollama` e `\huggingface` | ✅ PC 16/10: OLLAMA_MODELS = C:\IA\modelos\ollama, HF_HOME = C:\IA\modelos\huggingface |
 | R3 | Índice de documentos após a busca vetorial | Gravado em `C:\IA\dados\rag` | ⏳ |
-| R4 | Abrir LivreStudio, EngenhariaIA e estudio_local | Continuam achando os modelos | 🟡 atalhos e pastas existem; falta abrir os três apps |
+| R4 | Abrir LivreStudio, EngenhariaIA e estudio_local | Continuam achando os modelos | ✅ PC 16/10 (130143f): LivreStudio e EngenhariaIA abrem; estudio_local acha os modelos |
 | R5 | `rg -n "OneDrive|C:\\\\" ia_off --glob "!config.py"` e conferir padrões de Wan/FLUX.2/Z-Image no `config.py` | Nenhum caminho de modelo fixo fora do `config.py`; padrões vêm de `C:\IA\modelos`/variáveis, sem OneDrive; o `config.json` do Julio continua achando os arquivos | ✅ (ac06c3a) |
 | R6 | Novos modelos (Qwen3.8 27B, Z-Image, Wan 2.2 5B) | Aparecem nos seletores sem caminho fixo, geram um teste, tempo registrado, moderador ligado/desligado ok | 🟡 Z-Image desligado 774 s e ligado 786 s; Qwen3.8 1,47 e 1,41 tok/s, ok com moderação desligada e ligada; Wan 2.2 V5 ok; falta motor/seletor video_modelo |
 
