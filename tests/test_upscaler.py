@@ -116,3 +116,74 @@ def test_na_fila_progresso_e_cancel(tmp_path):
     while not ev["can"] and time.time() - t < 10: app.processEvents(); time.sleep(0.01)
     assert ev["can"] == [j2]
     q.shutdown()
+
+
+# ---------------------------------------------------------------- ponta a ponta pela JobQueue
+class _Fake4x:
+    """Runner falso tipo ONNX (escala 4, conta chamadas, pode pausar)."""
+    scale = 4; name = "fake-onnx"
+    def __init__(self, gate=None):
+        self.calls = 0; self.gate = gate; self.first = threading.Event()
+    def __call__(self, x):
+        self.calls += 1; self.first.set()
+        if self.gate is not None: self.gate.wait(5)
+        return x.repeat(4, 2).repeat(4, 3)
+
+
+def _fila(monkeypatch, runner=None):
+    import time
+    app = QCoreApplication.instance() or QCoreApplication([])
+    monkeypatch.setattr(jq, "_cfg", lambda: {"queue_unload_ollama": False})
+    eng = (lambda p, op, cf: up.ampliar(p, op, cf, runner=runner)) if runner else up.ampliar
+    q = jq.JobQueue(engines={"ampliar": eng}, progress_interval=0)
+    ev = {"st": [], "prog": [], "ph": [], "fin": [], "fail": [], "can": []}
+    q.started.connect(lambda i: ev["st"].append(i))
+    q.progress.connect(lambda i, s, t, pct, eta: ev["prog"].append((s, t, pct)))
+    q.phase.connect(lambda i, f: ev["ph"].append(f))
+    q.finished.connect(lambda i, r: ev["fin"].append(r)); q.failed.connect(lambda i, e: ev["fail"].append(e))
+    q.cancelled.connect(lambda i: ev["can"].append(i))
+    def pump(cond, timeout=10):
+        t = time.time()
+        while not cond() and time.time() - t < timeout: app.processEvents(); time.sleep(0.005)
+        app.processEvents(); return cond()
+    return q, ev, pump
+
+
+def test_e2e_fila_modelo_falso_x4(tmp_path, monkeypatch):
+    src = tmp_path / "in.png"; Image.fromarray(rnd(40, 24)).save(src)
+    run = _Fake4x(); q, ev, pump = _fila(monkeypatch, run)
+    jid = q.enqueue("ampliar", {"entrada": str(src), "escala": 4, "tile": 16, "saida": str(tmp_path / "out")})
+    assert pump(lambda: ev["fin"] or ev["fail"]) and not ev["fail"]
+    out = ev["fin"][0]; assert out.endswith("_x4.png") and "_lanczos" not in out
+    with Image.open(out) as im:
+        assert im.size == (160, 96) and "real-esrgan (fake-onnx, modelo 4x)" in im.info["upscaler"]
+    n = len(up.tile_grid(40, 24, 16)); assert n == 6 and run.calls == n
+    assert [s for s, t, _ in ev["prog"]] == list(range(1, n + 1)) and all(t == n for _, t, _ in ev["prog"])
+    assert ev["prog"][-1][2] == 100.0 and ev["ph"] == [] and ev["st"] == [jid]
+    assert q.get(jid)["estado"] == "concluida"; q.shutdown()
+
+
+def test_e2e_fila_cancel_entre_blocos(tmp_path, monkeypatch):
+    src = tmp_path / "in.png"; Image.fromarray(rnd(64, 64)).save(src)
+    gate = threading.Event(); run = _Fake4x(gate); q, ev, pump = _fila(monkeypatch, run)
+    out = tmp_path / "out"
+    jid = q.enqueue("ampliar", {"entrada": str(src), "tile": 16, "saida": str(out)})  # 16 blocos
+    assert run.first.wait(5); q.cancel(jid); gate.set()
+    assert pump(lambda: ev["can"]) and not ev["fin"] and not ev["fail"]
+    assert run.calls == 1 and q.get(jid)["estado"] == "cancelada"
+    pump(lambda: False, 0.1); assert not ev["prog"]  # nada de progresso após cancelar
+    assert not out.exists() or not list(out.iterdir())
+    q.shutdown()
+
+
+def test_e2e_fila_sem_modelo_lanczos(tmp_path, monkeypatch):
+    src = tmp_path / "in.png"; Image.fromarray(rnd(30, 20)).save(src)
+    q, ev, pump = _fila(monkeypatch)
+    q.enqueue("ampliar", {"entrada": str(src), "escala": 4, "saida": str(tmp_path),
+                          "cfg_override": {"upscale_model": str(tmp_path / "nao_existe.onnx"), "upscale_backend": "auto"}})
+    assert pump(lambda: ev["fin"] or ev["fail"]) and not ev["fail"]
+    out = ev["fin"][0]; assert out.endswith("_x4_lanczos.png")
+    with Image.open(out) as im:
+        assert im.size == (120, 80) and im.info["upscaler"].startswith("lanczos (fallback: ")
+    assert up.ULTIMO_FALLBACK[0] and [(s, t) for s, t, _ in ev["prog"]] == [(1, 1)] and ev["ph"] == []
+    q.shutdown()
