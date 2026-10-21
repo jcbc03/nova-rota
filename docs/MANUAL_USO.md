@@ -53,7 +53,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 
 ## 7. Fila de tarefas
 Imagem, vídeo, ampliar e voz passam por uma fila que roda uma tarefa pesada por vez, porque a CPU não aguenta duas ao mesmo tempo. Estados: **na fila**, **rodando**, **concluída**, **falhou** ou **cancelada**.
-- Antes de vídeo, imagem ou ampliar, a fila tira o modelo do chat da memória pra sobrar RAM. Se tiver uma resposta do chat em andamento, ela espera até 2 min e, se o chat não terminar, segue sem tirar nada, então a conversa nunca é cortada. Dá pra desligar com `queue_unload_ollama` em Configurações. Depois disso, a próxima mensagem do chat demora um pouco mais, porque o modelo carrega de novo.
+- Antes de vídeo, imagem ou ampliar, a fila tira o modelo do chat da memória pra sobrar RAM. Se tiver uma resposta do chat em andamento, ela espera até 2 min e, se o chat não terminar, segue sem tirar nada, então a conversa nunca é cortada. Dá pra desligar pondo `"queue_unload_ollama": false` no `config.json`. Depois disso, a próxima mensagem do chat demora um pouco mais, porque o modelo carrega de novo.
 
 ## 8. Configurações
 - Caminho do Ollama, threads, contexto, temperatura, prompt de sistema e modelo de tradução.
