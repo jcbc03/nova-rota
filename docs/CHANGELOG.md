@@ -43,7 +43,7 @@
 ### Em andamento
 - Revisão final antes da entrega de 30/10.
 - Aba Vídeo: o FPS segue o modelo escolhido, 24 no Wan 2.2 e 16 no 2.1. Antes a tela mandava sempre 16 (front `132ee82`, no main, ainda não instalado).
-- Robustez: 7 erros que passavam calados agora vão pro log (fila, senha corrompida no moderador, queda do FAISS pro numpy no RAG), sem mudar comportamento. `FILA_API.md` e `MODERADOR_API.md` fechados na v3.0. Suíte 178 ok e 3 skips (beck `a0c24cd`, aguardando push).
+- Robustez: 7 erros que passavam calados agora vão pro log (fila, senha corrompida no moderador, queda do FAISS pro numpy no RAG), sem mudar comportamento. `FILA_API.md` e `MODERADOR_API.md` fechados na v3.0. Suíte 178 ok e 3 skips (beck `725295b`, no main desde 16/10 às 18h03, ainda não instalado).
 - Conferido na tela: aviso do Lanczos (U3) e seletor Wan 2.1/2.2 (front). V4: as correções do Cancelar estão instaladas e os 21 testes passam, mas falta um Cancelar real na tela do PC (sub2 `4c86d2f`).
 
 ## 2.3.1 (15/10/2026)

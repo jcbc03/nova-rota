@@ -16,6 +16,11 @@ Versão no PC: `4c6d743`, instalada em 16/10 às 15h50. Backup em `C:\IA\backup\
 - Não aparece mais um passo falso depois de Cancelar.
 - A prioridade alta do modo turbo agora funciona no Windows 64-bit.
 
+## Já no GitHub, ainda não instalado no PC
+- FPS da aba Vídeo segue o modelo: 24 no Wan 2.2 e 16 no 2.1. Antes a tela mandava sempre 16 (`132ee82`).
+- Erros que passavam calados na fila, no moderador e no RAG agora vão pro log, sem mudar o comportamento (`725295b`, suíte 178 ok e 3 skips).
+- Vão pro PC juntos, com backup, depois da correção do negativo vazio do Wan e da suíte limpa.
+
 ## Limites conhecidos
 - O vídeo é lento neste PC. O menor teste (5 quadros, 2 passos) leva ~12 min, quase 9 deles decodificando, e um de 17 quadros com 20 passos leva ~68 min.
 - Z-Image a 768 px passa de 30 min.

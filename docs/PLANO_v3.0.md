@@ -87,5 +87,5 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - SE4 e menu da aba Vídeo aprovados no fim da tarde, e temporários apagados com o ok do Julio. Depende do Julio: S3 (o firewall exige administrador), o diálogo "Alterar filtro…" na tela (MO5, SE1) e trocar a senha temporária.
 - Falha "????" do negativo do Wan fechada, não é bug: o sd-cli recebe o texto sem acento de propósito, o .txt guarda o original em UTF-8, e os "?" são marcas do log de tokens do sd-cli (ia_off). Ponta nova pra amanhã: com negativo vazio, o .txt grava `negative:` em branco, mas o sd-cli usa o negativo padrão (ia_off, `sdcpp.py`).
 - V4: correções do Cancelar instaladas e 21 testes ok; falta um Cancelar real na tela, na próxima liberação do PC.
-- Robustez do beck (`a0c24cd`): suíte 178 ok, aguardando push. FPS da aba Vídeo (`132ee82`) no main, não instalado.
+- Robustez do beck: subiu como `725295b` (suíte 178 ok), não instalado. FPS da aba Vídeo (`132ee82`) no main, não instalado.
 - Próximo: etapa 4 (robustez e polimento) e versão candidata 3.0 (`docs/NOTAS_3.0_RC.md`).
