@@ -166,14 +166,14 @@ def test_ollama_down_tolerated(app, monkeypatch):
     calls = []; _fake_ollama(monkeypatch, calls, down=True)
     assert "finished" in _run_one(app, "ampliar") and len(calls) == 1
 
-def test_unload_off_by_default(app, monkeypatch):
+def test_unload_on_by_default(app, monkeypatch):
     calls = []
     def urlopen(req, timeout=None):
         calls.append(req); return _Resp()
     monkeypatch.setattr(jq.urllib.request, "urlopen", urlopen)
-    monkeypatch.setattr(jq, "_cfg", lambda: {"ollama_url": "http://h:1"})
+    monkeypatch.setattr(jq, "_cfg", lambda: {"ollama_url": "http://h:1"})  # chave ausente = padrão True
     _run_one(app, "video")
-    assert calls == []
+    assert calls  # consultou /api/ps
 
 
 # ---------- proteção do chat em andamento ----------
@@ -230,7 +230,7 @@ def test_cancel_durante_espera(app, monkeypatch, chat_limpo):
 def test_chat_ativo_sem_unload_padrao_intocado(app, monkeypatch, chat_limpo):
     calls = []
     monkeypatch.setattr(jq.urllib.request, "urlopen", lambda *a, **k: calls.append(a))
-    monkeypatch.setattr(jq, "_cfg", lambda: {"ollama_url": "http://h:1"})
+    monkeypatch.setattr(jq, "_cfg", lambda: {"ollama_url": "http://h:1", "queue_unload_ollama": False})
     with jq.chat_em_andamento():
         t0 = time.time(); names = _run_one(app, "video")
     assert "finished" in names and calls == [] and time.time() - t0 < 2
@@ -295,3 +295,47 @@ def test_excecao_apos_cancel_logada(app, caplog):
     assert q.get(a)["estado"] == "cancelada"
     assert any("descartada" in r.getMessage() for r in caplog.records)
     q.shutdown()
+
+
+# ---------- descarga do Ollama ligada por padrão (config) ----------
+def test_unload_video_sem_chat(app, monkeypatch, chat_limpo):
+    calls = []; _fake_ollama(monkeypatch, calls)
+    assert "finished" in _run_one(app, "video")
+    assert calls and calls[0][0] == "http://h:1/api/ps"
+
+
+@pytest.mark.parametrize("tipo", ["chat", "transcrever", "falar", "rag"])
+def test_sem_unload_fora_da_lista(app, monkeypatch, tipo):
+    calls = []; _fake_ollama(monkeypatch, calls)
+    assert "finished" in _run_one(app, tipo) and calls == []
+
+
+def test_chat_ativo_espera_curta_pula(app, monkeypatch, chat_limpo, caplog):
+    import logging
+    calls = []; _fake_ollama(monkeypatch, calls, cfg={"queue_unload_wait_s": 0.2})
+    with jq.chat_em_andamento(), caplog.at_level(logging.WARNING, logger="ia_off.job_queue"):
+        names = _run_one(app, "imagem")
+    assert "finished" in names and calls == []
+    assert any("pulada" in r.getMessage() for r in caplog.records)
+
+
+def test_unload_excecao_tarefa_conclui(app, monkeypatch, chat_limpo):
+    def boom(*a, **k): raise RuntimeError("falha inesperada")
+    monkeypatch.setattr(jq, "_cfg", lambda: {"queue_unload_ollama": True})
+    monkeypatch.setattr(jq, "unload_ollama_models", boom)
+    assert "finished" in _run_one(app, "video")
+
+
+def test_padroes_consistentes():
+    from ia_off import config
+    assert config.DEFAULTS["queue_unload_ollama"] is jq.UNLOAD_ENABLED is True
+    assert tuple(config.DEFAULTS["queue_unload_types"]) == jq.DEFAULT_UNLOAD_TYPES
+    assert float(config.DEFAULTS["queue_unload_wait_s"]) == jq.UNLOAD_WAIT_S
+
+
+@pytest.mark.parametrize("val,esp", [("0", False), ("1", True), ("false", False), ("TRUE", True),
+                                     (" False ", False), ("", True), ("xyz", True)])
+def test_env_queue_unload(monkeypatch, val, esp):
+    from ia_off import config
+    monkeypatch.setenv("IA_OFF_QUEUE_UNLOAD_OLLAMA", val)
+    assert config._env_bool("IA_OFF_QUEUE_UNLOAD_OLLAMA", True) is esp

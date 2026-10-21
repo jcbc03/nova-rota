@@ -31,6 +31,7 @@ _log = logging.getLogger(__name__)
 # Antes destes tipos, a fila descarrega os modelos do Ollama para liberar RAM (config: queue_unload_*).
 DEFAULT_UNLOAD_TYPES = ("video", "imagem", "ampliar")
 UNLOAD_TIMEOUT_S = 3.0
+UNLOAD_ENABLED = True  # padrão de queue_unload_ollama (igual a config.DEFAULTS)
 UNLOAD_WAIT_S = 120.0   # padrão de queue_unload_wait_s
 CHAT_POLL_S = 0.1
 
@@ -298,7 +299,7 @@ class JobQueue(QObject):
         """Gancho antes do motor (na thread de trabalho). Nunca falha a tarefa."""
         try:
             cfg = _cfg()
-            if not cfg.get("queue_unload_ollama", False):
+            if not cfg.get("queue_unload_ollama", UNLOAD_ENABLED):
                 return
             tipos = cfg.get("queue_unload_types")
             tipos = set(DEFAULT_UNLOAD_TYPES if tipos is None else tipos)

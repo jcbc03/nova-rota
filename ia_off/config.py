@@ -10,6 +10,15 @@ DADOS_DIR = os.environ.get("IA_OFF_DADOS_DIR") or r"C:\IA\dados"
 MODELOS_DIR = os.environ.get("IA_OFF_MODELOS_DIR") or r"C:\IA\modelos"
 _M = lambda *p: os.path.join(MODELOS_DIR, *p)
 
+
+def _env_bool(nome, padrao):
+    """Lê env booleana (0/1/false/true/no/yes/off/on, sem diferenciar maiúsculas); inválida/vazia = padrão."""
+    v = (os.environ.get(nome) or "").strip().lower()
+    if v in ("1", "true", "yes", "on", "sim"): return True
+    if v in ("0", "false", "no", "off", "nao", "não"): return False
+    return padrao
+
+
 DEFAULTS = {
     "ollama_url": "http://localhost:11434",
     "ollama_exe": os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "Ollama", "ollama.exe"),
@@ -65,6 +74,9 @@ DEFAULTS = {
     # --- runtime_dlls.py: pasta extra com vcomp140.dll (MSVC OpenMP) p/ sd-cli; vazio = busca automática; env IA_OFF_VCRUNTIME_DIR sobrepõe ---
     "vcruntime_dir": os.environ.get("IA_OFF_VCRUNTIME_DIR") or "",
     # --- Fila (job_queue.py): com chat em andamento, espera até N s antes de descarregar o Ollama; depois pula a descarga ---
+    # Descarga do Ollama antes de tarefas pesadas (segura: nunca com chat ativo); env IA_OFF_QUEUE_UNLOAD_OLLAMA=0/1 sobrepõe
+    "queue_unload_ollama": _env_bool("IA_OFF_QUEUE_UNLOAD_OLLAMA", True),
+    "queue_unload_types": ["video", "imagem", "ampliar"],
     "queue_unload_wait_s": 120,
 }
 

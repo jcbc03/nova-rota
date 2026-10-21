@@ -28,7 +28,7 @@ Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
   sinais já enfileirados); nunca sai `progress` após `cancelled`/`finished`/`failed`.
 - `shutdown(wait=True, timeout=None)`: cancela tudo e para o worker — chamar no `closeEvent`/`aboutToQuit`.
 - **Libera RAM antes de tarefas pesadas**: no worker, logo após `started(id)` e antes do motor, se o tipo está em
-  `queue_unload_types` (padrão `["video", "imagem", "ampliar"]`) e `queue_unload_ollama` (padrão `false`), a fila faz
+  `queue_unload_types` (padrão `["video", "imagem", "ampliar"]`) e `queue_unload_ollama` (padrão `true` em `config.DEFAULTS`; env `IA_OFF_QUEUE_UNLOAD_OLLAMA=0|1|false|true`), a fila faz
   `GET {ollama_url}/api/ps` e, para cada modelo carregado, `POST /api/generate {"model": nome, "keep_alive": 0}`
   (embedding: `POST /api/embed {..., "keep_alive": 0}`). Timeout 3 s por chamada; Ollama desligado/erro só vai pro log, nunca
   falha a tarefa. Nenhum sinal novo (API compatível). Função avulsa: `job_queue.unload_ollama_models(host) -> [nomes]`.
@@ -127,10 +127,13 @@ Etapas sem passos depois do último passo (`"decodificando"`, `"salvando"`, `"co
   e exceção do motor vira `cancelled` (não `failed`) — registrada em nível INFO no log `ia_off.job_queue`.
 - `cancel` de tarefa já terminada/inexistente -> `False`. `shutdown()` cancela tudo; `enqueue` depois dele -> `RuntimeError`.
 
-## Config (config.py)
+## Config (config.py, `DEFAULTS`; o código da fila usa os mesmos padrões se a chave faltar)
+Por que é seguro ligado por padrão: nunca descarrega com chat ativo (espera até `queue_unload_wait_s` e, no timeout,
+PULA a descarga com WARNING e roda a tarefa); só tipos de `queue_unload_types` (chat, voz, RAG nunca disparam);
+Ollama fora do ar ou erro na descarga só vai pro log, a tarefa segue; o chat recarrega o modelo na próxima mensagem.
 | chave | padrão | descrição |
 |---|---|---|
-| `queue_unload_ollama` | `false` | descarrega o Ollama antes de tarefas pesadas |
+| `queue_unload_ollama` | `true` (env `IA_OFF_QUEUE_UNLOAD_OLLAMA`) | descarrega o Ollama antes de tarefas pesadas |
 | `queue_unload_types` | `["video","imagem","ampliar"]` | tipos que disparam a descarga |
 | `queue_unload_wait_s` | `120` | espera máxima pelo fim do chat antes de pular a descarga |
 | `ollama_url` | `http://localhost:11434` | host do Ollama |
