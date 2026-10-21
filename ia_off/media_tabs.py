@@ -167,6 +167,10 @@ class QueueClient:
         if getattr(self, "fila", None) is None:
             raise RuntimeError("Fila de tarefas indisponível.")
         jid = self.fila.enqueue(tipo, params); self._jobs.add(jid); self.qid = jid
+        cfo = params.get("cfg_override") or {}
+        mod = cfo.get("video_modelo", "") if tipo == "video" else params.get("modo", "")
+        un = int(params.get("width") or 0) * int(params.get("height") or 0) * max(1, int(params.get("frames") or 1))
+        self.__dict__.setdefault("_dec_info", {})[jid] = {"chave": f"decode_rate_{tipo}_{mod}".rstrip("_"), "un": un}
         self.gen_btn.setEnabled(False); self.cancel_btn.setEnabled(True)
         self.bar.setRange(0, 0); self.bar.setFormat("Na fila…"); self.status.showMessage("Tarefa na fila…")
         return jid
@@ -186,12 +190,49 @@ class QueueClient:
 
     def _q_phase(self, jid, fase):
         if not self._mine(jid) or jid in getattr(self, "_cancelando", ()): return
-        txt = {"decodificando": "Decodificando…", "salvando": "Salvando vídeo…", "convertendo": "Convertendo para MP4…"}.get(fase, fase)
-        self.bar.setRange(0, 0); self.bar.setFormat(txt); self.status.showMessage(txt)
+        txt = {"decodificando": "Decodificando…", "salvando": "Salvando…", "convertendo": "Convertendo para MP4…"}.get(fase, fase)
+        info = getattr(self, "_dec_info", {}).get(jid)
+        if info is not None:
+            if fase == "decodificando":
+                info["t0"] = time.monotonic(); self._dec_jid = jid
+                rate = (self.cfg() or {}).get(info["chave"])
+                info["est"] = rate * info["un"] if rate and info["un"] else None
+                self._dec_timer().start()
+            elif "t0" in info and "dur" not in info:
+                info["dur"] = time.monotonic() - info["t0"]; self._save_decode_rate(info)
+        if fase != "decodificando": self._dec_timer().stop()
+        self._dec_txt = txt
+        self.bar.setRange(0, 0); self._show_decode() if fase == "decodificando" else (self.bar.setFormat(txt), self.status.showMessage(txt))
         lg = getattr(self, "log", None)
         if lg is not None: lg.appendPlainText(f"[fase] {txt}")
 
+    def _dec_timer(self):
+        t = getattr(self, "_dtimer", None)
+        if t is None:
+            from PySide6.QtCore import QTimer
+            t = self._dtimer = QTimer(self); t.setInterval(1000); t.timeout.connect(self._show_decode)
+        return t
+
+    def _show_decode(self):
+        info = getattr(self, "_dec_info", {}).get(getattr(self, "_dec_jid", None))
+        if not info or "t0" not in info: return
+        el = time.monotonic() - info["t0"]; est = info.get("est")
+        if est: txt = f"Decodificando… {fmt_eta(el)} de ~{fmt_eta(est)}" + (f" · falta ~{fmt_eta(est - el)}" if est > el else " · quase lá")
+        else: txt = f"Decodificando… {fmt_eta(el)} (a primeira vez não tem estimativa; pode levar vários minutos)"
+        self.bar.setFormat(txt); self.status.showMessage(txt)
+
+    def _save_decode_rate(self, info):
+        if not info.get("un") or info.get("dur", 0) <= 0: return
+        rate = info["dur"] / info["un"]; old = (self.cfg() or {}).get(info["chave"])
+        rate = rate if not old else 0.5 * old + 0.5 * rate  # média móvel simples
+        cs = getattr(self, "cfg_set", None)
+        if callable(cs): cs(**{info["chave"]: rate})
+
     def _q_end(self, jid):
+        info = getattr(self, "_dec_info", {}).pop(jid, None)
+        if info and "t0" in info and "dur" not in info and jid not in getattr(self, "_cancelando", ()):
+            info["dur"] = time.monotonic() - info["t0"]; self._save_decode_rate(info)
+        if getattr(self, "_dec_jid", None) == jid: self._dec_timer().stop(); self._dec_jid = None
         self._jobs.discard(jid); getattr(self, "_cancelando", set()).discard(jid)
         if getattr(self, "qid", None) == jid: self.qid = None
         if not self._jobs:
@@ -206,6 +247,7 @@ class QueueClient:
         self._q_end(jid); self.bar.setValue(0); self.status.showMessage(err, 8000)
         if err != "Cancelado.":
             blk = "bloque" in err.lower() or "PromptBloqueado" in err
+            if blk: err += "\n\nNenhum modelo foi carregado e nada foi gerado.\nPara mudar o nível ou desligar: Configurações > Moderação > \"Alterar filtro…\" (pede a senha)."
             QMessageBox.warning(self, "Prompt bloqueado pela moderação" if blk else "Erro na geração", err)
 
     def _q_cancelled(self, jid):
@@ -223,6 +265,7 @@ class ImageTab(QueueClient, QWidget):
     def __init__(self, cfg_getter, status, cfg_set=lambda **kw: None):
         super().__init__(); self.cfg = cfg_getter; self.status = status; self.engine = None; self.job = None
         self.init_image = None
+        self.cfg_set = cfg_set
         root = QHBoxLayout(self); sp = QSplitter(); root.addWidget(sp)
         left = QWidget(); f = QFormLayout(left)
         self.mode = QComboBox(); [self.mode.addItem(t, k) for k, t in MODES]; self.mode.currentIndexChanged.connect(self._mode_changed)

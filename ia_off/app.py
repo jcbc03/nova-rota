@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
         if mod.ativa(self.cfg):
             try: mod.checar_prompt(text, "chat", self.cfg)
             except mod.PromptBloqueado as e:
-                QMessageBox.warning(self, "Prompt bloqueado pela moderação", e.motivo); return
+                QMessageBox.warning(self, "Prompt bloqueado pela moderação", e.motivo + "\n\nNada foi enviado ao modelo nem salvo no histórico; o texto continua na caixa.\nPara mudar o nível ou desligar: Configurações > Moderação > \"Alterar filtro…\" (pede a senha)."); return
             extra = mod.instrucoes_chat(self.cfg)
             if extra: sys_prompt = sys_prompt + "\n" + extra
         if not self.conv_id:
