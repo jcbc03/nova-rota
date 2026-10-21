@@ -1,6 +1,7 @@
 import os, sys, html, traceback
 import markdown as md
 from PySide6.QtCore import Qt, QThread, Signal, QObject, QTimer
+from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget, QVBoxLayout, QHBoxLayout,
     QListWidget, QListWidgetItem, QTextBrowser, QPlainTextEdit, QPushButton, QComboBox, QLabel, QLineEdit,
     QSpinBox, QDoubleSpinBox, QFormLayout, QFileDialog, QMessageBox, QInputDialog, QSplitter, QDialog,
@@ -51,6 +52,20 @@ def run_bg(owner, fn, on_chunk=None, on_done=None, on_error=None):
     j = Job(fn, owner, on_chunk=on_chunk, on_done=lambda r: on_done and on_done(r if r is not None else ""),
             on_error=on_error or (lambda m: QMessageBox.warning(owner, "Erro", m)))
     j.start(); return j
+
+def fit_history(sys_prompt, hist, num_ctx, chars_por_token=3.5, reserva=0.30):
+    """Mantém o system + as mensagens mais recentes que cabem em ~70% do num_ctx (o resto fica pra resposta).
+    Reenviar o histórico inteiro deixa cada envio mais lento numa conversa longa (o Ollama corta o excesso
+    de qualquer jeito). Retorna (msgs, quantas antigas ficaram de fora). A última mensagem sempre vai."""
+    orc = int(num_ctx * (1 - reserva) * chars_por_token) - len(sys_prompt)
+    keep, tot = [], 0
+    for m in reversed(hist):
+        n = len(m.get("content", "")) + 16
+        if keep and tot + n > orc: break
+        keep.append(m); tot += n
+    keep.reverse()
+    return [{"role": "system", "content": sys_prompt}] + keep, len(hist) - len(keep)
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -192,12 +207,23 @@ class MainWindow(QMainWindow):
                 who = "<b class='u'>Você</b>" if m["role"] == "user" else "<b class='a'>IA</b>"
                 out.append(f"<p>{who}</p>{md_html(m['content'])}<hr>")
             self._hist_html = "".join(out); self._hist_cid = self.conv_id
+        if partial is not None and getattr(self, "_tail_cid", None) == self.conv_id and self._tail_pos is not None:
+            # streaming: troca só o trecho da resposta em andamento, sem refazer o layout do histórico
+            sb = self.view.verticalScrollBar(); at_end = sb.value() >= sb.maximum() - 40
+            cur = QTextCursor(self.view.document()); cur.setPosition(self._tail_pos)
+            cur.movePosition(QTextCursor.End, QTextCursor.KeepAnchor); cur.removeSelectedText()
+            cur.insertHtml(f"<p><b class='a'>IA</b> <i>(gerando…)</i></p>{md_html(partial)}")
+            if at_end: sb.setValue(sb.maximum())
+            return
         html_ = self._hist_html
-        if partial is not None:
-            html_ += f"<p><b class='a'>IA</b> <i>(gerando…)</i></p>{md_html(partial)}"
         sb = self.view.verticalScrollBar()
         at_end = partial is None or sb.value() >= sb.maximum() - 40
         self.view.setHtml(html_)
+        self._tail_cid = None; self._tail_pos = None
+        if partial is not None:
+            cur = QTextCursor(self.view.document()); cur.movePosition(QTextCursor.End)
+            self._tail_pos = cur.position(); self._tail_cid = self.conv_id
+            cur.insertHtml(f"<p><b class='a'>IA</b> <i>(gerando…)</i></p>{md_html(partial)}")
         if at_end: sb.setValue(sb.maximum())
 
     def _schedule_render(self):
@@ -226,7 +252,9 @@ class MainWindow(QMainWindow):
         elif not self.db.messages(self.conv_id):
             self.db.rename(self.conv_id, text[:40]); self.reload_convs()
         self.db.add_msg(self.conv_id, "user", text); self.input.clear()
-        msgs = [{"role": "system", "content": sys_prompt}] + self.db.messages(self.conv_id)
+        msgs, cortadas = fit_history(sys_prompt, self.db.messages(self.conv_id), self.cfg.get("num_ctx", 4096))
+        if cortadas: self.status.showMessage(f"Conversa longa: enviando só as últimas {len(msgs) - 1} mensagens "
+                                             f"({cortadas} antigas ficam fora do contexto de {self.cfg.get('num_ctx', 4096)} tokens).", 8000)
         self.cfg["model"] = model; config.save(self.cfg)
         self.answer = ""; self._hist_cid = None; self.render("")
         cid = self.conv_id
