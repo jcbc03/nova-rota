@@ -1,3 +1,4 @@
+import unittest
 import os, threading, logging
 from ia_off import sdcpp, engines_registry as er, perf
 
@@ -44,3 +45,18 @@ def test_gerar_video_wan22(tmp_path, monkeypatch):
     assert a[a.index("--fps") + 1] == "24" and seen["fps"] == 24
     assert a[a.index("--cfg-scale") + 1] == "6.0" and a[a.index("--flow-shift") + 1] == "3.0"
     assert a[a.index("--sampling-method") + 1] == "euler"
+
+
+class TestSidecarNegativoVazio(unittest.TestCase):
+    def test_sidecar_grava_negativo_padrao(self):
+        import tempfile, pathlib
+        from unittest import mock
+        from ia_off import engines_registry as er, sdcpp
+        with tempfile.TemporaryDirectory() as d:
+            with mock.patch.object(er, "_cfg", return_value={"video_modelo": "wan21"}), \
+                 mock.patch.object(er, "_require"), mock.patch.object(er, "_out_dir", return_value=pathlib.Path(d)), \
+                 mock.patch.object(sdcpp, "run_with_fallback", side_effect=RuntimeError("stop")):
+                with self.assertRaises(RuntimeError):
+                    er.gerar_video({"prompt": "gato", "negative": ""}, lambda *a: None, None)
+            txt = next(pathlib.Path(d).glob("*.txt")).read_text(encoding="utf-8")
+            self.assertIn("negative: " + sdcpp.WAN_NEG, txt)

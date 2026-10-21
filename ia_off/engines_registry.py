@@ -161,7 +161,7 @@ def gerar_video(params, on_progress, cancel_flag):
     w, h = int(p.get("width", 480)), int(p.get("height", 272))
     frames, steps = sdcpp.wan_frames(p.get("frames", 17)), int(p.get("steps", d.get("steps", 20)))
     cfgs, fps, seed = float(p.get("cfg_scale", d.get("cfg_scale", 6.0))), int(p.get("fps", d.get("fps", 16))), _seed(p.get("seed"))
-    neg = p.get("negative", ""); stem = f"{time.strftime('%Y%m%d_%H%M%S')}_wan_{seed}"
+    neg = str(p.get("negative") or "").strip() or sdcpp.WAN_NEG; stem = f"{time.strftime('%Y%m%d_%H%M%S')}_wan_{seed}"
     avi = out / f"{stem}.avi"
     (out / f"{stem}.txt").write_text(f"prompt: {prompt}\nnegative: {neg}\nseed: {seed}\nsize: {w}x{h}\n"
                                      f"modelo: {modelo}\nframes: {frames}\nsteps: {steps}\ncfg: {cfgs}\nfps: {fps}\n", encoding="utf-8")
