@@ -44,6 +44,10 @@
 - Revisão final antes da entrega de 30/10.
 - Aba Vídeo: o FPS segue o modelo escolhido, 24 no Wan 2.2 e 16 no 2.1. Antes a tela mandava sempre 16 (front `132ee82`, no main, ainda não instalado).
 - Robustez: 7 erros que passavam calados agora vão pro log (fila, senha corrompida no moderador, queda do FAISS pro numpy no RAG), sem mudar comportamento. `FILA_API.md` e `MODERADOR_API.md` fechados na v3.0. Suíte 178 ok e 3 skips (beck `725295b`, no main desde 16/10 às 18h03, ainda não instalado).
+- Wan: com o negativo vazio, o .txt agora grava o negativo padrão, que é o que o sd-cli recebe de fato (ia_off `7fe5e0c`, com teste).
+- Fila: descarrega o Ollama antes de vídeo, imagem e ampliar, ligado por padrão (`queue_unload_ollama`, `queue_unload_types`, env `IA_OFF_QUEUE_UNLOAD_OLLAMA=0/1`). Nunca descarrega com chat rodando: espera até `queue_unload_wait_s` e, se passar, pula e avisa no log (beck `33a0518`, suíte 190 ok).
+- Etapa 4: "Decodificando…" mostra o tempo decorrido e a estimativa do que falta, aprendida por modelo (`decode_rate_<tipo>_<modelo>`). Na primeira geração de cada modelo ainda não há estimativa. Textos de bloqueio do moderador mais claros, dizendo que nada foi enviado nem salvo e onde mudar o filtro (front `6e042b3`).
+- Esses três estão no main e aguardam a P2 do sub2 antes de ir pro PC.
 - Conferido na tela: aviso do Lanczos (U3) e seletor Wan 2.1/2.2 (front). V4: as correções do Cancelar estão instaladas e os 21 testes passam, mas falta um Cancelar real na tela do PC (sub2 `4c86d2f`).
 
 ## 2.3.1 (15/10/2026)
