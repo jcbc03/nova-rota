@@ -118,7 +118,7 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | E10 | Textos de bloqueio do moderador (com ele ligado) no Chat, Imagem, Vídeo e Falar | Mostra o motivo, diz que nada foi enviado nem salvo, o texto fica na caixa e aponta pra Configurações > Moderação > "Alterar filtro…". Depois, desligar a moderação | 🟡 PC 21/10 (dda8128, sem tela, moderação ligada só em memória): Chat, Imagem, Vídeo e Falar bloqueiam com motivo e caminho do filtro, sem chamar motor; Chat não grava e mantém o texto. Abas de mídia: aparece o prefixo técnico "PromptBloqueado: " e falta dizer que nada foi salvo e o texto continua na caixa (Front). Clique real fica pro Julio |
 | E11 | Robustez (725295b): forçar falha de um job (modelo ausente via cfg_override) | O erro aparece no log, e nada fica calado | ✅ PC 21/10: ERROR "tarefa job-1 (video) falhou: FileNotFoundError" com traceback; o job seguinte terminou normal (falha via exceção do motor falso, mesmo caminho da fila) |
 | E12 | Conversa longa com 200+ mensagens (depois da entrega do Front) | Rolar e mandar mensagem sem travar. Anotar o tempo de abrir a conversa | ✅ PC 22/10 (a7b20a3, envio real ao Ollama e rolagem real): conversa de 250 msgs abre em 337 ms; 50 passos de rolagem em 84 ms; fit_history manteve 29 e cortou 221, com aviso na barra; 1º pedaço em 79 s, fim em 82 s; redesenho com mediana 2 ms e máximo 281 ms; resposta salva |
-| E13 | Barra de progresso e Cancelar em todas as abas (depois do Front) | Toda aba mostra progresso e cancela sem travar | ❌ PC 22/10: Vídeo cancela em 249 ms e Imagem em 1,1 s (mas segue mostrando "Carregando modelo…"); Voz (Falar e Transcrever) com o Cancelar desabilitado e o job vai até o fim; barra da Voz em escala 5/100 ("2 de 40 frase(s)") |
+| E13 | Barra de progresso e Cancelar em todas as abas (depois do Front) | Toda aba mostra progresso e cancela sem travar | ❌ PC 22/10: Vídeo cancela em 249 ms e Imagem em 1,1 s (mas segue mostrando "Carregando modelo…"); Voz (Falar e Transcrever) com o Cancelar desabilitado e o job vai até o fim; barra da Voz em escala 5/100 ("2 de 40 frase(s)") → ✅ PC 22/10 (70ea8b5): Voz (Falar e Transcrever) com Cancelar habilitado, barra 4/40, cancela em 251 ms e termina como "cancelada"; Imagem mostra "Cancelando…" e cancela em 1,1 s; Vídeo em 256 ms; Chat para o streaming real em 477 ms. Cosmético: a Transcrição ainda diz "frase(s)" |
 | E14 | P2 + R5 no hash final | Suíte verde e nenhum caminho fixo fora do config.py | ⏳ |
 
 ## Registro de falhas
@@ -133,8 +133,8 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
 | 16/10 | V8 | 3.0 | Negativo vazio: .txt grava "negative:" em branco, mas o sd-cli recebe o negativo padrão do Wan | ia_off (sdcpp) | aberto (amanhã) |
 | 21/10 | E10 | 3.0 | Abas de mídia: mensagem de bloqueio mostra "PromptBloqueado: " e não diz que nada foi salvo / texto fica na caixa | beck (fila) + DEV Front (media_tabs) | corrigido em 17a1827 + 4692dc5 (falta instalar) |
-| 22/10 | E13 | 3.0 | Voz (Falar e Transcrever): Cancelar desabilitado, job roda até o fim; barra em escala diferente das outras abas | DEV Front / beck | aberto |
-| 22/10 | E13 | 3.0 | Imagem: depois de cancelar, ainda mostra "Carregando modelo…" | DEV Front | aberto |
+| 22/10 | E13 | 3.0 | Voz (Falar e Transcrever): Cancelar desabilitado, job roda até o fim; barra em escala diferente das outras abas | DEV Front / beck | corrigido em b16b394 + 30a9629, instalado 70ea8b5 ✅ |
+| 22/10 | E13 | 3.0 | Imagem: depois de cancelar, ainda mostra "Carregando modelo…" | DEV Front | corrigido em b16b394 + 30a9629, instalado 70ea8b5 ✅ |
 
 
 ## Checklist do Julio
