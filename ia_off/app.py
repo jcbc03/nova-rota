@@ -323,7 +323,9 @@ class MainWindow(QMainWindow):
         qh = QHBoxLayout(); self.rag_q = QLineEdit(); self.rag_q.setPlaceholderText("Pergunte sobre seus documentos…")
         self.rag_q.returnPressed.connect(self.ask_docs)
         self.rag_btn = QPushButton("Perguntar"); self.rag_btn.clicked.connect(self.ask_docs)
-        qh.addWidget(self.rag_q); qh.addWidget(self.rag_btn); v.addLayout(qh)
+        self.rag_stop = QPushButton("Parar"); self.rag_stop.setObjectName("danger"); self.rag_stop.setEnabled(False)
+        self.rag_stop.clicked.connect(lambda: getattr(self, "rag_worker", None) and setattr(self.rag_worker, "stopped", True))
+        qh.addWidget(self.rag_q); qh.addWidget(self.rag_btn); qh.addWidget(self.rag_stop); v.addLayout(qh)
         self.reload_docs(); return w
 
     def reload_docs(self):
@@ -375,22 +377,31 @@ class MainWindow(QMainWindow):
         if not q or not model or not self.store.meta or not self._embed_ok(): 
             if not self.store.meta: self.rag_out.setPlainText("Adicione documentos primeiro.")
             return
-        self.rag_btn.setEnabled(False); self.rag_out.setHtml(f"<style>{CSS}</style><i>Buscando…</i>")
+        self.rag_btn.setEnabled(False); self.rag_stop.setEnabled(True)
+        self.rag_out.setHtml(f"<style>{CSS}</style><i>Buscando…</i>")
         em = self.cfg["embed_model"]; buf = []
         def job(w):
             hits = self.store.search(self.client.embed(em, [q])[0], k=4)
+            if w.stopped: return ""
             msgs = [{"role": "user", "content": build_prompt(q, hits)}]
             from .job_queue import chat_em_andamento
             with chat_em_andamento():
-                for c in self.client.chat_stream(model, msgs, self.options()):
+                for c in self.client.chat_stream(model, msgs, self.options(), lambda: w.stopped):
                     w.chunk.emit(c)
             return citations(hits)
+        tm = QTimer(self); tm.setSingleShot(True); tm.setInterval(80)  # no máximo ~12 redesenhos/s
+        tm.timeout.connect(lambda: self.rag_out.setHtml(f"<style>{CSS}</style>" + md_html("".join(buf))))
         def chunk(c):
-            buf.append(c); self.rag_out.setHtml(f"<style>{CSS}</style>" + md_html("".join(buf)))
+            buf.append(c)
+            if not tm.isActive(): tm.start()
+        def end():
+            tm.stop(); self.rag_btn.setEnabled(True); self.rag_stop.setEnabled(False); self.rag_worker = None
         def done(cit):
-            self.rag_btn.setEnabled(True)
-            self.rag_out.setHtml(f"<style>{CSS}</style>" + md_html("".join(buf)) + "<hr><b>Fontes:</b><pre>" + html.escape(cit) + "</pre>")
-        run_bg(self, job, chunk, done, lambda e: (self.rag_btn.setEnabled(True), QMessageBox.warning(self, "Erro", e)))
+            parou = self.rag_worker is not None and self.rag_worker.stopped; end()
+            extra = "<hr><i>Interrompido.</i>" if parou else ""
+            if cit: extra += "<hr><b>Fontes:</b><pre>" + html.escape(cit) + "</pre>"
+            self.rag_out.setHtml(f"<style>{CSS}</style>" + md_html("".join(buf)) + extra)
+        self.rag_worker = run_bg(self, job, chunk, done, lambda e: (end(), QMessageBox.warning(self, "Erro", e)))
 
     # ---------- Outros ----------
     def _soon(self, txt):
