@@ -110,13 +110,13 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | E2 | V5 com o FPS novo: vídeo Wan 2.2 e depois Wan 2.1 pela aba Vídeo | O .txt e o arquivo saem com 24 fps no 2.2 e 16 fps no 2.1 (132ee82) | ⏳ |
 | E3 | V8: vídeo Wan com o negativo vazio | O .txt grava o negativo padrão do Wan, igual ao que o sd-cli recebe (7fe5e0c) | ⏳ |
 | E4 | R6 regressão: Z-Image, Qwen3.8 e Wan 2.2, um de cada | Geram normal, com os tempos perto dos de 16/10 | ⏳ |
-| E5 | Descarga do Ollama: gerar uma imagem com o chat parado | O Ollama é descarregado antes, e o log registra isso | ⏳ |
+| E5 | Descarga do Ollama: gerar uma imagem com o chat parado | O Ollama é descarregado antes, e o log registra isso | ✅ PC 21/10 (dda8128, JobQueue com motor falso): log "modelos do Ollama descarregados: qwen2.5:3b", ollama ps vazio depois; +4,4 s no job |
 | E6 | Descarga com chat em andamento: mandar mensagem longa e logo depois um vídeo na fila | A fila espera o chat (até `queue_unload_wait_s`) e não descarrega no meio. Se passar do tempo, pula com aviso no log, e o chat termina inteiro | ⏳ |
-| E7 | `IA_OFF_QUEUE_UNLOAD_OLLAMA=0` | Não descarrega nada | ⏳ |
+| E7 | `IA_OFF_QUEUE_UNLOAD_OLLAMA=0` | Não descarrega nada | ✅ PC 21/10: qwen2.5:3b seguiu carregado e nenhuma linha de descarga no log. Obs.: a env só muda o padrão; `queue_unload_ollama` no config.json vence (hoje ausente no config do Julio) |
 | E8 | "Decodificando…" na primeira geração de um modelo | Mostra o tempo passado e o aviso de que pode demorar, sem estimativa | ⏳ |
 | E9 | "Decodificando…" na segunda geração do mesmo modelo | Mostra quanto já passou, o total estimado e quanto falta. Anotar o real contra o estimado (aceitável errar até ~25%) | ⏳ |
 | E10 | Textos de bloqueio do moderador (com ele ligado) no Chat, Imagem, Vídeo e Falar | Mostra o motivo, diz que nada foi enviado nem salvo, o texto fica na caixa e aponta pra Configurações > Moderação > "Alterar filtro…". Depois, desligar a moderação | ⏳ |
-| E11 | Robustez (725295b): forçar falha de um job (modelo ausente via cfg_override) | O erro aparece no log, e nada fica calado | ⏳ |
+| E11 | Robustez (725295b): forçar falha de um job (modelo ausente via cfg_override) | O erro aparece no log, e nada fica calado | ✅ PC 21/10: ERROR "tarefa job-1 (video) falhou: FileNotFoundError" com traceback; o job seguinte terminou normal (falha via exceção do motor falso, mesmo caminho da fila) |
 | E12 | Conversa longa com 200+ mensagens (depois da entrega do Front) | Rolar e mandar mensagem sem travar. Anotar o tempo de abrir a conversa | ⏳ |
 | E13 | Barra de progresso e Cancelar em todas as abas (depois do Front) | Toda aba mostra progresso e cancela sem travar | ⏳ |
 | E14 | P2 + R5 no hash final | Suíte verde e nenhum caminho fixo fora do config.py | ⏳ |
