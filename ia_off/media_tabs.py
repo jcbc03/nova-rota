@@ -583,6 +583,16 @@ class VideoTab(QueueClient, QWidget):
         self.tr_out = QPlainTextEdit(); self.tr_out.setReadOnly(True); self.tr_out.setMaximumHeight(55)
         self.tr_out.setPlaceholderText("Prompt traduzido (aparece aqui antes de gerar)")
         f.addRow("Prompt:", self.prompt); f.addRow("Negativo:", self.neg); f.addRow(self.tr_chk); f.addRow("Em inglês:", self.tr_out)
+        # imagem inicial (Wan 2.2 TI2V): vai em params["init_image"]; o Wan 2.1 é só texto
+        self.init_path = ""
+        self.init_box = QWidget(); ib = QHBoxLayout(self.init_box); ib.setContentsMargins(0, 0, 0, 0)
+        self.init_btn = QPushButton("Imagem inicial (opcional)…"); self.init_btn.clicked.connect(self.pick_init)
+        self.init_lbl = QLabel("nenhuma", objectName="hint"); self.init_lbl.setWordWrap(True)
+        self.init_clr = QPushButton("Limpar"); self.init_clr.clicked.connect(lambda: self.set_init(""))
+        ib.addWidget(self.init_btn); ib.addWidget(self.init_lbl, 1); ib.addWidget(self.init_clr)
+        f.addRow("Imagem:", self.init_box); self._init_row_lbl = f.labelForField(self.init_box)
+        self.vmodel.currentIndexChanged.connect(lambda _: self._sync_init())
+        self.set_init(""); self._sync_init()
         f.addRow("Tamanho:", self.sizesel)
         f.addRow("Quadros (4k+1):", self.frames); f.addRow("Passos:", self.steps); f.addRow("CFG:", self.cfgs)
         f.addRow("FPS:", self.fps); f.addRow("Semente:", self.seed)
@@ -628,6 +638,21 @@ class VideoTab(QueueClient, QWidget):
         want = cfg.get("video_modelo", "wan21") if ok else "wan21"
         self.vmodel.blockSignals(True); self.vmodel.setCurrentIndex(max(0, self.vmodel.findData(want))); self.vmodel.blockSignals(False)
 
+    def _sync_init(self):
+        on = self.vmodel.currentData() == "wan22"
+        self.init_box.setVisible(on)
+        if self._init_row_lbl is not None: self._init_row_lbl.setVisible(on)
+
+    def set_init(self, path):
+        self.init_path = path or ""
+        self.init_lbl.setText(Path(self.init_path).name if self.init_path else "nenhuma (só texto)")
+        self.init_lbl.setToolTip(self.init_path); self.init_clr.setEnabled(bool(self.init_path))
+
+    def pick_init(self):
+        fn, _ = QFileDialog.getOpenFileName(self, "Imagem inicial do vídeo", str(config.output_dir("pictures")),
+                                            "Imagens (*.png *.jpg *.jpeg *.webp *.bmp)")
+        if fn: self.set_init(fn)
+
     def load_list(self):
         self.list.clear()
         for p in sorted(config.output_dir("videos").glob("*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -664,6 +689,10 @@ class VideoTab(QueueClient, QWidget):
         neg = self.neg.toPlainText().strip(); do_tr = self.tr_chk.isChecked(); self.tr_out.clear()
         params = dict(width=w, height=h, frames=self.frames.value(), steps=self.steps.value(), cfg_scale=self.cfgs.value(),
                       fps=self.fps.value(), seed=self.seed.value(), cfg_override=cfg, saida=str(config.output_dir("videos")))
+        if vm == "wan22" and self.init_path:
+            if not Path(self.init_path).is_file():
+                QMessageBox.warning(self, "Vídeo", f"Imagem inicial não encontrada:\n{self.init_path}"); return
+            params["init_image"] = self.init_path
         def go(pr, ng):
             params.update(prompt=pr, negative=ng)
             self.log.appendPlainText(f"Prompt usado: {pr}" + (f" | Negativo: {ng}" if ng else ""))
