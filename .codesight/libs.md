@@ -1,0 +1,126 @@
+# Libraries
+
+- `ia_off/app.py`
+  - function md_html: (text)
+  - function run_bg: (owner, fn, on_chunk, on_done, on_error)
+  - function fit_history: (sys_prompt, hist, num_ctx, chars_por_token, reserva)
+  - function is_embed_model: (name, cfg)
+  - function log_line: (msg)
+  - function install_diagnostics: ()
+  - _...2 more_
+- `ia_off/config.py`
+  - function output_dir: (kind)
+  - function load: ()
+  - function save: (cfg)
+- `ia_off/engine_api.py`
+  - function make_cancel_check: (cancel_flag, cancelled)
+  - function make_progress: (progress_cb, progress)
+  - function raise_if_cancelled: (check)
+  - class Cancelled
+- `ia_off/engines_registry.py`
+  - function gerar_imagem: (params, on_progress, cancel_flag, engine_factory)
+  - function gerar_video: (params, on_progress, cancel_flag)
+  - function transcrever: (params, on_progress, cancel_flag)
+  - function falar: (params, on_progress, cancel_flag)
+  - function ampliar: (params, on_progress, cancel_flag)
+  - function moderado: (fn, contexto, campo, negativo, neg_padrao)
+  - _...1 more_
+- `ia_off/image_engine.py`
+  - function inspect_sd_folder: (path)
+  - function load_sd_components: (path)
+  - class ImageEngine
+- `ia_off/job_queue.py`
+  - function chat_iniciado: ()
+  - function chat_terminado: ()
+  - function chat_ativo: ()
+  - function esperar_chat_livre: (timeout, cancel_flag, poll)
+  - function unload_ollama_models: (host, timeout)
+  - function register_engine: (tipo, fn)
+  - _...5 more_
+- `ia_off/jobs.py`
+  - function running: ()
+  - function shutdown_all: (timeout_ms)
+  - class Job
+- `ia_off/media_tabs.py`
+  - function open_path: (p)
+  - function get_translator: (cfg)
+  - function translate_in_job: (j, cfg, prompt, negative)
+  - function save_png: (im, fp, meta)
+  - function pil_to_pixmap: (img)
+  - function image_meta: (p, mode, seed)
+  - _...7 more_
+- `ia_off/moderador.py`
+  - function ativa: (cfg)
+  - function exportar_padrao: (path)
+  - function checar_prompt: (texto, contexto, cfg)
+  - function completar_negativo: (negativo, cfg)
+  - function instrucoes_chat: (cfg)
+  - function senha_definida: (cfg)
+  - _...4 more_
+- `ia_off/ollama_client.py`
+  - function build_modelfile: (gguf_path, num_ctx, threads, temperature, system)
+  - function create_from_gguf: (exe, name, gguf_path, **kw)
+  - class OllamaError
+  - class OllamaClient
+- `ia_off/ov_engine.py`
+  - function step_callback_kwargs: (pipe, on_step)
+  - function ir_dir_for: (src_path, lcm_path, lcm, kind)
+  - function export_ir: (src_path, kind, lcm, lcm_path, log)
+  - class OVEngine
+- `ia_off/perf.py`
+  - function ov_cache_dir: ()
+  - function set_thread_env: (threads)
+  - function effective_threads: (cfg)
+  - function set_high_priority: (on)
+  - function apply: (cfg, import_torch)
+  - function total_ram_gb: ()
+  - _...7 more_
+- `ia_off/rag.py`
+  - function read_file: (path)
+  - function chunk_text: (text, size, overlap)
+  - function default_folder: ()
+  - function migrate: (store, progress)
+  - function reindex: (store, embed_fn, batch, progress, on_progress, cancel_flag)
+  - function index_file: (path, store, embed_fn, size, overlap, progress)
+  - _...3 more_
+- `ia_off/runtime_dlls.py`
+  - function candidatos: (exe_path, cfg)
+  - function achar_vcomp: (exe_path, cfg)
+  - function env_para_exe: (exe_path, base_env, cfg)
+- `ia_off/sdcpp.py`
+  - function cli_safe: (text, what)
+  - function default_dir: ()
+  - function find_binary: (folder, variant)
+  - function download_binary: (folder, progress, total, cancelled, variant)
+  - function ensure_binary: (folder, variant, progress, t, cancelled)
+  - function run_with_fallback: (folder, variant, build_args, on_line, cancelled, log, progress, t, ensure, progress_cb, cancel_flag, phase_cb)
+  - _...12 more_
+- `ia_off/sizing.py`
+  - function target_size: (aspect, short, mult)
+  - function native_size: (engine, w, h)
+  - function plan: (engine, w, h)
+  - function upscale: (img, w, h, sharpen)
+  - function warning: (w, h)
+- `ia_off/storage.py` — class Storage
+- `ia_off/translate.py`
+  - function is_english: (text)
+  - function clean_output: (text)
+  - class Translator
+- `ia_off/upscaler.py`
+  - function tile_grid: (w, h, tile)
+  - function upscale_array: (arr, run, model_scale, tile, pad, on_progress, cancel_flag)
+  - function detect_scale: (run)
+  - function ampliar: (params, on_progress, cancel_flag, runner)
+- `ia_off/voice_engine.py`
+  - function whisper_model_dir: (cfg)
+  - function piper_voice_path: (cfg)
+  - function transcribe: (audio_path, progress_cb, cancel_flag, cfg, language, model_loader, audio_loader)
+  - function split_sentences: (text, max_len)
+  - function espeak_data_dir: (onnx, src)
+  - function speak: (text, out_wav, progress_cb, cancel_flag, cfg, voice_loader)
+- `tools/baixar_ampliador.py` — function main: ()
+- `tools/checar_imports.py` — function main: ()
+- `tools/converter_ampliador.py`
+  - function build_model: ()
+  - function sha256: (p)
+  - function main: ()

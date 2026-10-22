@@ -1,0 +1,41 @@
+# Events & Queues
+
+- `+ Nova conversa` [event] — `ia_off/app.py`
+- `Renomear` [event] — `ia_off/app.py`
+- `Excluir` [event] — `ia_off/app.py`
+- `Atualizar` [event] — `ia_off/app.py`
+- `Importar GGUF…` [event] — `ia_off/app.py`
+- `Enviar` [event] — `ia_off/app.py`
+- `Parar` [event] — `ia_off/app.py`
+- `Copiar última resposta` [event] — `ia_off/app.py`
+- `Procurar…` [event] — `ia_off/app.py`
+- `Adicionar arquivos…` [event] — `ia_off/app.py`
+- `Remover selecionado` [event] — `ia_off/app.py`
+- `Limpar base` [event] — `ia_off/app.py`
+- `Baixar modelo de embeddings` [event] — `ia_off/app.py`
+- `Perguntar` [event] — `ia_off/app.py`
+- `…` [event] — `ia_off/app.py`
+- `Benchmark (SD 1.5, 4 passos, 512×512)` [event] — `ia_off/app.py`
+- `Alterar filtro…` [event] — `ia_off/app.py`
+- `Trocar senha…` [event] — `ia_off/app.py`
+- `Salvar` [event] — `ia_off/app.py`
+- `Cancelado.` [event] — `ia_off/jobs.py`
+- `warn` [event] — `ia_off/media_tabs.py`
+- `translated` [event] — `ia_off/media_tabs.py`
+- `Abrir imagem de entrada…` [event] — `ia_off/media_tabs.py`
+- `Limpar máscara` [event] — `ia_off/media_tabs.py`
+- `Gerar` [event] — `ia_off/media_tabs.py`
+- `Cancelar` [event] — `ia_off/media_tabs.py`
+- `Usar como entrada` [event] — `ia_off/media_tabs.py`
+- `Abrir pasta` [event] — `ia_off/media_tabs.py`
+- `Ampliar com IA` [event] — `ia_off/media_tabs.py`
+- `log` [event] — `ia_off/media_tabs.py`
+- `Gerar vídeo` [event] — `ia_off/media_tabs.py`
+- `Baixar/verificar stable-diffusion.cpp` [event] — `ia_off/media_tabs.py`
+- `▶ Tocar` [event] — `ia_off/media_tabs.py`
+- `⏸ Pausar` [event] — `ia_off/media_tabs.py`
+- `Escolher áudio…` [event] — `ia_off/media_tabs.py`
+- `Copiar texto` [event] — `ia_off/media_tabs.py`
+- `▶ Ouvir de novo` [event] — `ia_off/media_tabs.py`
+- `Transcrever` [event] — `ia_off/media_tabs.py`
+- `Falar` [event] — `ia_off/media_tabs.py`
