@@ -41,3 +41,8 @@ def test_sdcpp_cancel_without_output(tmp_path):
     with pytest.raises(RuntimeError, match="Cancelado"):
         sdcpp.run([sys.executable, str(p)], cancelled=lambda: flag["c"])
     assert time.time() - t0 < 5
+
+def test_parar_durante_ensure_running_nao_envia():
+    r = _run("stop_ensure_gui.py")
+    assert r.returncode == 0, (r.returncode, r.stdout[-2000:], r.stderr[-3000:])
+    assert "STOP_ENSURE OK" in r.stdout
