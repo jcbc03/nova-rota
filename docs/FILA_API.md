@@ -142,3 +142,5 @@ Ollama fora do ar ou erro na descarga só vai pro log, a tarefa segue; o chat re
 - ERROR: tarefa falhou (`id`, tipo, erro; traceback também em stderr). WARNING: motor terminou sem resultado; falha ao
   descarregar um modelo; chat ainda ativo no timeout; gancho pré-tarefa com erro; config indisponível.
 - INFO: Ollama indisponível; modelos descarregados; exceção descartada por cancelamento.
+
+> **Precedência da `IA_OFF_QUEUE_UNLOAD_OLLAMA`:** a variável de ambiente só muda o *padrão*. Se o `config.json` tiver `queue_unload_ollama` escrito, o valor do arquivo vence a variável. (Conferido no PC em 21/10, E7.)
