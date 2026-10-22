@@ -177,15 +177,19 @@ def _load_piper(onnx):
         return _piper_cache[str(onnx)]
 
 
-def _piper_pcm(voice, text):
-    """(bytes PCM16, sample_rate) para piper-tts >=1.3 (synthesize -> AudioChunk) ou antigo (synthesize_stream_raw)."""
+def _piper_pcm(voice, text, check=None):
+    """(bytes PCM16, sample_rate) para piper-tts >=1.3 (synthesize -> AudioChunk) ou antigo (synthesize_stream_raw).
+    `check()` (opcional) é consultado entre os pedaços de áudio: frase longa também cancela no meio (E13)."""
     rate = getattr(getattr(voice, "config", None), "sample_rate", 22050)
-    if hasattr(voice, "synthesize_stream_raw"):
-        return b"".join(voice.synthesize_stream_raw(text)), rate
-    data = b""
-    for ch in voice.synthesize(text):
-        data += ch.audio_int16_bytes; rate = ch.sample_rate
-    return data, rate
+    it = voice.synthesize_stream_raw(text) if hasattr(voice, "synthesize_stream_raw") else voice.synthesize(text)
+    parts = []
+    for ch in it:
+        if check is not None and check(): raise Cancelled()
+        if isinstance(ch, (bytes, bytearray)):
+            parts.append(bytes(ch))
+        else:
+            parts.append(ch.audio_int16_bytes); rate = ch.sample_rate
+    return b"".join(parts), rate
 
 
 def speak(text, out_wav, progress_cb=None, cancel_flag=None, cfg=None, voice_loader=None):
@@ -206,9 +210,11 @@ def speak(text, out_wav, progress_cb=None, cancel_flag=None, cfg=None, voice_loa
     try:
         with wave.open(str(tmp), "wb") as w:
             w.setnchannels(1); w.setsampwidth(2); started = False
+            # taxa provisória: se cancelar antes da 1ª frase, fechar o WAV não mascara o Cancelled com wave.Error
+            w.setframerate(getattr(getattr(voice, "config", None), "sample_rate", 22050))
             for i, s in enumerate(sents, 1):
                 if check(): raise Cancelled()
-                pcm, rate = _piper_pcm(voice, s)
+                pcm, rate = _piper_pcm(voice, s, check)
                 if not started: w.setframerate(rate); started = True
                 w.writeframes(pcm)
                 if progress_cb: progress_cb(i, len(sents))
