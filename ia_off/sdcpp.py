@@ -117,6 +117,21 @@ def video_variant(cfg, vulkan_ok=None):
         return "cpu"
     return perf.sdcpp_variant(cfg, vulkan_ok)
 
+
+def flux2_variant(cfg, vulkan_ok=None):
+    """Variante do sd.cpp para FLUX.2 Klein. IA_OFF_SDCPP_VARIANT (cpu|vulkan) manda; senão CPU por padrão
+    (na UHD 620 o Vulkan passa de 10 min em "Carregando modelo"); só tenta Vulkan com cfg["flux2_vulkan"]
+    (ou env IA_OFF_FLUX2_VULKAN), e aí segue perf.sdcpp_variant (device/Vulkan disponível)."""
+    import os
+    from . import perf
+    v = (os.environ.get("IA_OFF_SDCPP_VARIANT") or "").strip().lower()
+    if v in ("cpu", "vulkan"):
+        return v
+    if not cfg.get("flux2_vulkan"):
+        return "cpu"
+    return perf.sdcpp_variant(cfg, vulkan_ok)
+
+
 def wan_frames(n):
     """Wan exige 4k+1 quadros."""
     n = max(5, int(n))
