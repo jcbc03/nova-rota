@@ -645,7 +645,15 @@ def install_diagnostics():
             pass
     qInstallMessageHandler(qt_handler)
 
+def ensure_std_streams():
+    """pythonw/exe sem console deixa sys.stdout/stderr = None; libs (tqdm, diffusers) chamam .isatty() e quebram."""
+    for name in ("stdout", "stderr"):
+        if getattr(sys, name, None) is None:
+            try: setattr(sys, name, open(os.devnull, "w", encoding="utf-8"))
+            except Exception: pass
+
 def main():
+    ensure_std_streams()
     install_diagnostics()
     from . import perf
     try:
