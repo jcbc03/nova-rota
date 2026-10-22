@@ -651,6 +651,9 @@ def ensure_std_streams():
         if getattr(sys, name, None) is None:
             try: setattr(sys, name, open(os.devnull, "w", encoding="utf-8"))
             except Exception: pass
+        if getattr(sys, "__" + name + "__", None) is None:
+            try: setattr(sys, "__" + name + "__", getattr(sys, name))
+            except Exception: pass
 
 def main():
     ensure_std_streams()
