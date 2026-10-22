@@ -4,7 +4,7 @@
 
 > 0 routes | 0 models | 0 components | 23 lib files | 22 env vars | 0 middleware | 39 events | 0% test coverage
 > **Token savings:** this file is ~3,100 tokens. Without it, AI exploration would cost ~25,500 tokens. **Saves ~22,400 tokens per conversation.**
-> **Last scanned:** 2026-10-22 09:38 — re-run after significant changes
+> **Last scanned:** 2026-10-22 12:02 — re-run after significant changes
 
 ---
 
@@ -178,9 +178,9 @@
 - `ia_off/moderador.py` — imported by **8** files
 - `ia_off/job_queue.py` — imported by **7** files
 - `ia_off/image_engine.py` — imported by **7** files
+- `ia_off/app.py` — imported by **5** files
 - `ia_off/ollama_client.py` — imported by **5** files
 - `ia_off/rag.py` — imported by **5** files
-- `ia_off/app.py` — imported by **4** files
 - `ia_off/storage.py` — imported by **3** files
 - `ia_off/jobs.py` — imported by **3** files
 - `ia_off/media_tabs.py` — imported by **3** files
@@ -201,8 +201,8 @@
 - `ia_off/moderador.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `tests/mo_pc_check.py`, `tests/test_job_queue.py`, `tests/test_moderador.py` +3 more
 - `ia_off/job_queue.py` ← `ia_off/app.py`, `tests/test_engines_registry.py`, `tests/test_fase_decode.py`, `tests/test_job_queue.py`, `tests/test_sub2_cdi.py` +2 more
 - `ia_off/image_engine.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/ov_engine.py`, `tests/stress_gui.py`, `tests/test_engine_api.py` +2 more
+- `ia_off/app.py` ← `ia_off/__main__.py`, `tests/smoke_gui.py`, `tests/stop_ensure_gui.py`, `tests/stress_gui.py`, `tests/test_threads.py`
 - `ia_off/ollama_client.py` ← `ia_off/app.py`, `ia_off/media_tabs.py`, `tests/test_core.py`, `tests/test_ollama_stop.py`, `tests/test_rag_v3.py`
-- `ia_off/rag.py` ← `ia_off/app.py`, `tests/test_core.py`, `tests/test_moderador.py`, `tests/test_rag_v3.py`, `tests/test_sub2_cdi.py`
 
 ---
 
@@ -253,7 +253,7 @@
 # Test Coverage
 
 > **0%** of routes and models are covered by tests
-> 26 test files found
+> 27 test files found
 
 ---
 
