@@ -9,6 +9,7 @@
 - `IA_OFF_MODERACAO_ARQUIVO` **required** — ia_off/config.py
 - `IA_OFF_MODERACAO_SENHA` **required** — ia_off/config.py
 - `IA_OFF_RAG_DIR` **required** — ia_off/config.py
+- `IA_OFF_SDCPP_VARIANT` **required** — ia_off/sdcpp.py
 - `IA_OFF_UPSCALE_MODEL` **required** — ia_off/config.py
 - `IA_OFF_VCRUNTIME_DIR` **required** — ia_off/config.py
 - `IA_OFF_VIDEO_MODELO` **required** — ia_off/config.py

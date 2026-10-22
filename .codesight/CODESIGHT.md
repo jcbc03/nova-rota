@@ -2,9 +2,9 @@
 
 > **Stack:** raw-http | none | unknown | python
 
-> 0 routes | 0 models | 0 components | 23 lib files | 22 env vars | 0 middleware | 39 events | 0% test coverage
-> **Token savings:** this file is ~3,100 tokens. Without it, AI exploration would cost ~25,500 tokens. **Saves ~22,400 tokens per conversation.**
-> **Last scanned:** 2026-10-22 14:45 — re-run after significant changes
+> 0 routes | 0 models | 0 components | 23 lib files | 23 env vars | 0 middleware | 39 events | 0% test coverage
+> **Token savings:** this file is ~3,100 tokens. Without it, AI exploration would cost ~25,700 tokens. **Saves ~22,600 tokens per conversation.**
+> **Last scanned:** 2026-10-22 15:27 — re-run after significant changes
 
 ---
 
@@ -104,7 +104,7 @@
   - function download_binary: (folder, progress, total, cancelled, variant)
   - function ensure_binary: (folder, variant, progress, t, cancelled)
   - function run_with_fallback: (folder, variant, build_args, on_line, cancelled, log, progress, t, ensure, progress_cb, cancel_flag, phase_cb)
-  - _...12 more_
+  - _...13 more_
 - `ia_off/sizing.py`
   - function target_size: (aspect, short, mult)
   - function native_size: (engine, w, h)
@@ -148,6 +148,7 @@
 - `IA_OFF_MODERACAO_ARQUIVO` **required** — ia_off/config.py
 - `IA_OFF_MODERACAO_SENHA` **required** — ia_off/config.py
 - `IA_OFF_RAG_DIR` **required** — ia_off/config.py
+- `IA_OFF_SDCPP_VARIANT` **required** — ia_off/sdcpp.py
 - `IA_OFF_UPSCALE_MODEL` **required** — ia_off/config.py
 - `IA_OFF_VCRUNTIME_DIR` **required** — ia_off/config.py
 - `IA_OFF_VIDEO_MODELO` **required** — ia_off/config.py
@@ -170,11 +171,11 @@
 
 ## Most Imported Files (change these carefully)
 
-- `ia_off/config.py` — imported by **16** files
-- `ia_off/sdcpp.py` — imported by **13** files
-- `ia_off/perf.py` — imported by **11** files
+- `ia_off/config.py` — imported by **17** files
+- `ia_off/sdcpp.py` — imported by **14** files
+- `ia_off/perf.py` — imported by **12** files
 - `ia_off/engine_api.py` — imported by **11** files
-- `ia_off/engines_registry.py` — imported by **9** files
+- `ia_off/engines_registry.py` — imported by **10** files
 - `ia_off/moderador.py` — imported by **8** files
 - `ia_off/job_queue.py` — imported by **7** files
 - `ia_off/image_engine.py` — imported by **7** files
@@ -193,11 +194,11 @@
 
 ## Import Map (who imports what)
 
-- `ia_off/config.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/job_queue.py`, `ia_off/media_tabs.py`, `ia_off/moderador.py` +11 more
-- `ia_off/sdcpp.py` ← `ia_off/engines_registry.py`, `ia_off/media_tabs.py`, `ia_off/voice_engine.py`, `tests/stress_gui.py`, `tests/test_engine_api.py` +8 more
-- `ia_off/perf.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/image_engine.py`, `ia_off/media_tabs.py`, `ia_off/ov_engine.py` +6 more
+- `ia_off/config.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/job_queue.py`, `ia_off/media_tabs.py`, `ia_off/moderador.py` +12 more
+- `ia_off/sdcpp.py` ← `ia_off/engines_registry.py`, `ia_off/media_tabs.py`, `ia_off/voice_engine.py`, `tests/stress_gui.py`, `tests/test_engine_api.py` +9 more
+- `ia_off/perf.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/image_engine.py`, `ia_off/media_tabs.py`, `ia_off/ov_engine.py` +7 more
 - `ia_off/engine_api.py` ← `ia_off/engines_registry.py`, `ia_off/image_engine.py`, `ia_off/ov_engine.py`, `ia_off/sdcpp.py`, `ia_off/upscaler.py` +6 more
-- `ia_off/engines_registry.py` ← `ia_off/app.py`, `tests/stress_gui.py`, `tests/test_engines_registry.py`, `tests/test_fase_decode.py`, `tests/test_moderador_motores.py` +4 more
+- `ia_off/engines_registry.py` ← `ia_off/app.py`, `tests/stress_gui.py`, `tests/test_engines_registry.py`, `tests/test_fase_decode.py`, `tests/test_flux2_variant.py` +5 more
 - `ia_off/moderador.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `tests/mo_pc_check.py`, `tests/test_job_queue.py`, `tests/test_moderador.py` +3 more
 - `ia_off/job_queue.py` ← `ia_off/app.py`, `tests/test_engines_registry.py`, `tests/test_fase_decode.py`, `tests/test_job_queue.py`, `tests/test_sub2_cdi.py` +2 more
 - `ia_off/image_engine.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/ov_engine.py`, `tests/stress_gui.py`, `tests/test_engine_api.py` +2 more
@@ -253,7 +254,7 @@
 # Test Coverage
 
 > **0%** of routes and models are covered by tests
-> 31 test files found
+> 32 test files found
 
 ---
 

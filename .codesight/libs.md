@@ -94,7 +94,7 @@
   - function download_binary: (folder, progress, total, cancelled, variant)
   - function ensure_binary: (folder, variant, progress, t, cancelled)
   - function run_with_fallback: (folder, variant, build_args, on_line, cancelled, log, progress, t, ensure, progress_cb, cancel_flag, phase_cb)
-  - _...12 more_
+  - _...13 more_
 - `ia_off/sizing.py`
   - function target_size: (aspect, short, mult)
   - function native_size: (engine, w, h)
