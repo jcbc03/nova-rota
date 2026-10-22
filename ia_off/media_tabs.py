@@ -178,7 +178,7 @@ class QueueClient:
     def _mine(self, jid): return jid in getattr(self, "_jobs", ())
 
     def _q_started(self, jid):
-        if self._mine(jid): self.bar.setRange(0, 0); self.bar.setFormat("Carregando modelo…"); self.status.showMessage("Rodando…")
+        if self._mine(jid) and jid not in getattr(self, "_cancelando", ()): self.bar.setRange(0, 0); self.bar.setFormat("Carregando modelo…"); self.status.showMessage("Rodando…")
 
     def _q_progress(self, jid, passo, total, pct, eta_s):
         if not self._mine(jid): return
@@ -258,6 +258,7 @@ class QueueClient:
         if getattr(self, "qid", None):
             self.__dict__.setdefault("_cancelando", set()).add(self.qid)
             self.fila.cancel(self.qid); self.status.showMessage("Cancelando… (termina o passo atual)")
+            self.bar.setRange(0, 0); self.bar.setFormat("Cancelando…")
             self.cancel_btn.setEnabled(False)  # evita cliques repetidos; _q_end reabilita o Gerar
             return True
         return False
@@ -684,9 +685,10 @@ class VoiceTab(QueueClient, QWidget):
         self.s_btn = QPushButton("Falar"); self.s_btn.clicked.connect(self.speak)
         bl.addWidget(self.t_btn); bl.addWidget(self.s_btn); bl.addStretch()
         self.cancel_btn = QPushButton("Cancelar"); self.cancel_btn.setObjectName("danger"); self.cancel_btn.setEnabled(False)
-        self.cancel_btn.clicked.connect(self.cancel_queue); bl.addWidget(self.cancel_btn)
+        self.cancel_btn.clicked.connect(self.cancel_queue)
         sp = QSplitter(); sp.addWidget(g1); sp.addWidget(g2); v.addWidget(sp, 1)
-        v.addWidget(self.gen_btn)
+        # Cancelar fica FORA do contêiner gen_btn; senão desabilitar o contêiner travava o Cancelar junto (E13)
+        bh = QHBoxLayout(); bh.addWidget(self.gen_btn, 1); bh.addWidget(self.cancel_btn); v.addLayout(bh)
         self.bar = QProgressBar(); self.bar.setValue(0); v.addWidget(self.bar)
         self.player = None; self.wav = None
         try:
@@ -717,9 +719,9 @@ class VoiceTab(QueueClient, QWidget):
         self._enqueue("falar", {"texto": t, "cfg_override": self.cfg()})
 
     def _q_progress(self, jid, passo, total, pct, eta_s):
-        if not self._mine(jid): return
+        if not self._mine(jid) or jid in getattr(self, "_cancelando", ()): return
         if total <= 0: self.bar.setRange(0, 0); return
-        self.bar.setRange(0, 100); self.bar.setValue(int(pct))
+        self.bar.setRange(0, total); self.bar.setValue(passo)  # mesma escala das outras abas
         unidade = "s de áudio" if self._tipo == "transcrever" else "frase(s)"
         txt = f"{passo} de {total} {unidade} · {int(pct)}% · falta {fmt_eta(eta_s)}"
         self.bar.setFormat(txt); self.status.showMessage(txt)
