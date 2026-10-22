@@ -496,7 +496,7 @@ class ImageTab(QueueClient, QWidget):
 
     def _flux2(self, j, cfg, p, out, finish=lambda im: im):
         from . import sdcpp, perf
-        variant = perf.sdcpp_variant(cfg)
+        variant = sdcpp.flux2_variant(cfg)
         for k in ("flux2_model", "flux2_vae", "flux2_llm"):
             if not Path(cfg[k]).is_file(): raise FileNotFoundError(f"Arquivo não encontrado: {cfg[k]}")
         paths = []

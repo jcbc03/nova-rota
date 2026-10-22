@@ -102,7 +102,7 @@ def gerar_imagem(params, on_progress, cancel_flag, engine_factory=None):
 def _flux2(p, cfg, out, prompt, w, h, steps, batch, seed, guidance, stamp, meta, on_progress, cancel_flag):
     from . import sdcpp, perf
     _require(cfg, ("flux2_model", "flux2_vae", "flux2_llm"))
-    variant = perf.sdcpp_variant(cfg); paths = []
+    variant = sdcpp.flux2_variant(cfg); paths = []
     for i in range(batch):
         if cancel_flag is not None and cancel_flag.is_set():
             raise Cancelled()
