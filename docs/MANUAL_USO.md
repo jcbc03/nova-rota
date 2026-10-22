@@ -39,7 +39,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 
 ## 5. Vídeo
 - **Modelo**: escolha **Wan 2.1** (padrão) ou **Wan 2.2**. O Wan 2.2 só fica disponível quando os três arquivos dele estão configurados (`wan22_model`, `wan22_t5` e `wan22_vae`, em Configurações). Ele gera a 24 quadros por segundo, e o 2.1 a 16. Medido no seu PC, um clipe de 480×272 com 9 quadros e 8 passos levou uns 25 min no Wan 2.2, e um de 17 quadros com 20 passos levou uns 68 min. O menor teste, com 5 quadros e 2 passos, levou uns 12 min, quase 9 deles decodificando depois do último passo. Num teste curto a 256×256 em 22/10, o Wan 2.2 levou 703 s (uns 12 min). No Wan 2.1, um clipe de 480×272 com 17 quadros e 20 passos levou uns 88 min: uns 70 min nos passos (cerca de 3 min 20 s cada) e uns 18 min decodificando (medido em 21/10).
-- Escreva o prompt, escolha proporção e resolução (até 480p) e clique **Gerar vídeo**.
+- Escreva o prompt, escolha proporção e resolução (até 480p) e clique **Gerar vídeo**. A aba lembra a última resolução/proporção escolhida; para um tamanho específico (ex.: 480×272) use **Personalizado**.
 - **Tempo esperado: um vídeo curto de 480×272 leva cerca de 1h30** (uns 9 min carregando, 65 min gerando e 16 min finalizando). Durante esse tempo a CPU fica toda ocupada.
 - A barra mostra o passo atual (ex.: "Passo 12/20"), o que prova que não travou. Depois do último passo ainda vêm as fases **Decodificando…**, **Salvando vídeo…** e **Convertendo para MP4…**, que podem levar uns 15 min. Em "Decodificando…" a barra mostra quanto tempo já passou e quanto falta, por exemplo "Decodificando… 3min10s de ~8min40s · falta ~5min30s". A estimativa vem das gerações anteriores do mesmo modelo, então na primeira vez de cada modelo aparece só o tempo decorrido. Isso vale também pra imagem. **Cancelar** para a geração: o botão fica cinza ao clicar e a barra mostra "Cancelando…" até parar.
 - O vídeo aparece na prévia (**▶ Tocar** / **⏸ Pausar**) e fica em `Vídeos\IA_Off`.
@@ -54,7 +54,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 
 ## 7. Fila de tarefas
 Imagem, vídeo, ampliar e voz passam por uma fila que roda uma tarefa pesada por vez, porque a CPU não aguenta duas ao mesmo tempo. Estados: **na fila**, **rodando**, **concluída**, **falhou** ou **cancelada**.
-- Antes de vídeo, imagem ou ampliar, a fila tira o modelo do chat da memória pra sobrar RAM. Se tiver uma resposta do chat em andamento, ela espera até 2 min e, se o chat não terminar, segue sem tirar nada, então a conversa nunca é cortada. Dá pra desligar pondo `"queue_unload_ollama": false` no `config.json`. Depois disso, a próxima mensagem do chat demora um pouco mais, porque o modelo carrega de novo.
+- Antes de vídeo, imagem ou ampliar, a fila tira o modelo do chat da memória pra sobrar RAM. Se tiver uma resposta do chat em andamento, ela espera até 2 min e, se o chat não terminar, segue sem tirar nada, então a conversa nunca é cortada. Dá pra desligar pondo `"queue_unload_ollama": false` no `config.json`. Depois disso, a próxima mensagem do chat demora um pouco mais, porque o modelo carrega de novo. Por isso a primeira resposta do chat depois de gerar imagem ou vídeo demora mais (modelo recarrega a frio).
 
 ## 8. Configurações
 - Caminho do Ollama, threads, contexto, temperatura, prompt de sistema e modelo de tradução.

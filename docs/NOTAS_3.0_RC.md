@@ -28,10 +28,10 @@ Versão no PC: `5818bfc`, instalada em 22/10 às 4h48. Backup em `C:\IA\backup\v
 - Cancelar revisado em todas as abas (`6b9feba`), incluindo a Voz (`b16b394`, `30a9629`).
 - **E13 passou no `70ea8b5`** (22/10): Voz cancela em 251 ms (barra 4/40, job "cancelada"), Imagem em 1,1 s, Vídeo em 256 ms e o Parar do Chat em 477 ms. O detalhe cosmético do "frase(s)" na transcrição foi fechado em `964be01` (agora "s de áudio") e instalado no `5818bfc`, aguardando a conferência do ia_off.
 - **E1 aprovado** (22/10): Cancelar no Wan 2.2 em 0,82 s, sem passo falso.
-- **E4 aprovado com ressalva de desempenho**: Z-Image 512 em 983 s (~20% mais lento que em 16/10), Qwen3.8 a 1,22 tok/s com 1º token em 164 s (a frio), Wan 2.2 em 703 s. Será remedido no `5818bfc`.
+- **E4 aprovado com ressalva de desempenho**: Z-Image 512 em 983 s (~20% mais lento que em 16/10), Qwen3.8 a 1,22 tok/s com 1º token em 164 s (a frio), Wan 2.2 em 703 s. Será remedido no `5818bfc`. O Qwen volta a frio porque `queue_unload_ollama` descarrega o Ollama antes de cada imagem/vídeo (explica o 1º token em 164 s).
 - **E2**: metade Wan 2.2 ok (24 fps); metade Wan 2.1 pendente.
-- Resolução padrão da aba Vídeo em verificação (abriu em 256×256 em vez de 480×272).
-- E14 a seguir.
+- Resolução padrão da aba Vídeo (abriu em 256×256): comportamento esperado: a aba lembra a última proporção usada (padrão 256p, mais rápido na CPU; sem config salva abre em 16:9).
+- E14 roda no `5818bfc` depois da comparação com 16/10.
 - Ampliador com IA pronto no código, mas no PC continua no Lanczos até o Julio aprovar o modelo de ~4,9 MB.
 
 ## Limites conhecidos
