@@ -28,3 +28,17 @@ def test_tick_para_no_cancelar_e_no_fim(monkeypatch):
     assert w._prog_timer().isActive()
     w._cancelando = {"j1"}; w._show_progress()
     assert not w._prog_timer().isActive()
+
+def test_passo_unico_mostra_tempo_decorrido(monkeypatch):
+    t = [10.0]; monkeypatch.setattr(time, "monotonic", lambda: t[0])
+    w = Tab(); w._tipos = {"j1": "ampliar"}
+    w._q_started("j1"); t[0] += 7; w._show_progress()
+    assert w.bar.format() == "Processando… 7s" and w._prog_timer().isActive()
+    w._q_progress("j1", 1, 1, 100.0, 0.0)
+    assert "Passo 1/1" in w.bar.format()
+
+def test_carregando_modelo_conta_tempo(monkeypatch):
+    t = [0.0]; monkeypatch.setattr(time, "monotonic", lambda: t[0])
+    w = Tab(); w._tipos = {"j1": "imagem"}
+    w._q_started("j1"); t[0] += 12; w._show_progress()
+    assert w.bar.format() == "Carregando modelo… 12s"

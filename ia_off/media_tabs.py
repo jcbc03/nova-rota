@@ -179,7 +179,12 @@ class QueueClient:
     def _mine(self, jid): return jid in getattr(self, "_jobs", ())
 
     def _q_started(self, jid):
-        if self._mine(jid) and jid not in getattr(self, "_cancelando", ()): self.bar.setRange(0, 0); self.bar.setFormat("Carregando modelo…"); self.status.showMessage("Rodando…")
+        if self._mine(jid) and jid not in getattr(self, "_cancelando", ()):
+            self.bar.setRange(0, 0); self.bar.setFormat("Carregando modelo…"); self.status.showMessage("Rodando…")
+            # até o 1º passo chegar (ou num passo único, como o Lanczos) mostra o tempo decorrido
+            self._p_anc = {"jid": jid, "t": time.monotonic(), "passo": None}
+            t = self._prog_timer()
+            if not t.isActive(): t.start()
 
     def _q_progress(self, jid, passo, total, pct, eta_s):
         if not self._mine(jid): return
@@ -209,6 +214,11 @@ class QueueClient:
         a = getattr(self, "_p_anc", None)
         if not a or a["jid"] not in getattr(self, "_jobs", ()) or a["jid"] in getattr(self, "_cancelando", ()):
             self._stop_progress(); return
+        if a["passo"] is None:
+            el = int(time.monotonic() - a["t"])
+            rot = "Processando…" if getattr(self, "_tipos", {}).get(a["jid"]) == "ampliar" else "Carregando modelo…"
+            txt = f"{rot} {fmt_eta(el)}"
+            self.bar.setRange(0, 0); self.bar.setFormat(txt); self.status.showMessage(txt); return
         passo, total, eta = a["passo"], a["total"], a["eta"]
         el = time.monotonic() - a["t"]; frac = 0.0; eta_now = eta
         if eta is not None and eta >= 0:
