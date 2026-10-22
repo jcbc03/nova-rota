@@ -15,7 +15,7 @@
 Changes to these files have the widest blast radius across the codebase:
 
 - `ia_off/config.py` — imported by **17** files
-- `ia_off/sdcpp.py` — imported by **16** files
+- `ia_off/sdcpp.py` — imported by **17** files
 - `ia_off/perf.py` — imported by **14** files
 - `ia_off/engines_registry.py` — imported by **12** files
 - `ia_off/engine_api.py` — imported by **11** files
