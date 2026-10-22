@@ -30,6 +30,8 @@
 - `Abrir pasta` [event] — `ia_off/media_tabs.py`
 - `Ampliar com IA` [event] — `ia_off/media_tabs.py`
 - `log` [event] — `ia_off/media_tabs.py`
+- `Imagem inicial (opcional)…` [event] — `ia_off/media_tabs.py`
+- `Limpar` [event] — `ia_off/media_tabs.py`
 - `Gerar vídeo` [event] — `ia_off/media_tabs.py`
 - `Baixar/verificar stable-diffusion.cpp` [event] — `ia_off/media_tabs.py`
 - `▶ Tocar` [event] — `ia_off/media_tabs.py`

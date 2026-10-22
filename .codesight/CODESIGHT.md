@@ -2,9 +2,9 @@
 
 > **Stack:** raw-http | none | unknown | python
 
-> 0 routes | 0 models | 0 components | 23 lib files | 23 env vars | 0 middleware | 39 events | 0% test coverage
-> **Token savings:** this file is ~3,100 tokens. Without it, AI exploration would cost ~25,700 tokens. **Saves ~22,500 tokens per conversation.**
-> **Last scanned:** 2026-10-22 16:33 — re-run after significant changes
+> 0 routes | 0 models | 0 components | 23 lib files | 23 env vars | 0 middleware | 41 events | 0% test coverage
+> **Token savings:** this file is ~3,200 tokens. Without it, AI exploration would cost ~26,100 tokens. **Saves ~22,900 tokens per conversation.**
+> **Last scanned:** 2026-10-22 16:34 — re-run after significant changes
 
 ---
 
@@ -178,9 +178,9 @@
 - `ia_off/engine_api.py` — imported by **11** files
 - `ia_off/moderador.py` — imported by **8** files
 - `ia_off/job_queue.py` — imported by **7** files
+- `ia_off/media_tabs.py` — imported by **7** files
 - `ia_off/image_engine.py` — imported by **7** files
 - `ia_off/app.py` — imported by **6** files
-- `ia_off/media_tabs.py` — imported by **6** files
 - `ia_off/ollama_client.py` — imported by **5** files
 - `ia_off/rag.py` — imported by **5** files
 - `ia_off/storage.py` — imported by **3** files
@@ -201,9 +201,9 @@
 - `ia_off/engine_api.py` ← `ia_off/engines_registry.py`, `ia_off/image_engine.py`, `ia_off/ov_engine.py`, `ia_off/sdcpp.py`, `ia_off/upscaler.py` +6 more
 - `ia_off/moderador.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `tests/mo_pc_check.py`, `tests/test_job_queue.py`, `tests/test_moderador.py` +3 more
 - `ia_off/job_queue.py` ← `ia_off/app.py`, `tests/test_engines_registry.py`, `tests/test_fase_decode.py`, `tests/test_job_queue.py`, `tests/test_sub2_cdi.py` +2 more
+- `ia_off/media_tabs.py` ← `ia_off/app.py`, `tests/test_decode_barra.py`, `tests/test_flux2_cpu_padrao.py`, `tests/test_progresso_tick.py`, `tests/test_translate.py` +2 more
 - `ia_off/image_engine.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/ov_engine.py`, `tests/stress_gui.py`, `tests/test_engine_api.py` +2 more
 - `ia_off/app.py` ← `ia_off/__main__.py`, `tests/smoke_gui.py`, `tests/stop_ensure_gui.py`, `tests/stress_gui.py`, `tests/test_std_streams.py` +1 more
-- `ia_off/media_tabs.py` ← `ia_off/app.py`, `tests/test_decode_barra.py`, `tests/test_flux2_cpu_padrao.py`, `tests/test_progresso_tick.py`, `tests/test_translate.py` +1 more
 
 ---
 
@@ -239,6 +239,8 @@
 - `Abrir pasta` [event] — `ia_off/media_tabs.py`
 - `Ampliar com IA` [event] — `ia_off/media_tabs.py`
 - `log` [event] — `ia_off/media_tabs.py`
+- `Imagem inicial (opcional)…` [event] — `ia_off/media_tabs.py`
+- `Limpar` [event] — `ia_off/media_tabs.py`
 - `Gerar vídeo` [event] — `ia_off/media_tabs.py`
 - `Baixar/verificar stable-diffusion.cpp` [event] — `ia_off/media_tabs.py`
 - `▶ Tocar` [event] — `ia_off/media_tabs.py`
@@ -254,7 +256,7 @@
 # Test Coverage
 
 > **0%** of routes and models are covered by tests
-> 35 test files found
+> 37 test files found
 
 ---
 
