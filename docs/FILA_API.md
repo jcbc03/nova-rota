@@ -21,6 +21,7 @@ Uma tarefa pesada por vez (CPU). Responsável: DEV beck.
 
 ## Implementação (DEV beck, ia_off/job_queue.py)
 - `JobQueue(parent=None, engines=None, progress_interval=0.1)` — criar na thread da GUI (ex.: no MainWindow).
+- Ordem: FIFO, sem prioridade entre tipos (decisão do Gerente em 22/10; o `ampliar` não passa na frente do vídeo).
 - `id` é `str` ("job-1", ...). `enqueue` levanta `ValueError` se o tipo não tiver motor.
 - `cancel(id) -> bool`; `list_jobs()` / `get(id)` devolvem dicts: id, tipo, estado, passo, total, pct, eta_s, resultado, erro, criado, inicio, fim, params.
 - `progress`: pct 0–100 (float), eta_s em segundos (-1 = desconhecido); limitado a 1 emissão/`progress_interval` s (o último passo sempre sai).
