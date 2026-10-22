@@ -137,7 +137,7 @@ Regras: só o ia_off executa no PC; antes de instalar, P2 verde no hash exato; b
 | F9 | Voz: A1 + A2 + Cancelar na transcrição | Texto e áudio ok; barra "s de áudio"; cancela em < 1 s | ⏳ |
 | F10 | Moderador: desligado por padrão (MO1) + um bloqueio em Rígido (MO5) | Sem amarras desligado; bloqueio com motivo | ⏳ |
 | F11 | R2/R4: OLLAMA_MODELS e HF_HOME, outros apps acham os modelos | Tudo em C:\IA\modelos | ⏳ |
-| F12 | Fim: ollama ps vazio, nenhum python rodando, tela bloqueada | PC limpo | ⏳ |
+| F12 | Fim: fechar processos (ollama ps vazio, nenhum python rodando), tela bloqueada | PC como estava; nada apagado sem ok do Julio (nem backups, zips ou stash) | ⏳ |
 
 ## Registro de falhas
 | Data | ID | Versão | O que aconteceu | Responsável | Status |
