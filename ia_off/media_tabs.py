@@ -609,7 +609,12 @@ class VideoTab(QueueClient, QWidget):
         for b in (pl, ps, od): pb.addWidget(b)
         rv.addLayout(pb); rv.addWidget(QLabel("Vídeos (Vídeos\\IA_Off):"))
         self.list = QListWidget(); self.list.itemClicked.connect(lambda it: self.preview(it.data(Qt.UserRole))); rv.addWidget(self.list, 1)
-        sp.addWidget(left); sp.addWidget(right); sp.setSizes([420, 700]); self.load_list()
+        self.log.setMinimumHeight(80)
+        # painel com rolagem: em janela baixa o formulário rola em vez de espremer o seletor de tamanho
+        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setWidget(left)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff); scroll.setMinimumWidth(left.sizeHint().width() + 24)
+        self.left_scroll = scroll
+        sp.addWidget(scroll); sp.addWidget(right); sp.setSizes([420, 700]); self.load_list()
 
     @staticmethod
     def wan22_ok(cfg):
