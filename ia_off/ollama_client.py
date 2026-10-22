@@ -1,4 +1,4 @@
-import json, os, shutil, subprocess, sys, time, tempfile, threading, socket
+import json, os, shutil, subprocess, sys, time, tempfile, threading, socket, queue
 from pathlib import Path
 import requests
 
@@ -47,69 +47,104 @@ class OllamaClient:
         return any(n == name or n.split(":")[0] == name.split(":")[0] for n in names)
 
     def chat_stream(self, model, messages, options, stop_flag=lambda: False):
+        """Gera tokens via streaming do /api/chat com worker daemon para resposta rápida ao stop_flag.
+        Problema resolvido: requests.post bloqueia até primeiro header (~5s); worker inicia request imediatamente.
+        """
         body = {"model": model, "messages": messages, "stream": True, "options": options}
-        with requests.post(self.url + "/api/chat", json=body, stream=True, timeout=(5, 600)) as r:
-            if not r.ok:
-                raise OllamaError(f"Erro {r.status_code}: {r.text[:300]}")
-            # watcher daemon que fecha a conexão se stop_flag virar True
-            fim = threading.Event()
-            parado = threading.Event()
-            def watcher():
-                while not fim.is_set():
-                    try:
-                        if stop_flag():
-                            parado.set()
-                            try:
-                                # On Linux, r.close() alone does not wake a thread blocked in socket.recv.
-                                # Shutdown the underlying socket first.
-                                sock = None
-                                try:
-                                    conn = getattr(r.raw, "_connection", None)
-                                    sock = getattr(conn, "sock", None)
-                                except Exception:
-                                    pass
-                                if sock is None:
-                                    try:
-                                        sock = r.raw._fp.fp.raw._sock
-                                    except Exception:
-                                        pass
-                                if sock is not None:
-                                    try:
-                                        sock.shutdown(socket.SHUT_RDWR)
-                                    except Exception:
-                                        pass
-                                r.close()
-                                if hasattr(r, 'raw') and r.raw:
-                                    r.raw.close()
-                            except Exception:
-                                pass
-                            return
-                    except Exception:
-                        pass  # stop_flag levantando não deve crashar
-                    time.sleep(0.05)
-            t = threading.Thread(target=watcher, daemon=True)
-            t.start()
+        parar = threading.Event()
+        estado = {}
+        q = queue.Queue()
+
+        def _fechar(r):
+            """Fecha conexão de forma agressiva (best-effort) para acordar iter_lines bloqueado."""
             try:
+                if not r:
+                    return
+                sock = None
+                try:
+                    conn = getattr(r.raw, "_connection", None)
+                    sock = getattr(conn, "sock", None)
+                except Exception:
+                    pass
+                if sock is None:
+                    try:
+                        sock = r.raw._fp.fp.raw._sock
+                    except Exception:
+                        pass
+                if sock is not None:
+                    try:
+                        sock.shutdown(socket.SHUT_RDWR)
+                    except Exception:
+                        pass
+                r.close()
+                if hasattr(r, 'raw') and r.raw:
+                    r.raw.close()
+            except Exception:
+                pass
+
+        def worker():
+            r = None
+            try:
+                r = requests.post(self.url + "/api/chat", json=body, stream=True, timeout=(5, 600))
+                estado["r"] = r
+                if parar.is_set():
+                    _fechar(r)
+                    return
+                if not r.ok:
+                    q.put(("erro", OllamaError(f"Erro {r.status_code}: {r.text[:300]}")))
+                    return
                 for line in r.iter_lines():
-                    if stop_flag() or parado.is_set():
+                    if parar.is_set():
                         break
-                    if not line:
-                        continue
-                    d = json.loads(line)
-                    if "error" in d:
-                        raise OllamaError(d["error"])
-                    c = d.get("message", {}).get("content", "")
-                    if c:
-                        yield c
-                    if d.get("done"):
-                        break
+                    q.put(("linha", line))
+                q.put(("fim", None))
             except Exception as e:
-                if parado.is_set() or stop_flag():
-                    return  # swallow se foi stop
-                raise
+                if not parar.is_set():
+                    q.put(("erro", e))
             finally:
-                fim.set()
-                t.join(timeout=0.1)
+                if r:
+                    _fechar(r)
+
+        t = threading.Thread(target=worker, daemon=True)
+        t.start()
+
+        def _parou():
+            try:
+                return bool(stop_flag())
+            except Exception:
+                return False
+
+        try:
+            while True:
+                if _parou():
+                    parar.set()
+                    if estado.get("r") is not None:
+                        _fechar(estado["r"])
+                    return
+                try:
+                    kind, val = q.get(timeout=0.05)
+                    if kind == "fim":
+                        return
+                    elif kind == "erro":
+                        raise val
+                    elif kind == "linha":
+                        if not val:
+                            continue
+                        d = json.loads(val)
+                        if "error" in d:
+                            raise OllamaError(d["error"])
+                        c = d.get("message", {}).get("content", "")
+                        if c:
+                            yield c
+                        if d.get("done"):
+                            parar.set()
+                            return
+                except queue.Empty:
+                    continue
+        finally:
+            parar.set()
+            if estado.get("r") is not None:
+                _fechar(estado.get("r"))
 
     def chat(self, model, messages, options=None):
         r = requests.post(self.url + "/api/chat", json={"model": model, "messages": messages, "stream": False,
