@@ -111,14 +111,14 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | E3 | V8: vídeo Wan com o negativo vazio | O .txt grava o negativo padrão do Wan, igual ao que o sd-cli recebe (7fe5e0c) | ✅ PC 21/10 (dda8128, Wan 2.1 real 480x272, 17 quadros, 20 passos, negativo vazio): .txt grava o negativo padrão do Wan ("vivid garish colors, overexposed, …"), fps 16, modelo wan21. Total 87min38s (difusão ~70min, ~3min20s/passo; decodificação 18min04s) |
 | E4 | R6 regressão: Z-Image, Qwen3.8 e Wan 2.2, um de cada | Geram normal, com os tempos perto dos de 16/10 | ⏳ |
 | E5 | Descarga do Ollama: gerar uma imagem com o chat parado | O Ollama é descarregado antes, e o log registra isso | ✅ PC 21/10 (dda8128, JobQueue com motor falso): log "modelos do Ollama descarregados: qwen2.5:3b", ollama ps vazio depois; +4,4 s no job |
-| E6 | Descarga com chat em andamento: mandar mensagem longa e logo depois um vídeo na fila | A fila espera o chat (até `queue_unload_wait_s`) e não descarrega no meio. Se passar do tempo, pula com aviso no log, e o chat termina inteiro | ⏳ |
+| E6 | Descarga com chat em andamento: mandar mensagem longa e logo depois um vídeo na fila | A fila espera o chat (até `queue_unload_wait_s`) e não descarrega no meio. Se passar do tempo, pula com aviso no log, e o chat termina inteiro | ✅ PC 22/10 (a7b20a3): espera 120 s, a fila esperou o chat (~59 s), descarregou o qwen2.5:3b e rodou o job; espera 3 s, pulou a descarga com aviso no log e o chat terminou normal. config.json e conversas.db intactos |
 | E7 | `IA_OFF_QUEUE_UNLOAD_OLLAMA=0` | Não descarrega nada | ✅ PC 21/10: qwen2.5:3b seguiu carregado e nenhuma linha de descarga no log. Obs.: a env só muda o padrão; `queue_unload_ollama` no config.json vence (hoje ausente no config do Julio) |
 | E8 | "Decodificando…" na primeira geração de um modelo | Mostra o tempo passado e o aviso de que pode demorar, sem estimativa | ✅ PC 21/10 (mesmo job, sem tela): "Decodificando… Xs (a primeira vez não tem estimativa; pode levar vários minutos)" |
 | E9 | "Decodificando…" na segunda geração do mesmo modelo | Mostra quanto já passou, o total estimado e quanto falta. Anotar o real contra o estimado (aceitável errar até ~25%) | ⏳ fica pro Julio na tela: a taxa decode_rate_* só é gravada pelo widget (rodada sem tela não grava) |
 | E10 | Textos de bloqueio do moderador (com ele ligado) no Chat, Imagem, Vídeo e Falar | Mostra o motivo, diz que nada foi enviado nem salvo, o texto fica na caixa e aponta pra Configurações > Moderação > "Alterar filtro…". Depois, desligar a moderação | 🟡 PC 21/10 (dda8128, sem tela, moderação ligada só em memória): Chat, Imagem, Vídeo e Falar bloqueiam com motivo e caminho do filtro, sem chamar motor; Chat não grava e mantém o texto. Abas de mídia: aparece o prefixo técnico "PromptBloqueado: " e falta dizer que nada foi salvo e o texto continua na caixa (Front). Clique real fica pro Julio |
 | E11 | Robustez (725295b): forçar falha de um job (modelo ausente via cfg_override) | O erro aparece no log, e nada fica calado | ✅ PC 21/10: ERROR "tarefa job-1 (video) falhou: FileNotFoundError" com traceback; o job seguinte terminou normal (falha via exceção do motor falso, mesmo caminho da fila) |
-| E12 | Conversa longa com 200+ mensagens (depois da entrega do Front) | Rolar e mandar mensagem sem travar. Anotar o tempo de abrir a conversa | ⏳ |
-| E13 | Barra de progresso e Cancelar em todas as abas (depois do Front) | Toda aba mostra progresso e cancela sem travar | ⏳ |
+| E12 | Conversa longa com 200+ mensagens (depois da entrega do Front) | Rolar e mandar mensagem sem travar. Anotar o tempo de abrir a conversa | 🟡 PC 22/10: abrir a conversa de 250 msgs levou 314 ms e o fit_history cortou certo; envio, streaming e rolagem não rodaram (script não esperou a lista de modelos). Falha do teste, refazer |
+| E13 | Barra de progresso e Cancelar em todas as abas (depois do Front) | Toda aba mostra progresso e cancela sem travar | ❌ PC 22/10: Vídeo cancela em 249 ms e Imagem em 1,1 s (mas segue mostrando "Carregando modelo…"); Voz (Falar e Transcrever) com o Cancelar desabilitado e o job vai até o fim; barra da Voz em escala 5/100 ("2 de 40 frase(s)") |
 | E14 | P2 + R5 no hash final | Suíte verde e nenhum caminho fixo fora do config.py | ⏳ |
 
 ## Registro de falhas
@@ -133,6 +133,8 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
 | 16/10 | V8 | 3.0 | Negativo vazio: .txt grava "negative:" em branco, mas o sd-cli recebe o negativo padrão do Wan | ia_off (sdcpp) | aberto (amanhã) |
 | 21/10 | E10 | 3.0 | Abas de mídia: mensagem de bloqueio mostra "PromptBloqueado: " e não diz que nada foi salvo / texto fica na caixa | beck (fila) + DEV Front (media_tabs) | corrigido em 17a1827 + 4692dc5 (falta instalar) |
+| 22/10 | E13 | 3.0 | Voz (Falar e Transcrever): Cancelar desabilitado, job roda até o fim; barra em escala diferente das outras abas | DEV Front / beck | aberto |
+| 22/10 | E13 | 3.0 | Imagem: depois de cancelar, ainda mostra "Carregando modelo…" | DEV Front | aberto |
 
 
 ## Checklist do Julio
