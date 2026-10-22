@@ -258,6 +258,7 @@ class QueueClient:
         if getattr(self, "qid", None):
             self.__dict__.setdefault("_cancelando", set()).add(self.qid)
             self.fila.cancel(self.qid); self.status.showMessage("Cancelando… (termina o passo atual)")
+            self.cancel_btn.setEnabled(False)  # evita cliques repetidos; _q_end reabilita o Gerar
             return True
         return False
 
@@ -503,7 +504,9 @@ class ImageTab(QueueClient, QWidget):
 
     def cancel(self):
         if self.cancel_queue(): return
-        if self.job: self.job.cancel = True; self.status.showMessage("Cancelando… (termina o passo atual)")
+        if self.job:
+            self.job.cancel = True; self.cancel_btn.setEnabled(False)
+            self.status.showMessage("Cancelando… (termina o passo atual)")
 
 class VideoTab(QueueClient, QWidget):
     def __init__(self, cfg_getter, status, cfg_set=lambda **kw: None):
@@ -538,7 +541,7 @@ class VideoTab(QueueClient, QWidget):
         f.addRow("FPS:", self.fps); f.addRow("Semente:", self.seed)
         gh = QHBoxLayout(); self.gen_btn = QPushButton("Gerar vídeo"); self.gen_btn.clicked.connect(self.generate)
         self.cancel_btn = QPushButton("Cancelar"); self.cancel_btn.setObjectName("danger"); self.cancel_btn.setEnabled(False)
-        self.cancel_btn.clicked.connect(lambda: self.cancel_queue() or (self.job and setattr(self.job, "cancel", True)))
+        self.cancel_btn.clicked.connect(self.cancel)
         gh.addWidget(self.gen_btn); gh.addWidget(self.cancel_btn); f.addRow(gh)
         self.bar = QProgressBar(); f.addRow(self.bar)
         self.dl_btn = QPushButton("Baixar/verificar stable-diffusion.cpp"); self.dl_btn.clicked.connect(self.check_bin); f.addRow(self.dl_btn)
@@ -651,6 +654,12 @@ class VideoTab(QueueClient, QWidget):
     def _done(self, path):
         self.bar.setValue(100); self.load_list(); self.preview(path); self.status.showMessage(f"Vídeo salvo: {path}", 10000)
 
+
+    def cancel(self):
+        if self.cancel_queue(): return
+        if self.job:
+            self.job.cancel = True; self.cancel_btn.setEnabled(False)
+            self.status.showMessage("Cancelando… (termina o passo atual)")
 
 class VoiceTab(QueueClient, QWidget):
     """Voz offline: transcrever (Whisper) e falar (Piper), ambos pela fila."""
