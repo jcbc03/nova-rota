@@ -9,7 +9,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 
 ## 2. Chat
 - Escolha o modelo no seletor do topo (ex.: `qwen3-30b-a3b`, o mais capaz; carrega em ~30 s na primeira mensagem e responde a uns 11 tokens por segundo). **Atualizar** recarrega a lista.
-- Escreva e clique **Enviar** (ou Ctrl+Enter). **Parar** interrompe a resposta.
+- Escreva e clique **Enviar** (ou Ctrl+Enter). **Parar** interrompe a resposta na hora; se clicado antes da primeira palavra aparecer, leva cerca de 1 s.
 - **+ Nova conversa**, **Renomear** e **Excluir** ficam na barra lateral; as conversas ficam salvas.
 - **Copiar última resposta** copia o texto da IA.
 - A rolagem automática só acontece se você estiver no fim da conversa, então dá pra ler o começo enquanto a IA responde.
