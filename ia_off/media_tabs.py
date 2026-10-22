@@ -247,7 +247,7 @@ class QueueClient:
         self._q_end(jid); self.bar.setValue(0); self.status.showMessage(err, 8000)
         if err != "Cancelado.":
             blk = "bloque" in err.lower() or "PromptBloqueado" in err
-            if blk: err += "\n\nNenhum modelo foi carregado e nada foi gerado.\nPara mudar o nível ou desligar: Configurações > Moderação > \"Alterar filtro…\" (pede a senha)."
+            if blk: err += "\n\nNenhum modelo foi carregado, nada foi gerado nem salvo; o texto continua na caixa.\nPara mudar o nível ou desligar: Configurações > Moderação > \"Alterar filtro…\" (pede a senha)."
             QMessageBox.warning(self, "Prompt bloqueado pela moderação" if blk else "Erro na geração", err)
 
     def _q_cancelled(self, jid):
