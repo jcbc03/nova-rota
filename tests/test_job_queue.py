@@ -339,3 +339,21 @@ def test_env_queue_unload(monkeypatch, val, esp):
     from ia_off import config
     monkeypatch.setenv("IA_OFF_QUEUE_UNLOAD_OLLAMA", val)
     assert config._env_bool("IA_OFF_QUEUE_UNLOAD_OLLAMA", True) is esp
+
+
+def test_prompt_bloqueado_sem_prefixo_tecnico(app, monkeypatch):
+    from ia_off.moderador import PromptBloqueado
+    import time as _t
+    monkeypatch.setattr(jq, "_cfg", lambda: {"queue_unload_ollama": False})
+    def motor(p, on_progress, cancel):
+        raise PromptBloqueado("Pedido bloqueado pela moderação (nível \"medio\"): teste")
+    q = jq.JobQueue(engines={"imagem": motor})
+    erros = []
+    q.failed.connect(lambda jid, err: erros.append(err))
+    q.enqueue("imagem", {})
+    fim = _t.time() + 5
+    while not erros and _t.time() < fim:
+        app.processEvents(); _t.sleep(0.02)
+    q.shutdown()
+    assert erros and erros[0].startswith("Pedido bloqueado")
+    assert "PromptBloqueado:" not in erros[0]

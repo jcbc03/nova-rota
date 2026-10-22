@@ -352,7 +352,11 @@ class JobQueue(QObject):
                           job.id, type(e).__name__, e)
                 res = None
             else:
-                job.erro = f"{type(e).__name__}: {e}"
+                # Erros "pro usuário" (ex.: PromptBloqueado do moderador) vão sem o nome técnico da classe.
+                if getattr(e, "motivo", None) is not None or type(e).__name__ == "PromptBloqueado":
+                    job.erro = str(e)
+                else:
+                    job.erro = f"{type(e).__name__}: {e}"
                 with self._cond:
                     job.estado = FALHOU; job.fim = time.time()
                 traceback.print_exc()

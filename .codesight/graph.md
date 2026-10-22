@@ -7,7 +7,7 @@
 - `ia_off/perf.py` — imported by **11** files
 - `ia_off/engine_api.py` — imported by **10** files
 - `ia_off/engines_registry.py` — imported by **8** files
-- `ia_off/moderador.py` — imported by **7** files
+- `ia_off/moderador.py` — imported by **8** files
 - `ia_off/image_engine.py` — imported by **7** files
 - `ia_off/job_queue.py` — imported by **6** files
 - `ia_off/rag.py` — imported by **5** files
@@ -30,7 +30,7 @@
 - `ia_off/perf.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/image_engine.py`, `ia_off/media_tabs.py`, `ia_off/ov_engine.py` +6 more
 - `ia_off/engine_api.py` ← `ia_off/engines_registry.py`, `ia_off/image_engine.py`, `ia_off/ov_engine.py`, `ia_off/sdcpp.py`, `ia_off/upscaler.py` +5 more
 - `ia_off/engines_registry.py` ← `ia_off/app.py`, `tests/stress_gui.py`, `tests/test_engines_registry.py`, `tests/test_fase_decode.py`, `tests/test_moderador_motores.py` +3 more
-- `ia_off/moderador.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `tests/mo_pc_check.py`, `tests/test_moderador.py`, `tests/test_moderador_motores.py` +2 more
+- `ia_off/moderador.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `tests/mo_pc_check.py`, `tests/test_job_queue.py`, `tests/test_moderador.py` +3 more
 - `ia_off/image_engine.py` ← `ia_off/app.py`, `ia_off/engines_registry.py`, `ia_off/ov_engine.py`, `tests/stress_gui.py`, `tests/test_engine_api.py` +2 more
 - `ia_off/job_queue.py` ← `ia_off/app.py`, `tests/test_engines_registry.py`, `tests/test_fase_decode.py`, `tests/test_job_queue.py`, `tests/test_sub2_cdi.py` +1 more
 - `ia_off/rag.py` ← `ia_off/app.py`, `tests/test_core.py`, `tests/test_moderador.py`, `tests/test_rag_v3.py`, `tests/test_sub2_cdi.py`
