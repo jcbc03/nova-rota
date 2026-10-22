@@ -1,6 +1,6 @@
 # IA Off 3.0: versão candidata (16/10/2026)
 
-Versão no PC: `70ea8b5`, instalada em 22/10 às 4h05. Backup em `C:\IA\backup\v3_20261022_040450`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
+Versão no PC: `5818bfc`, instalada em 22/10 às 4h48. Backup em `C:\IA\backup\v3_20261022_044800`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
 
 ## O que tem de novo
 - **Moderador opcional**, desligado por padrão. Desligado, não restringe nada. Ligado, tem três níveis (leve, médio e rígido), e mudar o filtro exige senha. A senha fica guardada só como hash.
@@ -26,7 +26,12 @@ Versão no PC: `70ea8b5`, instalada em 22/10 às 4h05. Backup em `C:\IA\backup\v
 - Botão Parar na pergunta aos Documentos (`3b72007`).
 - Mensagem de bloqueio sem nome técnico e dizendo que nada foi gerado nem salvo (`17a1827`, `4692dc5`).
 - Cancelar revisado em todas as abas (`6b9feba`), incluindo a Voz (`b16b394`, `30a9629`).
-- **E13 passou no `70ea8b5`** (22/10): Voz cancela em 251 ms (barra 4/40, job "cancelada"), Imagem em 1,1 s, Vídeo em 256 ms e o Parar do Chat em 477 ms. O detalhe cosmético do "frase(s)" na transcrição foi fechado em `964be01` (agora "s de áudio"), aguardando instalação. E1/E4 (Wan 2.2) em andamento.
+- **E13 passou no `70ea8b5`** (22/10): Voz cancela em 251 ms (barra 4/40, job "cancelada"), Imagem em 1,1 s, Vídeo em 256 ms e o Parar do Chat em 477 ms. O detalhe cosmético do "frase(s)" na transcrição foi fechado em `964be01` (agora "s de áudio") e instalado no `5818bfc`, aguardando a conferência do ia_off.
+- **E1 aprovado** (22/10): Cancelar no Wan 2.2 em 0,82 s, sem passo falso.
+- **E4 aprovado com ressalva de desempenho**: Z-Image 512 em 983 s (~20% mais lento que em 16/10), Qwen3.8 a 1,22 tok/s com 1º token em 164 s (a frio), Wan 2.2 em 703 s. Será remedido no `5818bfc`.
+- **E2**: metade Wan 2.2 ok (24 fps); metade Wan 2.1 pendente.
+- Resolução padrão da aba Vídeo em verificação (abriu em 256×256 em vez de 480×272).
+- E14 a seguir.
 - Ampliador com IA pronto no código, mas no PC continua no Lanczos até o Julio aprovar o modelo de ~4,9 MB.
 
 ## Limites conhecidos

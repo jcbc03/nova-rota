@@ -1,6 +1,6 @@
 # Registro de versões – IA Off
 
-## 3.0 (instalada no PC do Julio em 15/10/2026; versão atual no PC: `70ea8b5`, instalada em 22/10 às 4h05, backup em `C:\IA\backup\v3_20261022_040450` (antes, `a7b20a3` às 3h49, backup `v3_20261022_034815`; `dda8128` em 21/10 às 21h27, backup `v3_20261021_212733`; `2f4504e` às 21h26, backup `v3_20261021_212540`; e `4c6d743` em 16/10 às 15h50); teste rápido depois da instalação ok (chat Qwen3.8 com primeiro texto em 65 s, Z-Image 256 em 69 s com fases, Wan 2.2 curto em 709 s); em testes; entrega prevista 30/10/2026)
+## 3.0 (instalada no PC do Julio em 15/10/2026; versão atual no PC: `5818bfc`, instalada em 22/10 às 4h48, backup em `C:\IA\backup\v3_20261022_044800` (P2 verde em `b3d2a78`, depois só docs; traz o "s de áudio" da Voz, `964be01`) (antes, `70ea8b5` às 4h05, backup `v3_20261022_040450`; `a7b20a3` às 3h49, backup `v3_20261022_034815`; `dda8128` em 21/10 às 21h27, backup `v3_20261021_212733`; `2f4504e` às 21h26, backup `v3_20261021_212540`; e `4c6d743` em 16/10 às 15h50); teste rápido depois da instalação ok (chat Qwen3.8 com primeiro texto em 65 s, Z-Image 256 em 69 s com fases, Wan 2.2 curto em 709 s); em testes; entrega prevista 30/10/2026)
 ### Novo
 - Busca em documentos com índice vetorial local FAISS (`faiss-cpu`, com fallback numpy); índice em `rag_dir` do `config.py` (padrão `C:\IA\dados\rag`). Documentos antigos são reindexados uma vez na abertura, com andamento na barra de status. (beck `8bf11e9`, front `fde8c1b`)
 - Fila de tarefas de imagem e vídeo (`job_queue.py`): uma tarefa por vez, sinais `started`, `progress`, `finished`, `failed`, `cancelled`. (beck `51aeff4`)
@@ -57,7 +57,7 @@
 - Conversa longa testada no PC em 22/10 (E12): 250 mensagens abrem em 337 ms, 50 passos de rolagem em 84 ms, o histórico enviado foi cortado pra 29 mensagens com aviso na barra, e o redesenho do streaming ficou em 2 ms na mediana.
 - Voz: Cancelar corrigido (o botão ficava dentro do bloco desabilitado), barra na mesma escala das outras abas e "Cancelando…" em vez de "Carregando modelo…" (front `b16b394`). O Piper para também no meio de frase longa e não dá mais `wave.Error` ao cancelar na primeira frase (beck `30a9629`). P2 verde no `70ea8b5` (203 ok), instalado no PC em 22/10 às 4h05.
 - E13 passou no `70ea8b5` (22/10, refeito pelo ia_off). Voz (Falar e Transcrever): Cancelar habilitado, barra em 4/40, cancela em 251 ms e o job fica "cancelada". Imagem: "Cancelando…", cancela em 1,1 s. Vídeo: 256 ms. Chat: Parar interrompe o streaming real em 477 ms. Hashes conferem. Pendência cosmética do texto "frase(s)" na transcrição: fechada (ver abaixo). Script: `/workspace/etests/e13_test.py`.
-- Barra da Voz: a unidade agora vem do tipo do próprio job, e o Transcrever mostra "s de áudio" em vez de "frase(s)" (front `964be01`, wiki `e253439`; suíte 196 ok + 3 falhas locais conhecidas). Fechado, aguardando o P2 do sub2 no `e253439` e a próxima instalação.
+- Barra da Voz: a unidade agora vem do tipo do próprio job, e o Transcrever mostra "s de áudio" em vez de "frase(s)" (front `964be01`, wiki `e253439`; suíte 196 ok + 3 falhas locais conhecidas). Fechado e instalado no PC no `5818bfc` (22/10 às 4h48), aguardando a conferência do ia_off.
 - Conferido na tela: aviso do Lanczos (U3) e seletor Wan 2.1/2.2 (front). V4: as correções do Cancelar estão instaladas e os 21 testes passam, mas falta um Cancelar real na tela do PC (sub2 `4c86d2f`).
 
 ## 2.3.1 (15/10/2026)
@@ -66,3 +66,6 @@
 
 ## 2.3
 - Chat via Ollama, perguntas sobre documentos, imagem (SD 1.5 + LCM, FLUX.2 Klein), seletores até 8K, tradução automática do prompt, modo turbo e modelos centralizados em `C:\IA\modelos`.
+- E1 passou no `70ea8b5` (22/10, 4h10 a 4h45): Cancelar real no passo 2/8 do Wan 2.2, a barra foi direto pra "Cancelando…", o job ficou "cancelada" em 0,82 s, o sd-cli fechou e não apareceu passo falso.
+- E4 passou no `70ea8b5`, com ressalva de desempenho: Z-Image 512×512 com 8 passos em 983 s (em 16/10 eram ~800 s, ~20% mais lento); Qwen3.8 27B a 1,22 tok/s, com o 1º token em 164 s (em 16/10, 1,4 tok/s e ~60 s; carregou a frio); Wan 2.2 em 703 s, mas a aba Vídeo abriu em 256×256 em vez de 480×272 (o DEV Front vai confirmar o padrão). A comparação com 16/10 será refeita no `5818bfc` com tudo carregado; se ficar mais de 15% pior, abre falha pro beck.
+- E2: metade Wan 2.2 ok (24 fps no .txt e no arquivo, conferido com ffmpeg). A metade Wan 2.1 está pendente e será conferida com ffprobe no vídeo do E3 `20261021_215646_wan_1629243728.mp4` (esperado 16 fps). Próximo: E14.
