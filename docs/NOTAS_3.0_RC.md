@@ -26,12 +26,13 @@ Versão no PC: `5818bfc`, instalada em 22/10 às 4h48. Backup em `C:\IA\backup\v
 - Botão Parar na pergunta aos Documentos (`3b72007`).
 - Mensagem de bloqueio sem nome técnico e dizendo que nada foi gerado nem salvo (`17a1827`, `4692dc5`).
 - Cancelar revisado em todas as abas (`6b9feba`), incluindo a Voz (`b16b394`, `30a9629`).
-- **E13 passou no `70ea8b5`** (22/10): Voz cancela em 251 ms (barra 4/40, job "cancelada"), Imagem em 1,1 s, Vídeo em 256 ms e o Parar do Chat em 477 ms. O detalhe cosmético do "frase(s)" na transcrição foi fechado em `964be01` (agora "s de áudio") e instalado no `5818bfc`, aguardando a conferência do ia_off.
+- **E13 passou no `70ea8b5`** (22/10): Voz cancela em 251 ms (barra 4/40, job "cancelada"), Imagem em 1,1 s, Vídeo em 256 ms e o Parar do Chat em 477 ms. O detalhe cosmético do "frase(s)" na transcrição foi fechado em `964be01` (agora "s de áudio") e instalado no `5818bfc`; conferido no PC no `5818bfc`: a barra mostra "4 de 40 s de áudio", e todas as abas cancelam.
 - **E1 aprovado** (22/10): Cancelar no Wan 2.2 em 0,82 s, sem passo falso.
-- **E4 aprovado com ressalva de desempenho**: Z-Image 512 em 983 s (~20% mais lento que em 16/10), Qwen3.8 a 1,22 tok/s com 1º token em 164 s (a frio), Wan 2.2 em 703 s. Será remedido no `5818bfc`. O Qwen volta a frio porque `queue_unload_ollama` descarrega o Ollama antes de cada imagem/vídeo (explica o 1º token em 164 s).
-- **E2**: metade Wan 2.2 ok (24 fps); metade Wan 2.1 pendente.
-- Resolução padrão da aba Vídeo (abriu em 256×256): comportamento esperado: a aba lembra a última proporção usada (padrão 256p, mais rápido na CPU; sem config salva abre em 16:9).
-- E14 roda no `5818bfc` depois da comparação com 16/10.
+- **E4 aprovado, ressalva só do 1º token** (`5818bfc`, tudo carregado, nada acima de 15% vs. 16/10): Qwen3.8 1,42 tok/s (igual), 1º token 97 s (16/10: 52 a 64 s); Z-Image 875 s (+7 a 13%), difusão 86,5 s/passo, carga 131 s; Wan 2.2 480×272 em 831 s com 4 passos (mínimo do campo; 16/10 usou 2), ~+7% ajustado, decode +2%.
+- **E2 FECHADO**: Wan 2.1 do E3 a 16 fps (.txt e arquivo, ffprobe) e Wan 2.2 a 24 fps.
+- **E14 PASSOU no `5818bfc`** (hash final): P2 limpa 2x (203 ok, 3 skipped), R5 limpo (só docstring em `rag.py`), app abre sem erro no PC.
+- **Falhas abertas novas**: (1) Wan: na decodificação a barra volta a "Passo 1/4 …" em vez de "Decodificando…" (Front); (2) Parar do Chat levou 5,3 s (antes ~480 ms) (beck/Front). Roteiro atualizado pelo sub2 em `929df8b`.
+- Pendentes do Julio: E9 e os cliques reais do E10.
 - Ampliador com IA pronto no código, mas no PC continua no Lanczos até o Julio aprovar o modelo de ~4,9 MB.
 
 ## Limites conhecidos
