@@ -260,6 +260,7 @@ class MainWindow(QMainWindow):
         cid = self.conv_id
         def job(w):
             self.client.ensure_running()
+            if w.stopped: return ""  # Parar enquanto o Ollama ainda subia: não manda o pedido
             from .job_queue import chat_em_andamento
             with chat_em_andamento():
                 for c in self.client.chat_stream(model, msgs, self.options(), lambda: w.stopped):
