@@ -19,3 +19,13 @@ def test_tqdm_real_sem_console(monkeypatch):
     app.ensure_std_streams()
     for _ in tqdm(range(3)):
         pass
+
+def test_transformers_loading_report_sem_console(monkeypatch):
+    lr = pytest.importorskip("transformers.utils.loading_report")
+    _zera(monkeypatch)
+    app.ensure_std_streams()
+    import inspect
+    style = lr._style
+    n = len([p for p in inspect.signature(style).parameters.values()
+             if p.default is inspect.Parameter.empty and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)])
+    style(*(["x"] * n))  # sem a guarda: AttributeError 'NoneType' object has no attribute 'isatty'
