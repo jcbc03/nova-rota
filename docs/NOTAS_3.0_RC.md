@@ -60,3 +60,21 @@ Faça um de cada vez, com o app aberto.
 Já feitos em 16/10, com o ok do Julio: SE4 aprovado (sem o `moderacao_senha.json` o app pede senha nova; o arquivo foi restaurado do backup e a senha temporária voltou) e os temporários da instalação apagados (os backups ficaram).
 
 Se algo falhar, mande no grupo um print e o horário.
+
+## O que o Julio precisa conferir na tela (atualizado 22/10, 18h)
+
+Já instalado no PC (`d040ea5`):
+- **Barra de progresso** (Imagem, Melhorar e Vídeo): o "falta" desce a cada segundo entre os passos, aparece "Carregando modelo… Xs" antes do 1º passo e "Processando… Xs" no Melhorar sem IA.
+- **Aba Vídeo, linha Tamanho**: Proporção, Resolução e L×A separados e clicáveis; o painel rola com a janela baixa.
+- **E9** e os cliques reais do **E10**, **MO5** e **SE1** (roteiro, "Checklist do Julio").
+
+Depois da próxima instalação (ainda não está no PC):
+- **FLUX.2 na CPU com o Dispositivo em Auto**: editar uma imagem pequena (512×512) e ver que não fica preso em "Carregando modelo…" na GPU. Antes disso, o Dispositivo deve voltar de CPU para Auto (o ia_off mudou para CPU durante o teste de 22/10).
+- **Vídeo com imagem inicial**: com Wan 2.2, escolher uma imagem em "Imagem inicial (opcional)…" e gerar; no Wan 2.1 a linha não deve aparecer.
+
+Decisões só do Julio:
+- Modelo do chat: o `config.json` está com o `qwen3-30b-a3b`, e não com o `qwen3.8-27b-aggressive` aprovado (com o 30b, o app mínimo passa de ~57 GB para ~74 GB).
+- Manter o FLUX.2 para a edição, já que ele não está na lista de modelos aprovados (imagem: Z-Image e Qwen-Image 2.1).
+- Aprovar o modelo do ampliador (`.onnx`, ~4,9 MB); até lá é usado o Lanczos.
+- Trocar a senha temporária e fazer o S3 sem internet.
+- Ok para limpar `stash@{0}`, os zips e os ~90 GB de cópias e cache (nada é apagado sem o ok dele).
