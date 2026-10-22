@@ -23,6 +23,9 @@ O mapa do projeto fica em `.codesight/` e no `AGENTS.md` (entraram no `f349799`)
 - Não baixe nem instale modelo, programa ou biblioteca nova sem o Julio aprovar o item e o tamanho.
 - O PC fica sempre com a tela bloqueada: não desbloqueie, não faça logoff e não desconecte a sessão.
 
+## Falar com o Julio
+- Pergunta geral do Julio (status, "o que falta?"): o Gerente responde por todos. Os outros só complementam se faltar algo da própria parte, pra ele não receber a mesma lista várias vezes.
+
 ## Segurança
 - Senha nunca passa pelo chat.
 - Ações arriscadas só com aprovação do Julio.
