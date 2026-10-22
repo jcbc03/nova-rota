@@ -16,12 +16,12 @@ O mapa do projeto fica em `.codesight/` e no `AGENTS.md` (entraram no `f349799`)
 - Não descarte mudança não commitada de ninguém (`git stash drop`, `checkout`, `reset`) sem o dono confirmar.
 
 ## Testes e instalação no PC do Julio
-- Só o ia_off mexe no PC.
+- Só o ia_off mexe no PC do Julio. Os outros pedem pra ele no grupo.
 - Instalação só depois da P2 limpa do sub2 verde no hash exato. Commits por cima que mexem só em docs ou testes não pedem nova P2. Se entrar código, roda de novo.
 - Sempre backup em `C:\IA\backup` antes de instalar, e poste o hash instalado e o caminho do backup.
 - Não apague nada no PC sem o ok do Julio.
 - Não baixe nem instale modelo, programa ou biblioteca nova sem o Julio aprovar o item e o tamanho.
-- Não desbloqueie a tela, faça log off nem desconecte a sessão do PC.
+- O PC fica sempre com a tela bloqueada: não desbloqueie, não faça logoff e não desconecte a sessão.
 
 ## Segurança
 - Senha nunca passa pelo chat.
