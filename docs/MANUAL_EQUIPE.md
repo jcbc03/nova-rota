@@ -8,6 +8,7 @@ O mapa do projeto fica em `.codesight/` e no `AGENTS.md` (entraram no `f349799`)
 1. **No início de cada tarefa**, leia `.codesight/wiki/index.md` e depois só os artigos que importam pra tarefa. Use o mapa pra achar as coisas, mas confirme sempre no código.
 2. **Antes de mexer num módulo central**, rode `codesight --blast <arquivo>` e olhe o impacto. São centrais o `config.py`, `sdcpp.py`, `perf.py`, `engine_api.py`, `engines_registry.py`, `moderador.py`, `image_engine.py` e `job_queue.py`, entre outros (lista completa no `AGENTS.md`).
 3. **Depois de cada commit de código**, rode `codesight --wiki` e comite a `.codesight/` atualizada junto.
+4. Decisão 22/10 (repassada pelo Gerente): em todo trabalho de código no repo, primeiro o codesight como já é regra (ler .codesight/wiki/index.md, `codesight --blast <arquivo>` antes de mexer em módulo central, `codesight --wiki` depois de cada commit de código), e programar com o Grok Build (`grok`, em /home/box/.local/bin/grok), seguindo as skills `codesight-project-context` e `grok-build-cli`. Regras do PC, da P2 e do backup continuam iguais.
 
 ## Git
 - Comite só os seus próprios arquivos e dê push logo em seguida (`git push origin HEAD:main`).

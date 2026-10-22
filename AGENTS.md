@@ -32,3 +32,6 @@ Required environment variables (no defaults):
 
 Read .codesight/wiki/index.md for orientation (WHERE things live). Then read actual source files before implementing. Wiki articles are navigation aids, not implementation guides.
 Read .codesight/CODESIGHT.md for the complete AI context map including all routes, schema, components, libraries, config, middleware, and dependency graph.
+
+## Codesight + Grok Build
+Decisão 22/10 (repassada pelo Gerente): em todo trabalho de código no repo, primeiro o codesight como já é regra (ler .codesight/wiki/index.md, `codesight --blast <arquivo>` antes de mexer em módulo central, `codesight --wiki` depois de cada commit de código), e programar com o Grok Build (`grok`, em /home/box/.local/bin/grok), seguindo as skills `codesight-project-context` e `grok-build-cli`. Regras do PC, da P2 e do backup continuam iguais.
