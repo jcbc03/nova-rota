@@ -382,3 +382,30 @@ def test_ampliar_fifo_progresso_por_bloco_e_cancel(app, monkeypatch):
     assert pump(app, lambda: "cancelled" in r.names(a) and "finished" in r.names(b))
     assert q.get(a)["estado"] == "cancelada" and q.get(a)["passo"] < 200
     q.shutdown()
+
+
+def test_falha_grava_erro_log(app, monkeypatch, tmp_path):
+    from ia_off import config
+    monkeypatch.setattr(config, "APP_DIR", tmp_path)
+    def raising(p, op, cf):
+        raise ValueError("boom")
+    q = jq.JobQueue(engines={"imagem": raising}); r = Rec(q)
+    jid = q.enqueue("imagem")
+    assert pump(app, lambda: "failed" in r.names(jid))
+    log_content = (tmp_path / "erro.log").read_text(encoding="utf-8")
+    assert "Traceback" in log_content and "ValueError: boom" in log_content and "imagem" in log_content
+    q.shutdown()
+
+
+def test_erro_log_invalido_fila_continua(app, monkeypatch, tmp_path):
+    from ia_off import config
+    bad_dir = tmp_path / "arquivo"
+    bad_dir.write_text("block")
+    monkeypatch.setattr(config, "APP_DIR", bad_dir)
+    engines = {"imagem": lambda p, op, cf: 1 / 0, "video": steps_engine()}
+    q = jq.JobQueue(engines=engines); r = Rec(q)
+    a = q.enqueue("imagem")
+    b = q.enqueue("video", {"name": "good"})
+    assert pump(app, lambda: done(q, a) and done(q, b))
+    assert q.get(a)["estado"] == "falhou" and "finished" in r.names(b)
+    q.shutdown()

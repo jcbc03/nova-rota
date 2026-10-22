@@ -91,6 +91,16 @@ def _cfg():
         return {}
 
 
+def _log_erro(msg):
+    """Grava em config.APP_DIR/erro.log (pythonw: stderr vai pro devnull). Nunca levanta."""
+    try:
+        from ia_off import config
+        with open(config.APP_DIR / "erro.log", "a", encoding="utf-8") as f:
+            f.write(time.strftime("[%Y-%m-%d %H:%M:%S] ") + msg + "\n")
+    except Exception:
+        pass
+
+
 def _post(url, payload, timeout):
     req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST",
                                  headers={"Content-Type": "application/json"})
@@ -360,7 +370,8 @@ class JobQueue(QObject):
                 with self._cond:
                     job.estado = FALHOU; job.fim = time.time()
                 traceback.print_exc()
-                _log.error("fila: tarefa %s (%s) falhou: %s", job.id, job.tipo, job.erro)
+                _log_erro(f"fila: tarefa {job.id} ({job.tipo}) falhou: {job.erro}\n" + traceback.format_exc().rstrip("\n"))
+                _log.error("fila: tarefa %s (%s) falhou: %s", job.id, job.tipo, job.erro, exc_info=True)
                 self.failed.emit(job.id, job.erro)
                 return
         with self._cond:
