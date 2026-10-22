@@ -121,6 +121,24 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | E13 | Barra de progresso e Cancelar em todas as abas (depois do Front) | Toda aba mostra progresso e cancela sem travar | ❌ PC 22/10: Vídeo cancela em 249 ms e Imagem em 1,1 s (mas segue mostrando "Carregando modelo…"); Voz (Falar e Transcrever) com o Cancelar desabilitado e o job vai até o fim; barra da Voz em escala 5/100 ("2 de 40 frase(s)") → ✅ PC 22/10 (70ea8b5): Voz (Falar e Transcrever) com Cancelar habilitado, barra 4/40, cancela em 251 ms e termina como "cancelada"; Imagem mostra "Cancelando…" e cancela em 1,1 s; Vídeo em 256 ms; Chat para o streaming real em 477 ms. Cosmético: a Transcrição ainda diz "frase(s)"; reconferido no 5818bfc: "4 de 40 s de áudio" e todas as abas cancelam ✅ |
 | E14 | P2 + R5 no hash final | Suíte verde e nenhum caminho fixo fora do config.py | ✅ 22/10 no 5818bfc (hash final): P2 limpa 2x com 203 ok e 3 skipped; R5 só achou C:\IA\dados\rag numa docstring do rag.py; PC com 5818bfc, app abre sem erro |
 
+## 11. Regressão final (29/10, no hash candidato à entrega)
+Regras: só o ia_off executa no PC; antes de instalar, P2 verde no hash exato; backup antes; nada baixado nem apagado. Modelos quentes onde indicado; o Julio não precisa estar.
+
+| ID | Teste | Esperado | Status |
+|---|---|---|---|
+| F1 | P2 limpa 2x + R1/R5 no hash candidato | Suíte verde, nenhum caminho fixo fora do config.py | ⏳ |
+| F2 | Instalar com backup, conferir SHA256 de ollama_client.py, app.py, media_tabs.py, sdcpp.py | Hashes batem; P1 abre em < 15 s | ⏳ |
+| F3 | Chat: C1 + Parar antes do 1º pedaço, no meio e durante o ensure_running (c5ae85c), com qwen3.8-27b-aggressive | Parar < 0,5 s nos três; 2º Enviar normal; llama-server sem CPU depois | ⏳ |
+| F4 | Chat: C3 (fechar e reabrir) + E12 (250 mensagens) | Histórico preservado, abre em < 1 s | ⏳ |
+| F5 | Documentos: D2 com um PDF | Resposta com citação | ⏳ |
+| F6 | Imagem: I1 Z-Image 512x512 8 passos + Cancelar numa 2ª | Gera; tempo até +15% do E4 (875 s); cancela sem "Carregando modelo…" | ⏳ |
+| F7 | Vídeo: Wan 2.2 256x256 4 passos + Cancelar numa 2ª | "Decodificando…" até o fim, 24 fps; cancela em ~1 passo | ⏳ |
+| F8 | Ampliador: U1 2x (só se o .onnx estiver aprovado) senão U3 | IA ou Lanczos com aviso | ⏳ |
+| F9 | Voz: A1 + A2 + Cancelar na transcrição | Texto e áudio ok; barra "s de áudio"; cancela em < 1 s | ⏳ |
+| F10 | Moderador: desligado por padrão (MO1) + um bloqueio em Rígido (MO5) | Sem amarras desligado; bloqueio com motivo | ⏳ |
+| F11 | R2/R4: OLLAMA_MODELS e HF_HOME, outros apps acham os modelos | Tudo em C:\IA\modelos | ⏳ |
+| F12 | Fim: ollama ps vazio, nenhum python rodando, tela bloqueada | PC limpo | ⏳ |
+
 ## Registro de falhas
 | Data | ID | Versão | O que aconteceu | Responsável | Status |
 |---|---|---|---|---|---|
