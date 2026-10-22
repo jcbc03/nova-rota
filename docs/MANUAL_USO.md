@@ -18,7 +18,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 
 ## 3. Documentos
 - **Adicionar arquivos…** aceita PDF, Word (DOCX), TXT e MD.
-- Escreva a pergunta e clique **Perguntar**. A resposta cita o documento e o trecho de onde veio.
+- Escreva a pergunta e clique **Perguntar**. A resposta cita o documento e o trecho de onde veio. **Parar** interrompe a resposta na hora: o que já foi escrito fica, marcado como "Interrompido", e as fontes continuam aparecendo.
 - **Remover selecionado** tira um documento; **Limpar base** apaga todos (não apaga seus arquivos originais).
 - Usa o modelo de embeddings `embeddinggemma-2:740m` no Ollama. Se faltar, **Baixar modelo de embeddings** (precisa de internet uma única vez).
 - O índice fica em `C:\IA\dados\rag`. Documentos importados na 2.x são trazidos automaticamente na primeira abertura.

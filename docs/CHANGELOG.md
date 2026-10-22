@@ -50,6 +50,7 @@
 - Conversa longa: o streaming só redesenha a resposta (de 33 pra 2 ms por pedaço com 250 mensagens) e o histórico enviado cabe no `num_ctx` (front `5278092`).
 - Ampliador: testes de ponta a ponta pela fila com modelo falso e `docs/UPSCALER_API.md` (beck `dda8128`). No PC segue no Lanczos até o Julio aprovar o `realesr-general-x4v3.onnx` (~4,9 MB, já no repositório).
 - Tudo acima, mais `725295b` e `132ee82`, instalado no PC em 21/10 às 21h27 (`dda8128`, P2 197 ok e 3 skips). Rodada E1 a E14 em andamento.
+- Documentos: botão Parar na pergunta, que mantém o que já foi escrito marcado como "Interrompido" e mostra as fontes. A resposta redesenha no máximo ~12 vezes por segundo (front `3b72007`, P2 verde no `f75c39f`, ainda não instalado).
 - Conferido na tela: aviso do Lanczos (U3) e seletor Wan 2.1/2.2 (front). V4: as correções do Cancelar estão instaladas e os 21 testes passam, mas falta um Cancelar real na tela do PC (sub2 `4c86d2f`).
 
 ## 2.3.1 (15/10/2026)
