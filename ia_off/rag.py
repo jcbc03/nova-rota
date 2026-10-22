@@ -106,7 +106,10 @@ class VectorStore:
     def save(self):
         tmp = self.folder / "meta.json.tmp"
         tmp.write_text(json.dumps(self.meta, ensure_ascii=False), encoding="utf-8")
-        np.save(self.folder / "vecs.npy", self.vecs)
+        vt = self.folder / "vecs.npy.tmp"
+        with open(vt, "wb") as fh:
+            np.save(fh, self.vecs)
+        vt.replace(self.folder / "vecs.npy")
         tmp.replace(self.folder / "meta.json")
         fi = self.folder / "index.faiss"
         if self.use_faiss and self.index is not None:
@@ -128,6 +131,7 @@ class VectorStore:
 
     # ---------- operações ----------
     def add(self, metas, vectors):
+        if not len(metas): return  # entrada vazia: nada a fazer (antes dava ValueError)
         v = self._norm(vectors)
         if len(metas) != len(v):
             raise ValueError("Quantidade de trechos e vetores diferente.")
@@ -207,7 +211,6 @@ def reindex(store, embed_fn, batch=16, progress=lambda s: None, on_progress=None
 
 def index_file(path, store, embed_fn, size=800, overlap=150, progress=lambda s: None):
     name = Path(path).name
-    store.remove_source(name)
     metas = []
     for page, txt in read_file(path):
         for c in chunk_text(txt, size, overlap):
@@ -218,6 +221,7 @@ def index_file(path, store, embed_fn, size=800, overlap=150, progress=lambda s: 
     for i in range(0, len(metas), 16):
         vecs.extend(embed_fn([m["text"] for m in metas[i:i + 16]]))
         progress(f"{name}: {min(i + 16, len(metas))}/{len(metas)} trechos")
+    store.remove_source(name)  # só remove após embeddings bem-sucedidos (mantém chunks antigos se falhar)
     store.add(metas, vecs)
     return len(metas)
 

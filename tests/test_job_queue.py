@@ -357,3 +357,28 @@ def test_prompt_bloqueado_sem_prefixo_tecnico(app, monkeypatch):
     q.shutdown()
     assert erros and erros[0].startswith("Pedido bloqueado")
     assert "PromptBloqueado:" not in erros[0]
+
+
+# ---------- worker não morre com BaseException do motor ----------
+@pytest.mark.parametrize("exc", [SystemExit(3), KeyboardInterrupt()])
+def test_baseexception_do_motor_nao_mata_worker(app, exc):
+    def ruim(p, op, cf): raise exc
+    q = jq.JobQueue(engines={"imagem": ruim, "video": steps_engine(2, 0)}); r = Rec(q)
+    a = q.enqueue("imagem"); b = q.enqueue("video", {"name": "b"})
+    assert pump(app, lambda: done(q, a) and done(q, b))
+    assert q.get(a)["estado"] == "falhou" and "finished" in r.names(b)
+    q.shutdown()
+
+
+# ---------- tipo "ampliar" na fila (UPSCALER_API / FILA_API) ----------
+def test_ampliar_fifo_progresso_por_bloco_e_cancel(app, monkeypatch):
+    monkeypatch.setattr(jq, "_cfg", lambda: {"queue_unload_ollama": False})
+    q = jq.JobQueue(engines={"ampliar": steps_engine(200, 0.01), "imagem": steps_engine(3, 0)},
+                    progress_interval=0); r = Rec(q)
+    a = q.enqueue("ampliar", {"entrada": "x.png"}); b = q.enqueue("imagem")   # FIFO, sem prioridade
+    assert pump(app, lambda: any(e[0] == "progress" and e[1] == a for e in r.ev))
+    assert q.get(b)["estado"] == "na_fila"
+    q.cancel(a)
+    assert pump(app, lambda: "cancelled" in r.names(a) and "finished" in r.names(b))
+    assert q.get(a)["estado"] == "cancelada" and q.get(a)["passo"] < 200
+    q.shutdown()

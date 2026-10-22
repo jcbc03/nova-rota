@@ -346,7 +346,7 @@ class JobQueue(QObject):
             res = self._engine(job.tipo)(dict(job.params), on_progress, job.cancel_flag)
         except JobCancelled:
             res = None; job.cancel_flag.set()
-        except Exception as e:
+        except BaseException as e:  # SystemExit/KeyboardInterrupt do motor não podem matar o worker (fila travaria)
             if job.cancel_flag.is_set():
                 _log.info("fila: tarefa %s cancelada; exceção do motor descartada (%s: %s)",
                           job.id, type(e).__name__, e)

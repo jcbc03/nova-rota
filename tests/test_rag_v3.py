@@ -110,3 +110,44 @@ def test_with_mocked_ollama_client(tmp_path, monkeypatch):
     s = VectorStore(tmp_path / "vs")
     index_file(str(_doc(tmp_path)), s, lambda t: cli.embed("nomic-embed-text", t), size=200)
     assert "carros" in s.search(cli.embed("nomic-embed-text", ["carros estrada"])[0], k=1)[0][1]["text"]
+
+
+# ---------- robustez (beck) ----------
+def _emb(texts):
+    return [[1.0, float(len(t) % 7), 0.5] for t in texts]
+
+
+def test_add_vazio_e_noop(tmp_path):
+    from ia_off import rag
+    st = rag.VectorStore(tmp_path / "i", use_faiss=False)
+    st.add([], [])                       # antes: ValueError
+    assert st.meta == [] and st.search([1, 0, 0]) == []
+
+
+def test_index_file_falha_no_embed_mantem_trechos_antigos(tmp_path):
+    from ia_off import rag
+    st = rag.VectorStore(tmp_path / "i", use_faiss=False)
+    doc = tmp_path / "doc.txt"; doc.write_text("versão um do documento. " * 20, encoding="utf-8")
+    n = rag.index_file(doc, st, _emb)
+    assert n > 0 and st.sources() == ["doc.txt"]
+    doc.write_text("versão dois. " * 20, encoding="utf-8")
+    def quebra(t): raise ConnectionError("Ollama fora")
+    with pytest.raises(ConnectionError):
+        rag.index_file(doc, st, quebra)
+    st2 = rag.VectorStore(tmp_path / "i", use_faiss=False)
+    assert len(st2.meta) == n and "versão um" in st2.meta[0]["text"]
+
+
+def test_save_atomico_sem_tmp_e_falha_nao_corrompe(tmp_path, monkeypatch):
+    from ia_off import rag
+    import numpy as np
+    st = rag.VectorStore(tmp_path / "i", use_faiss=False)
+    st.add([{"source": "a", "page": None, "text": "x"}], [[1.0, 0, 0]])
+    assert not list((tmp_path / "i").glob("*.tmp"))
+    def boom(fh, a): fh.write(b"lixo"); raise OSError("disco cheio")
+    monkeypatch.setattr(rag.np, "save", boom)
+    with pytest.raises(OSError):
+        st.add([{"source": "b", "page": None, "text": "y"}], [[0, 1.0, 0]])
+    monkeypatch.undo()
+    st2 = rag.VectorStore(tmp_path / "i", use_faiss=False)   # carrega a versão anterior íntegra
+    assert [m["source"] for m in st2.meta] == ["a"] and st2.vecs.shape == (1, 3)
