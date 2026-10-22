@@ -187,12 +187,43 @@ class QueueClient:
         if getattr(self, "_fases", {}).get(jid) == "decodificando":  # Wan manda o decode como passos; mantém o rótulo
             self.bar.setRange(0, 0); self._show_decode(); return
         if total <= 0: self.bar.setRange(0, 0); return
-        self.bar.setRange(0, total); self.bar.setValue(passo)
-        txt = f"Passo {passo}/{total} · {int(pct)}% · falta {fmt_eta(eta_s)}"
+        # âncora do último passo: entre passos o tick de 1 s faz o "falta" descer e a % andar
+        self._p_anc = {"jid": jid, "t": time.monotonic(), "passo": passo, "total": total, "pct": pct, "eta": eta_s}
+        self._show_progress()
+        t = self._prog_timer()
+        if not t.isActive(): t.start()
+
+    def _prog_timer(self):
+        t = getattr(self, "_ptimer", None)
+        if t is None:
+            from PySide6.QtCore import QTimer
+            t = self._ptimer = QTimer(self); t.setInterval(1000); t.timeout.connect(self._show_progress)
+        return t
+
+    def _stop_progress(self):
+        self._p_anc = None
+        t = getattr(self, "_ptimer", None)
+        if t is not None: t.stop()
+
+    def _show_progress(self):
+        a = getattr(self, "_p_anc", None)
+        if not a or a["jid"] not in getattr(self, "_jobs", ()) or a["jid"] in getattr(self, "_cancelando", ()):
+            self._stop_progress(); return
+        passo, total, eta = a["passo"], a["total"], a["eta"]
+        el = time.monotonic() - a["t"]; frac = 0.0; eta_now = eta
+        if eta is not None and eta >= 0:
+            eta_now = max(0.0, eta - el)
+            resta = total - passo
+            if resta > 0 and eta > 0: frac = min(0.95, el / (eta / resta))
+        pct = max(float(a["pct"]), min(99.0, (passo + frac) / total * 100.0)) if passo < total else float(a["pct"])
+        self.bar.setRange(0, 1000); self.bar.setValue(int(pct * 10))
+        falta = "quase lá" if (eta is not None and eta >= 0 and eta_now <= 0 and passo < total) else f"falta {fmt_eta(eta_now)}"
+        txt = f"Passo {passo}/{total} · {int(pct)}% · {falta}"
         self.bar.setFormat(txt); self.status.showMessage(txt)
 
     def _q_phase(self, jid, fase):
         if not self._mine(jid) or jid in getattr(self, "_cancelando", ()): return
+        self._stop_progress()
         self.__dict__.setdefault("_fases", {})[jid] = fase
         txt = {"decodificando": "Decodificando…", "salvando": "Salvando…", "convertendo": "Convertendo para MP4…"}.get(fase, fase)
         info = getattr(self, "_dec_info", {}).get(jid)
@@ -237,6 +268,7 @@ class QueueClient:
         if info and "t0" in info and "dur" not in info and jid not in getattr(self, "_cancelando", ()):
             info["dur"] = time.monotonic() - info["t0"]; self._save_decode_rate(info)
         if getattr(self, "_dec_jid", None) == jid: self._dec_timer().stop(); self._dec_jid = None
+        if (getattr(self, "_p_anc", None) or {}).get("jid") == jid: self._stop_progress()
         self._jobs.discard(jid); getattr(self, "_cancelando", set()).discard(jid); getattr(self, "_fases", {}).pop(jid, None)
         if getattr(self, "qid", None) == jid: self.qid = None
         if not self._jobs:
@@ -261,7 +293,7 @@ class QueueClient:
     def cancel_queue(self):
         if getattr(self, "qid", None):
             self.__dict__.setdefault("_cancelando", set()).add(self.qid)
-            self.fila.cancel(self.qid); self.status.showMessage("Cancelando… (termina o passo atual)")
+            self._stop_progress(); self.fila.cancel(self.qid); self.status.showMessage("Cancelando… (termina o passo atual)")
             self.bar.setRange(0, 0); self.bar.setFormat("Cancelando…")
             self.cancel_btn.setEnabled(False)  # evita cliques repetidos; _q_end reabilita o Gerar
             return True
