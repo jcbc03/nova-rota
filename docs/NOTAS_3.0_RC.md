@@ -1,6 +1,6 @@
 # IA Off 3.0: versão candidata (16/10/2026)
 
-Versão no PC: `dda8128`, instalada em 21/10 às 21h27. Backup em `C:\IA\backup\v3_20261021_212733`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
+Versão no PC: `a7b20a3`, instalada em 22/10 às 3h49. Backup em `C:\IA\backup\v3_20261022_034815`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
 
 ## O que tem de novo
 - **Moderador opcional**, desligado por padrão. Desligado, não restringe nada. Ligado, tem três níveis (leve, médio e rígido), e mudar o filtro exige senha. A senha fica guardada só como hash.
@@ -16,13 +16,16 @@ Versão no PC: `dda8128`, instalada em 21/10 às 21h27. Backup em `C:\IA\backup\
 - Não aparece mais um passo falso depois de Cancelar.
 - A prioridade alta do modo turbo agora funciona no Windows 64-bit.
 
-## Novo desde 16/10 (instalado em 21/10)
+## Novo desde 16/10 (instalado em 21 e 22/10)
 - FPS da aba Vídeo segue o modelo: 24 no Wan 2.2 e 16 no 2.1. Antes a tela mandava sempre 16 (`132ee82`).
 - Erros que passavam calados na fila, no moderador e no RAG agora vão pro log, sem mudar o comportamento (`725295b`, suíte 178 ok e 3 skips).
 - Negativo vazio do Wan gravado certo no .txt (`7fe5e0c`).
 - Ollama descarregado antes de tarefas pesadas, sem nunca cortar um chat em andamento (`33a0518`).
 - "Decodificando…" com tempo decorrido e estimativa, e mensagens de bloqueio mais claras (`6e042b3`).
 - Conversa longa mais leve: com 250 mensagens a tela não pesa mais, e o histórico cabe no contexto do modelo (`5278092`).
+- Botão Parar na pergunta aos Documentos (`3b72007`).
+- Mensagem de bloqueio sem nome técnico e dizendo que nada foi gerado nem salvo (`17a1827`, `4692dc5`).
+- Cancelar revisado em todas as abas (`6b9feba`).
 - Ampliador com IA pronto no código, mas no PC continua no Lanczos até o Julio aprovar o modelo de ~4,9 MB.
 
 ## Limites conhecidos

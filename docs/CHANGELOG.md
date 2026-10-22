@@ -1,6 +1,6 @@
 # Registro de versões – IA Off
 
-## 3.0 (instalada no PC do Julio em 15/10/2026; versão atual no PC: `dda8128`, instalada em 21/10 às 21h27, backup em `C:\IA\backup\v3_20261021_212733` (antes, `2f4504e` às 21h26, backup `v3_20261021_212540`; e `4c6d743` em 16/10 às 15h50); teste rápido depois da instalação ok (chat Qwen3.8 com primeiro texto em 65 s, Z-Image 256 em 69 s com fases, Wan 2.2 curto em 709 s); em testes; entrega prevista 30/10/2026)
+## 3.0 (instalada no PC do Julio em 15/10/2026; versão atual no PC: `a7b20a3`, instalada em 22/10 às 3h49, backup em `C:\IA\backup\v3_20261022_034815` (antes, `dda8128` em 21/10 às 21h27, backup `v3_20261021_212733`; `2f4504e` às 21h26, backup `v3_20261021_212540`; e `4c6d743` em 16/10 às 15h50); teste rápido depois da instalação ok (chat Qwen3.8 com primeiro texto em 65 s, Z-Image 256 em 69 s com fases, Wan 2.2 curto em 709 s); em testes; entrega prevista 30/10/2026)
 ### Novo
 - Busca em documentos com índice vetorial local FAISS (`faiss-cpu`, com fallback numpy); índice em `rag_dir` do `config.py` (padrão `C:\IA\dados\rag`). Documentos antigos são reindexados uma vez na abertura, com andamento na barra de status. (beck `8bf11e9`, front `fde8c1b`)
 - Fila de tarefas de imagem e vídeo (`job_queue.py`): uma tarefa por vez, sinais `started`, `progress`, `finished`, `failed`, `cancelled`. (beck `51aeff4`)
@@ -50,9 +50,9 @@
 - Conversa longa: o streaming só redesenha a resposta (de 33 pra 2 ms por pedaço com 250 mensagens) e o histórico enviado cabe no `num_ctx` (front `5278092`).
 - Ampliador: testes de ponta a ponta pela fila com modelo falso e `docs/UPSCALER_API.md` (beck `dda8128`). No PC segue no Lanczos até o Julio aprovar o `realesr-general-x4v3.onnx` (~4,9 MB, já no repositório).
 - Tudo acima, mais `725295b` e `132ee82`, instalado no PC em 21/10 às 21h27 (`dda8128`, P2 197 ok e 3 skips). Rodada E1 a E14 em andamento.
-- Documentos: botão Parar na pergunta, que mantém o que já foi escrito marcado como "Interrompido" e mostra as fontes. A resposta redesenha no máximo ~12 vezes por segundo (front `3b72007`, P2 verde no `f75c39f`, ainda não instalado).
-- Moderador: nas abas de mídia, a mensagem de bloqueio chega sem o prefixo técnico `PromptBloqueado: `. Os outros erros continuam com o nome técnico no log (beck `17a1827`, suíte 198 ok, ainda não instalado). Nas abas de mídia a mensagem agora também diz que nada foi gerado nem salvo e que o texto continua na caixa (front `4692dc5`).
-- Cancelar revisado em todas as abas: Chat e Documentos têm Parar, Imagem, Vídeo e Falar têm Cancelar, e Ampliar usa o caminho da Imagem. O botão Cancelar se desabilita ao clicar, e a aba Vídeo mostra "Cancelando…" também fora da fila (front `6b9feba`). P2 verde no `a7b20a3` (198 ok), ainda não instalado.
+- Documentos: botão Parar na pergunta, que mantém o que já foi escrito marcado como "Interrompido" e mostra as fontes. A resposta redesenha no máximo ~12 vezes por segundo (front `3b72007`, instalado em 22/10).
+- Moderador: nas abas de mídia, a mensagem de bloqueio chega sem o prefixo técnico `PromptBloqueado: `. Os outros erros continuam com o nome técnico no log (beck `17a1827`, suíte 198 ok, instalado em 22/10). Nas abas de mídia a mensagem agora também diz que nada foi gerado nem salvo e que o texto continua na caixa (front `4692dc5`).
+- Cancelar revisado em todas as abas: Chat e Documentos têm Parar, Imagem, Vídeo e Falar têm Cancelar, e Ampliar usa o caminho da Imagem. O botão Cancelar se desabilita ao clicar, e a aba Vídeo mostra "Cancelando…" também fora da fila (front `6b9feba`). P2 verde no `a7b20a3` (198 ok), instalado no PC em 22/10 às 3h49.
 - Conferido na tela: aviso do Lanczos (U3) e seletor Wan 2.1/2.2 (front). V4: as correções do Cancelar estão instaladas e os 21 testes passam, mas falta um Cancelar real na tela do PC (sub2 `4c86d2f`).
 
 ## 2.3.1 (15/10/2026)
