@@ -135,8 +135,8 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | 21/10 | E10 | 3.0 | Abas de mídia: mensagem de bloqueio mostra "PromptBloqueado: " e não diz que nada foi salvo / texto fica na caixa | beck (fila) + DEV Front (media_tabs) | corrigido em 17a1827 + 4692dc5 (falta instalar) |
 | 22/10 | E13 | 3.0 | Voz (Falar e Transcrever): Cancelar desabilitado, job roda até o fim; barra em escala diferente das outras abas | DEV Front / beck | corrigido em b16b394 + 30a9629, instalado 70ea8b5 ✅ |
 | 22/10 | E13 | 3.0 | Imagem: depois de cancelar, ainda mostra "Carregando modelo…" | DEV Front | corrigido em b16b394 + 30a9629, instalado 70ea8b5 ✅ |
-| 22/10 | E4 | 3.0 | Wan: na decodificação a barra não mostra "Decodificando…", volta a "Passo 1/4 … falta 27min" até 4/4 (progresso do decode chega como passos); Z-Image ok | DEV Front (+ ia_off sdcpp) | aberto |
-| 22/10 | E13 | 3.0 | Parar do chat levou 5,3 s (antes ~480 ms); pode ser carga do PC | beck / DEV Front | aberto |
+| 22/10 | E4 | 3.0 | Wan: na decodificação a barra não mostra "Decodificando…", volta a "Passo 1/4 … falta 27min" até 4/4 (progresso do decode chega como passos); Z-Image ok | DEV Front (+ ia_off sdcpp) | corrigido em 5b88ac2 + teste e1507cf; PC d7e8c8b: Wan 2.2 256x256 ficou em "Decodificando…" até o fim ✅ (ressalva: o aviso de passo durante o decode, visto em 480x272, não se repetiu) |
+| 22/10 | E13 | 3.0 | Parar do chat levou 5,3 s (antes ~480 ms). Causa: Parar antes do 1º pedaço espera o Ollama (3,2 s no 3b, 3,37 s no 30B) | beck (ollama_client, exceção do Gerente) | 6cd24aa ❌ no PC d7e8c8b com qwen3.8-27b: 4,8–5,3 s antes do 1º pedaço (no meio, 28–49 ms). O watcher só nasce depois do requests.post devolver os headers, e o Ollama só manda os headers no 1º pedaço; reaberto |
 
 
 ## Checklist do Julio
