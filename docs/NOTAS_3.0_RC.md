@@ -1,6 +1,6 @@
 # IA Off 3.0: versão candidata (16/10/2026)
 
-Versão no PC: `5818bfc`, instalada em 22/10 às 4h48. Backup em `C:\IA\backup\v3_20261022_044800`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
+Versão no PC: `d7e8c8b`, instalada em 22/10 de manhã (P2 verde, 206 ok e 3 skipped; SHA256 de 4 arquivos conferido, incluindo `ollama_client.py` e `media_tabs.py`). Backup: caminho a confirmar pelo ia_off. Antes: `5818bfc`, instalada em 22/10 às 4h48, backup em `C:\IA\backup\v3_20261022_044800`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
 
 ## O que tem de novo
 - **Moderador opcional**, desligado por padrão. Desligado, não restringe nada. Ligado, tem três níveis (leve, médio e rígido), e mudar o filtro exige senha. A senha fica guardada só como hash.
@@ -31,7 +31,7 @@ Versão no PC: `5818bfc`, instalada em 22/10 às 4h48. Backup em `C:\IA\backup\v
 - **E4 aprovado, ressalva só do 1º token** (`5818bfc`, tudo carregado, nada acima de 15% vs. 16/10): Qwen3.8 1,42 tok/s (igual), 1º token 97 s (16/10: 52 a 64 s); Z-Image 875 s (+7 a 13%), difusão 86,5 s/passo, carga 131 s; Wan 2.2 480×272 em 831 s com 4 passos (mínimo do campo; 16/10 usou 2), ~+7% ajustado, decode +2%.
 - **E2 FECHADO**: Wan 2.1 do E3 a 16 fps (.txt e arquivo, ffprobe) e Wan 2.2 a 24 fps.
 - **E14 PASSOU no `5818bfc`** (hash final): P2 limpa 2x (203 ok, 3 skipped), R5 limpo (só docstring em `rag.py`), app abre sem erro no PC.
-- **Falhas abertas novas**: (1) Wan: na decodificação a barra volta a "Passo 1/4 …" em vez de "Decodificando…" (Front); (2) Parar do Chat levou 5,3 s (antes ~480 ms) (beck/Front). Roteiro atualizado pelo sub2 em `929df8b`.
+- **Falhas abertas**: (1) Wan decode (Front, `5b88ac2` + teste `e1507cf`): **PASSOU** no PC no `d7e8c8b` em 256×256, 5 quadros, 4 passos: "Passo 2/4" → "Decodificando…" até 2 min 01 s, sem voltar a "Passo N". Ressalva: a fila não mandou passo durante o decode nesta rodada, então o caso exato (480×272) não foi exercitado. (2) Parar do Chat (beck, `6cd24aa`): causa confirmada (Parar antes do 1º pedaço espera o socket; no `5818bfc`, qwen2.5:3b 3,2 s antes do 1º pedaço, ~0,1 s no streaming). **No `d7e8c8b` continua aberta**: qwen3.8-27b-aggressive 5349/4896/4833 ms antes do 1º pedaço (esperado <0,5 s), 28/38/49 ms durante a resposta; qwen3-30b-a3b ~3,37 s antes do 1º pedaço. Nenhum pedaço depois do clique, sem diálogo. O watcher que fecha o socket não age antes do Ollama mandar algo. Com o beck. Modelo de referência: qwen3.8-27b-aggressive (aprovado da 3.0). Roteiro atualizado pelo sub2 em `929df8b`.
 - Pendentes do Julio: E9 e os cliques reais do E10.
 - Ampliador com IA pronto no código, mas no PC continua no Lanczos até o Julio aprovar o modelo de ~4,9 MB.
 
