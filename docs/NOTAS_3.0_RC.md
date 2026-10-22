@@ -26,6 +26,7 @@ Versão no PC: `70ea8b5`, instalada em 22/10 às 4h05. Backup em `C:\IA\backup\v
 - Botão Parar na pergunta aos Documentos (`3b72007`).
 - Mensagem de bloqueio sem nome técnico e dizendo que nada foi gerado nem salvo (`17a1827`, `4692dc5`).
 - Cancelar revisado em todas as abas (`6b9feba`), incluindo a Voz (`b16b394`, `30a9629`).
+- **E13 passou no `70ea8b5`** (22/10): Voz cancela em 251 ms (barra 4/40, job "cancelada"), Imagem em 1,1 s, Vídeo em 256 ms e o Parar do Chat em 477 ms. Fica aberto um detalhe cosmético: a transcrição ainda mostra "frase(s)". E1/E4 (Wan 2.2) em andamento.
 - Ampliador com IA pronto no código, mas no PC continua no Lanczos até o Julio aprovar o modelo de ~4,9 MB.
 
 ## Limites conhecidos

@@ -56,6 +56,7 @@
 - Testado no PC em 22/10: a fila espera o chat terminar antes de descarregar o Ollama (E6 com 120 s) e, se o chat passar do limite, pula a descarga com aviso e roda o job (E6 com 3 s).
 - Conversa longa testada no PC em 22/10 (E12): 250 mensagens abrem em 337 ms, 50 passos de rolagem em 84 ms, o histórico enviado foi cortado pra 29 mensagens com aviso na barra, e o redesenho do streaming ficou em 2 ms na mediana.
 - Voz: Cancelar corrigido (o botão ficava dentro do bloco desabilitado), barra na mesma escala das outras abas e "Cancelando…" em vez de "Carregando modelo…" (front `b16b394`). O Piper para também no meio de frase longa e não dá mais `wave.Error` ao cancelar na primeira frase (beck `30a9629`). P2 verde no `70ea8b5` (203 ok), instalado no PC em 22/10 às 4h05.
+- E13 passou no `70ea8b5` (22/10, refeito pelo ia_off). Voz (Falar e Transcrever): Cancelar habilitado, barra em 4/40, cancela em 251 ms e o job fica "cancelada". Imagem: "Cancelando…", cancela em 1,1 s. Vídeo: 256 ms. Chat: Parar interrompe o streaming real em 477 ms. Hashes conferem. Pendência cosmética: a transcrição ainda mostra o texto "frase(s)". Script: `/workspace/etests/e13_test.py`.
 - Conferido na tela: aviso do Lanczos (U3) e seletor Wan 2.1/2.2 (front). V4: as correções do Cancelar estão instaladas e os 21 testes passam, mas falta um Cancelar real na tela do PC (sub2 `4c86d2f`).
 
 ## 2.3.1 (15/10/2026)
