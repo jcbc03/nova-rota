@@ -89,3 +89,10 @@ Status: todos confirmaram os prazos em 15/10. Roteiro de testes: `docs/ROTEIRO_T
 - V4: correções do Cancelar instaladas e 21 testes ok; falta um Cancelar real na tela, na próxima liberação do PC.
 - Robustez do beck: subiu como `725295b` (suíte 178 ok), não instalado. FPS da aba Vídeo (`132ee82`) no main, não instalado.
 - Próximo: etapa 4 (robustez e polimento) e versão candidata 3.0 (`docs/NOTAS_3.0_RC.md`).
+
+## Decisão 21/10: codesight obrigatório (ordem do Julio)
+- Todos usam o codesight em toda tarefa, sem exceção. O mapa está em `.codesight/` e no `AGENTS.md` (`f349799`).
+- No início: ler `.codesight/wiki/index.md` e os artigos da tarefa, confirmando no código.
+- Antes de mexer em módulo central (`config.py`, `job_queue.py`, `moderador.py`, `engine_api.py`, `sdcpp.py` e outros): `codesight --blast <arquivo>`.
+- Depois de cada commit de código: `codesight --wiki` e comitar a `.codesight/` junto.
+- Se não achar o comando: `/home/box/.local/bin/codesight`. Regras completas da equipe em `docs/MANUAL_EQUIPE.md`.
