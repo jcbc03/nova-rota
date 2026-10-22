@@ -11,6 +11,20 @@ class _H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def do_POST(self):
         self.rfile.read(int(self.headers.get("Content-Length", 0)))
+        if self.server.modo == "vigia_desconexao":
+            # segura antes dos headers e registra quando o cliente desconecta (EOF no recv)
+            import select, socket as _s
+            fim = time.monotonic() + ESPERA_ANTES_DO_1o
+            while time.monotonic() < fim:
+                pr, _, _ = select.select([self.connection], [], [], 0.02)
+                if pr:
+                    try:
+                        dado = self.connection.recv(1, _s.MSG_PEEK)
+                    except OSError:
+                        dado = b""
+                    if not dado:
+                        self.server.desconectou = time.monotonic(); return
+            self.server.modo = ""
         if self.server.modo == "sem_headers":
             time.sleep(ESPERA_ANTES_DO_1o)   # Ollama: headers só saem junto com o 1º chunk
         if self.server.modo == "erro_http":
@@ -35,7 +49,7 @@ class _H(BaseHTTPRequestHandler):
 
 @pytest.fixture
 def server():
-    s = ThreadingHTTPServer(("127.0.0.1", 0), _H); s.daemon_threads = True; s.lento = False; s.modo = ""
+    s = ThreadingHTTPServer(("127.0.0.1", 0), _H); s.daemon_threads = True; s.lento = False; s.modo = ""; s.desconectou = None
     th = threading.Thread(target=s.serve_forever, daemon=True); th.start()
     yield s
     s.shutdown(); s.server_close()
@@ -85,3 +99,19 @@ def test_servidor_fora_levanta():
     import requests
     with pytest.raises(requests.RequestException):
         list(OllamaClient("http://127.0.0.1:9").chat_stream("m", [], {}))
+
+
+def test_parar_antes_dos_headers_derruba_conexao(server):
+    """O servidor (Ollama) precisa VER a desconexão logo, para cancelar o prompt na CPU."""
+    server.modo = "vigia_desconexao"; stop = threading.Event()
+    gen = _cli(server).chat_stream("m", [], {}, stop_flag=stop.is_set)
+    threading.Timer(0.3, stop.set).start(); t0 = time.monotonic()
+    assert list(gen) == []
+    t_stop = t0 + 0.3; dt_cli = time.monotonic() - t_stop
+    while server.desconectou is None and time.monotonic() - t_stop < 3: time.sleep(0.01)
+    assert server.desconectou is not None, "servidor não viu a desconexão"
+    dt_srv = server.desconectou - t_stop
+    print(f"\ncliente parou em {dt_cli:.3f} s; servidor detectou desconexão em {dt_srv:.3f} s")
+    assert dt_cli < 1.0 and dt_srv < 1.0
+    server.modo = ""   # 2º pedido logo depois funciona normal
+    assert "".join(_cli(server).chat_stream("m", [], {})) == "Olá, mundo"

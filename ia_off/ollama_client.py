@@ -1,9 +1,49 @@
 import json, os, shutil, subprocess, sys, time, tempfile, threading, socket, queue
 from pathlib import Path
 import requests
+import urllib3.connection
+import urllib3.connectionpool
+import requests.adapters
 
 class OllamaError(Exception):
     pass
+
+
+def _sessao_com_socket(socks):
+    """Cria uma requests.Session que registra todo socket TCP conectado na lista socks
+    (para poder matá-lo antes dos headers chegarem)."""
+    class _Conn(urllib3.connection.HTTPConnection):
+        def connect(self):
+            super().connect()
+            socks.append(self.sock)
+
+    class _Pool(urllib3.connectionpool.HTTPConnectionPool):
+        ConnectionCls = _Conn
+
+    class _Adapter(requests.adapters.HTTPAdapter):
+        def init_poolmanager(self, *a, **kw):
+            super().init_poolmanager(*a, **kw)
+            self.poolmanager.pool_classes_by_scheme = {
+                **self.poolmanager.pool_classes_by_scheme,
+                "http": _Pool,
+            }
+
+    s = requests.Session()
+    s.mount("http://", _Adapter())
+    return s
+
+
+def _matar_sockets(socks):
+    """Fecha agressivamente todos os sockets registrados (shutdown + close)."""
+    for sock in socks:
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            pass
+        try:
+            sock.close()
+        except Exception:
+            pass
 
 class OllamaClient:
     def __init__(self, url="http://localhost:11434", exe=""):
@@ -54,6 +94,7 @@ class OllamaClient:
         parar = threading.Event()
         estado = {}
         q = queue.Queue()
+        socks = []
 
         def _fechar(r):
             """Fecha conexão de forma agressiva (best-effort) para acordar iter_lines bloqueado."""
@@ -84,8 +125,10 @@ class OllamaClient:
 
         def worker():
             r = None
+            sessao = None
             try:
-                r = requests.post(self.url + "/api/chat", json=body, stream=True, timeout=(5, 600))
+                sessao = _sessao_com_socket(socks)
+                r = sessao.post(self.url + "/api/chat", json=body, stream=True, timeout=(5, 600))
                 estado["r"] = r
                 if parar.is_set():
                     _fechar(r)
@@ -104,6 +147,12 @@ class OllamaClient:
             finally:
                 if r:
                     _fechar(r)
+                if sessao:
+                    try:
+                        sessao.close()
+                    except Exception:
+                        pass
+                _matar_sockets(socks)
 
         t = threading.Thread(target=worker, daemon=True)
         t.start()
@@ -120,6 +169,7 @@ class OllamaClient:
                     parar.set()
                     if estado.get("r") is not None:
                         _fechar(estado["r"])
+                    _matar_sockets(socks)
                     return
                 try:
                     kind, val = q.get(timeout=0.05)
@@ -145,6 +195,7 @@ class OllamaClient:
             parar.set()
             if estado.get("r") is not None:
                 _fechar(estado.get("r"))
+            _matar_sockets(socks)
 
     def chat(self, model, messages, options=None):
         r = requests.post(self.url + "/api/chat", json={"model": model, "messages": messages, "stream": False,
