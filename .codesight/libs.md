@@ -7,7 +7,7 @@
   - function is_embed_model: (name, cfg)
   - function log_line: (msg)
   - function install_diagnostics: ()
-  - _...2 more_
+  - _...3 more_
 - `ia_off/config.py`
   - function output_dir: (kind)
   - function load: ()
