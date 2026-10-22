@@ -4,6 +4,7 @@ import requests
 import urllib3.connection
 import urllib3.connectionpool
 import requests.adapters
+import urllib.parse
 
 class OllamaError(Exception):
     pass
@@ -48,6 +49,13 @@ def _matar_sockets(socks):
 class OllamaClient:
     def __init__(self, url="http://localhost:11434", exe=""):
         self.url = url.rstrip("/")
+        # no Windows "localhost" tenta ::1 primeiro; o Ollama escuta só em 127.0.0.1 e o Winsock repete a conexão recusada por ~1 s, atrasando cada pedido (ensure_running antes de cada chat; Parar antes do 1º pedaço ficava ~1 s)
+        p = urllib.parse.urlsplit(self.url)
+        if (p.hostname or "").lower() == "localhost":
+            netloc = "127.0.0.1" + (f":{p.port}" if p.port else "")
+            if p.username or p.password:
+                netloc = p.netloc.rsplit("@", 1)[0] + "@" + netloc
+            self.url = urllib.parse.urlunsplit((p.scheme, netloc, p.path, p.query, p.fragment))
         self.exe = exe
 
     def find_exe(self):

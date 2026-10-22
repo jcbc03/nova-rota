@@ -9,6 +9,9 @@ ESPERA_ANTES_DO_1o = 6.0
 
 class _H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
+    def do_GET(self):   # /api/version (ensure_running)
+        b = b'{"version":"fake"}'
+        self.send_response(200); self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b)
     def do_POST(self):
         self.rfile.read(int(self.headers.get("Content-Length", 0)))
         if self.server.modo == "vigia_desconexao":
@@ -115,3 +118,27 @@ def test_parar_antes_dos_headers_derruba_conexao(server):
     assert dt_cli < 1.0 and dt_srv < 1.0
     server.modo = ""   # 2º pedido logo depois funciona normal
     assert "".join(_cli(server).chat_stream("m", [], {})) == "Olá, mundo"
+
+
+@pytest.mark.parametrize("entrada,esperado", [
+    ("http://localhost:11434", "http://127.0.0.1:11434"),
+    ("http://LOCALHOST:11434/", "http://127.0.0.1:11434"),
+    ("http://localhost", "http://127.0.0.1"),
+    ("http://127.0.0.1:11434", "http://127.0.0.1:11434"),
+    ("http://192.168.0.5:11434", "http://192.168.0.5:11434"),
+    ("http://meu-pc:11434", "http://meu-pc:11434"),
+])
+def test_localhost_vira_ipv4(entrada, esperado):
+    """Windows: 'localhost' tenta ::1 antes e o Winsock gasta ~1 s até cair no 127.0.0.1 (Parar ~1 s fixo)."""
+    assert OllamaClient(entrada).url == esperado
+
+
+def test_parar_logo_apos_enviar_inclui_ensure_running(server, monkeypatch):
+    """Caminho do app: ensure_running() + chat_stream; Parar 20 ms depois do Enviar volta rápido."""
+    server.modo = "sem_headers"; cli = _cli(server); stop = threading.Event()
+    threading.Timer(0.02, stop.set).start(); t0 = time.monotonic()
+    cli.ensure_running()
+    assert list(cli.chat_stream("m", [], {}, stop_flag=stop.is_set)) == []
+    dt = time.monotonic() - (t0 + 0.02)
+    print(f"\nensure_running + Parar: {dt:.3f} s após o stop")
+    assert dt < 0.5
