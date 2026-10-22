@@ -162,15 +162,24 @@ def wan_keys(cfg, log=None):
     return WAN_KEYS[wan_modelo(cfg, log)]
 
 def build_wan_args(binary, cfg, prompt, out_path, negative="", width=480, height=272, frames=17,
-                   steps=20, cfg_scale=6.0, seed=-1, fps=16, flow_shift=3.0, modelo=None):
-    km, kt, kv = WAN_KEYS[modelo] if modelo else wan_keys(cfg)
-    return [str(binary), "-M", "vid_gen",
+                   steps=20, cfg_scale=6.0, seed=-1, fps=16, flow_shift=3.0, modelo=None, init_image=None):
+    modelo = modelo or wan_modelo(cfg)
+    km, kt, kv = WAN_KEYS[modelo]
+    if init_image:
+        if modelo != "wan22":
+            raise ValueError("Imagem inicial exige o Wan 2.2 TI2V 5B; o Wan 2.1 1.3B é só texto→vídeo.")
+        if not os.path.isfile(str(init_image)):
+            raise FileNotFoundError(f"Imagem inicial não encontrada: {init_image}")
+    a = [str(binary), "-M", "vid_gen",
             "--diffusion-model", cfg[km], "--vae", cfg[kv], "--t5xxl", cfg[kt],
             "-p", cli_safe(prompt), "-n", cli_safe(negative or WAN_NEG, "negativo"),
             "--cfg-scale", str(cfg_scale), "--sampling-method", "euler", "--steps", str(int(steps)),
             "-W", str(int(width)), "-H", str(int(height)), "--video-frames", str(wan_frames(frames)),
             "--fps", str(int(fps)), "--flow-shift", str(flow_shift), "-s", str(int(seed)),
             "-t", str(int(cfg.get("threads", 4))), "--vae-tiling", "-o", str(out_path), "-v"]
+    if init_image:
+        a += ["-i", str(init_image)]
+    return a
 
 def build_flux2_args(binary, cfg, prompt, out_path, width=512, height=512, steps=4, seed=-1,
                      cfg_scale=1.0, ref_image=None):
