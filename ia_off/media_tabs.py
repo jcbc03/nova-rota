@@ -167,6 +167,7 @@ class QueueClient:
         if getattr(self, "fila", None) is None:
             raise RuntimeError("Fila de tarefas indisponível.")
         jid = self.fila.enqueue(tipo, params); self._jobs.add(jid); self.qid = jid
+        self.__dict__.setdefault("_tipos", {})[jid] = tipo
         cfo = params.get("cfg_override") or {}
         mod = cfo.get("video_modelo", "") if tipo == "video" else params.get("modo", "")
         un = int(params.get("width") or 0) * int(params.get("height") or 0) * max(1, int(params.get("frames") or 1))
@@ -722,7 +723,7 @@ class VoiceTab(QueueClient, QWidget):
         if not self._mine(jid) or jid in getattr(self, "_cancelando", ()): return
         if total <= 0: self.bar.setRange(0, 0); return
         self.bar.setRange(0, total); self.bar.setValue(passo)  # mesma escala das outras abas
-        unidade = "s de áudio" if self._tipo == "transcrever" else "frase(s)"
+        unidade = "s de áudio" if getattr(self, "_tipos", {}).get(jid, self._tipo) == "transcrever" else "frase(s)"
         txt = f"{passo} de {total} {unidade} · {int(pct)}% · falta {fmt_eta(eta_s)}"
         self.bar.setFormat(txt); self.status.showMessage(txt)
 
