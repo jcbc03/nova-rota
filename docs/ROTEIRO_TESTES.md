@@ -115,7 +115,7 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | E7 | `IA_OFF_QUEUE_UNLOAD_OLLAMA=0` | Não descarrega nada | ✅ PC 21/10: qwen2.5:3b seguiu carregado e nenhuma linha de descarga no log. Obs.: a env só muda o padrão; `queue_unload_ollama` no config.json vence (hoje ausente no config do Julio) |
 | E8 | "Decodificando…" na primeira geração de um modelo | Mostra o tempo passado e o aviso de que pode demorar, sem estimativa | ⏳ |
 | E9 | "Decodificando…" na segunda geração do mesmo modelo | Mostra quanto já passou, o total estimado e quanto falta. Anotar o real contra o estimado (aceitável errar até ~25%) | ⏳ |
-| E10 | Textos de bloqueio do moderador (com ele ligado) no Chat, Imagem, Vídeo e Falar | Mostra o motivo, diz que nada foi enviado nem salvo, o texto fica na caixa e aponta pra Configurações > Moderação > "Alterar filtro…". Depois, desligar a moderação | ⏳ |
+| E10 | Textos de bloqueio do moderador (com ele ligado) no Chat, Imagem, Vídeo e Falar | Mostra o motivo, diz que nada foi enviado nem salvo, o texto fica na caixa e aponta pra Configurações > Moderação > "Alterar filtro…". Depois, desligar a moderação | 🟡 PC 21/10 (dda8128, sem tela, moderação ligada só em memória): Chat, Imagem, Vídeo e Falar bloqueiam com motivo e caminho do filtro, sem chamar motor; Chat não grava e mantém o texto. Abas de mídia: aparece o prefixo técnico "PromptBloqueado: " e falta dizer que nada foi salvo e o texto continua na caixa (Front). Clique real fica pro Julio |
 | E11 | Robustez (725295b): forçar falha de um job (modelo ausente via cfg_override) | O erro aparece no log, e nada fica calado | ✅ PC 21/10: ERROR "tarefa job-1 (video) falhou: FileNotFoundError" com traceback; o job seguinte terminou normal (falha via exceção do motor falso, mesmo caminho da fila) |
 | E12 | Conversa longa com 200+ mensagens (depois da entrega do Front) | Rolar e mandar mensagem sem travar. Anotar o tempo de abrir a conversa | ⏳ |
 | E13 | Barra de progresso e Cancelar em todas as abas (depois do Front) | Toda aba mostra progresso e cancela sem travar | ⏳ |
@@ -132,6 +132,7 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | 15/10 | V2 | 3.0 | Negativo padrão do Wan chega ao sd-cli como "????" (página de código do Windows) | ia_off (sdcpp) | fechado 16/10: não é bug (cli_safe manda ASCII de propósito; .txt guarda UTF-8; os "?" são do log de tokens do sd-cli) |
 | 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
 | 16/10 | V8 | 3.0 | Negativo vazio: .txt grava "negative:" em branco, mas o sd-cli recebe o negativo padrão do Wan | ia_off (sdcpp) | aberto (amanhã) |
+| 21/10 | E10 | 3.0 | Abas de mídia: mensagem de bloqueio mostra "PromptBloqueado: " e não diz que nada foi salvo / texto fica na caixa | DEV Front (media_tabs) | aberto |
 
 
 ## Checklist do Julio
