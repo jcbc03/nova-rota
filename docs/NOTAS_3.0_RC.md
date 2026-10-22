@@ -1,6 +1,6 @@
 # IA Off 3.0: versão candidata (16/10/2026)
 
-Versão no PC: `a7b20a3`, instalada em 22/10 às 3h49. Backup em `C:\IA\backup\v3_20261022_034815`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
+Versão no PC: `70ea8b5`, instalada em 22/10 às 4h05. Backup em `C:\IA\backup\v3_20261022_040450`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
 
 ## O que tem de novo
 - **Moderador opcional**, desligado por padrão. Desligado, não restringe nada. Ligado, tem três níveis (leve, médio e rígido), e mudar o filtro exige senha. A senha fica guardada só como hash.
@@ -25,7 +25,7 @@ Versão no PC: `a7b20a3`, instalada em 22/10 às 3h49. Backup em `C:\IA\backup\v
 - Conversa longa mais leve: com 250 mensagens a tela não pesa mais, e o histórico cabe no contexto do modelo (`5278092`).
 - Botão Parar na pergunta aos Documentos (`3b72007`).
 - Mensagem de bloqueio sem nome técnico e dizendo que nada foi gerado nem salvo (`17a1827`, `4692dc5`).
-- Cancelar revisado em todas as abas (`6b9feba`).
+- Cancelar revisado em todas as abas (`6b9feba`), incluindo a Voz (`b16b394`, `30a9629`).
 - Ampliador com IA pronto no código, mas no PC continua no Lanczos até o Julio aprovar o modelo de ~4,9 MB.
 
 ## Limites conhecidos
