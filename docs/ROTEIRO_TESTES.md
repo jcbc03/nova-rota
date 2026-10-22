@@ -132,7 +132,7 @@ Rodar no PC depois de instalar o 14dbf57 (código do 6e042b3), com P2 verde ante
 | 15/10 | V2 | 3.0 | Negativo padrão do Wan chega ao sd-cli como "????" (página de código do Windows) | ia_off (sdcpp) | fechado 16/10: não é bug (cli_safe manda ASCII de propósito; .txt guarda UTF-8; os "?" são do log de tokens do sd-cli) |
 | 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
 | 16/10 | V8 | 3.0 | Negativo vazio: .txt grava "negative:" em branco, mas o sd-cli recebe o negativo padrão do Wan | ia_off (sdcpp) | aberto (amanhã) |
-| 21/10 | E10 | 3.0 | Abas de mídia: mensagem de bloqueio mostra "PromptBloqueado: " e não diz que nada foi salvo / texto fica na caixa | DEV Front (media_tabs) | aberto |
+| 21/10 | E10 | 3.0 | Abas de mídia: mensagem de bloqueio mostra "PromptBloqueado: " e não diz que nada foi salvo / texto fica na caixa | beck (fila) + DEV Front (media_tabs) | corrigido em 17a1827 + 4692dc5 (falta instalar) |
 
 
 ## Checklist do Julio
