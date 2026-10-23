@@ -151,7 +151,7 @@ Regras: só o ia_off executa no PC; antes de instalar, P2 verde no hash exato; b
 | 15/10 | A3 | 3.0 | Cancelar transcrição demorou 88 s | ia_off (voice_engine) | corrigido em d798d2c (trechos de 10 s numa thread; falta instalar no PC) |
 | 15/10 | V2 | 3.0 | Negativo padrão do Wan chega ao sd-cli como "????" (página de código do Windows) | ia_off (sdcpp) | fechado 16/10: não é bug (cli_safe manda ASCII de propósito; .txt guarda UTF-8; os "?" são do log de tokens do sd-cli) |
 | 15/10 | D2 | 3.0 | `nomic-embed-text` (embed_model padrão) não instalado no Ollama do PC | ia_off | padrão trocado em 98931fb; config.json do Julio trocado para embeddinggemma-2:740m (backup C:\IA\backup\config_20261015_2338.json) |
-| 16/10 | V8 | 3.0 | Negativo vazio: .txt grava "negative:" em branco, mas o sd-cli recebe o negativo padrão do Wan | ia_off (sdcpp) | aberto (amanhã) |
+| 16/10 | V8 | 3.0 | Negativo vazio: .txt grava "negative:" em branco, mas o sd-cli recebe o negativo padrão do Wan | ia_off (sdcpp) | ✅ resolvido: `7fe5e0c` (o .txt grava o negativo padrão que o sd-cli recebe); conferido no PC em 21/10 no `dda8128` (E3) |
 | 21/10 | E10 | 3.0 | Abas de mídia: mensagem de bloqueio mostra "PromptBloqueado: " e não diz que nada foi salvo / texto fica na caixa | beck (fila) + DEV Front (media_tabs) | corrigido em 17a1827 + 4692dc5, instalado no PC desde d040ea5; falta reconferir na tela |
 | 22/10 | E13 | 3.0 | Voz (Falar e Transcrever): Cancelar desabilitado, job roda até o fim; barra em escala diferente das outras abas | DEV Front / beck | corrigido em b16b394 + 30a9629, instalado 70ea8b5 ✅ |
 | 22/10 | E13 | 3.0 | Imagem: depois de cancelar, ainda mostra "Carregando modelo…" | DEV Front | corrigido em b16b394 + 30a9629, instalado 70ea8b5 ✅ |

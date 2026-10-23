@@ -61,20 +61,26 @@ Já feitos em 16/10, com o ok do Julio: SE4 aprovado (sem o `moderacao_senha.jso
 
 Se algo falhar, mande no grupo um print e o horário.
 
-## O que o Julio precisa conferir na tela (atualizado 22/10, 18h)
+## O que o Julio precisa conferir na tela (atualizado 23/10, 9h)
 
-Já instalado no PC (`d040ea5`):
-- **Barra de progresso** (Imagem, Melhorar e Vídeo): o "falta" desce a cada segundo entre os passos, aparece "Carregando modelo… Xs" antes do 1º passo e "Processando… Xs" no Melhorar sem IA.
-- **Aba Vídeo, linha Tamanho**: Proporção, Resolução e L×A separados e clicáveis; o painel rola com a janela baixa.
-- **E9** e os cliques reais do **E10**, **MO5** e **SE1** (roteiro, "Checklist do Julio").
+**Versão no PC hoje:** `d040ea5` (22/10, 11h48, backup `C:\IA\backup\v3_20261022_114804`). **Hash candidato à entrega:** ainda não definido. Vai ser o topo do main depois do `init_image` do vídeo no `engines_registry.py` (ia_off, espera o ok do Julio no chat direto dele), com a P2 do sub2 verde. Os itens abaixo valem para a versão instalada no momento em que o Julio for conferir; os da parte B só depois da instalação do candidato.
 
-Depois da próxima instalação (ainda não está no PC):
-- **FLUX.2 na CPU com o Dispositivo em Auto**: editar uma imagem pequena (512×512) e ver que não fica preso em "Carregando modelo…" na GPU. Antes disso, o Dispositivo deve voltar de CPU para Auto (o ia_off mudou para CPU durante o teste de 22/10).
-- **Vídeo com imagem inicial**: com Wan 2.2, escolher uma imagem em "Imagem inicial (opcional)…" e gerar; no Wan 2.1 a linha não deve aparecer.
+**A. Já dá pra conferir no `d040ea5`:**
+1. **E9** (roteiro).
+2. Cliques reais do **E10** (cosmético das abas de mídia, instalado desde o `d040ea5`), do **MO5** e do **SE1**.
+3. **Barra de progresso** (Imagem, Melhorar e Vídeo): o "falta" desce a cada segundo entre os passos; "Carregando modelo… Xs" antes do 1º passo; "Processando… Xs" no Melhorar sem IA.
+4. **Aba Vídeo, linha Tamanho:** Proporção, Resolução e L×A separados e clicáveis; o painel rola com a janela baixa.
+5. **Trocar a senha temporária** pelo botão "Trocar senha…" no painel do moderador.
+6. **S3:** usar o app com a internet desligada (por último).
 
-Decisões só do Julio:
-- Modelo do chat: o `config.json` está com o `qwen3-30b-a3b`, e não com o `qwen3.8-27b-aggressive` aprovado (com o 30b, o app mínimo passa de ~57 GB para ~74 GB).
-- Manter o FLUX.2 para a edição, já que ele não está na lista de modelos aprovados (imagem: Z-Image e Qwen-Image 2.1).
-- Aprovar o modelo do ampliador (`.onnx`, ~4,9 MB); até lá é usado o Lanczos.
-- Trocar a senha temporária e fazer o S3 sem internet.
-- Ok para limpar `stash@{0}`, os zips e os ~90 GB de cópias e cache (nada é apagado sem o ok dele).
+**B. Depois da instalação do hash candidato:**
+7. **E15, FLUX.2 na CPU com o Dispositivo em Auto:** editar uma imagem em 512×512 e ver que não fica preso em "Carregando modelo…". Antes, o Dispositivo volta de CPU para Auto (mudado no teste de 22/10).
+8. **E16, vídeo com imagem inicial:** com o Wan 2.2, escolher uma imagem em "Imagem inicial (opcional)…" e gerar; no Wan 2.1 a linha não aparece.
+
+**C. Decisões só do Julio:**
+- Modelo do chat: o `config.json` está com o `qwen3-30b-a3b`, não com o `qwen3.8-27b-aggressive` aprovado (com o 30b, o app mínimo passa de ~57 GB para ~74 GB).
+- Manter o FLUX.2 na edição, já que ele não está na lista de modelos aprovados (imagem: Z-Image e Qwen-Image 2.1).
+- Aprovar o modelo do ampliador (`.onnx`, ~4,9 MB); até lá vale o Lanczos.
+- Ok para limpar `stash@{0}`, os zips e os ~90 GB de cópias e cache. Nada é apagado sem o ok dele.
+
+Resolvido desde 22/10: V8 (negativo vazio) fechado com o `7fe5e0c`, conferido no PC em 21/10 (E3).
