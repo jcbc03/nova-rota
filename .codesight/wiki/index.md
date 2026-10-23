@@ -1,6 +1,6 @@
 # ia_off_v3 — Wiki
 
-_Generated 2026-10-22 — re-run `npx codesight --wiki` if the codebase has changed._
+_Generated 2026-10-23 — re-run `npx codesight --wiki` if the codebase has changed._
 
 Structural map compiled from source code via AST. No LLM — deterministic, 200ms.
 
@@ -42,4 +42,4 @@ These exist in your codebase but are **not** reflected in wiki articles:
 When in doubt, search the source. The wiki is a starting point, not a complete inventory.
 
 ---
-_Last compiled: 2026-10-22 · 3 articles · [codesight](https://github.com/Houseofmvps/codesight)_
+_Last compiled: 2026-10-23 · 3 articles · [codesight](https://github.com/Houseofmvps/codesight)_
