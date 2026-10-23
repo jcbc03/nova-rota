@@ -802,7 +802,8 @@ class VoiceTab(QueueClient, QWidget):
         if not self._mine(jid) or jid in getattr(self, "_cancelando", ()): return
         if total <= 0: self.bar.setRange(0, 0); return
         self.bar.setRange(0, total); self.bar.setValue(passo)  # mesma escala das outras abas
-        unidade = "s de áudio" if getattr(self, "_tipos", {}).get(jid, self._tipo) == "transcrever" else "frase(s)"
+        unidade = ("s de áudio" if getattr(self, "_tipos", {}).get(jid, self._tipo) == "transcrever"
+                   else ("frase" if total == 1 else "frases"))
         txt = f"{passo} de {total} {unidade} · {int(pct)}% · falta {fmt_eta(eta_s)}"
         self.bar.setFormat(txt); self.status.showMessage(txt)
 
