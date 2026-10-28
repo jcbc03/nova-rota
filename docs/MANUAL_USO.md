@@ -51,7 +51,7 @@ App de IA 100% offline no seu PC: chat, perguntas sobre documentos, imagem, víd
 ## 6. Voz
 - **Transcrever**: **Escolher áudio…**, clique **Transcrever**; o texto aparece na tela e **Copiar texto** copia.
 - **Falar**: escreva um texto e clique **Falar**; o áudio toca na hora e **▶ Ouvir de novo** repete.
-- **Cancelar** funciona também na Voz (Falar e Transcrever): a barra mostra o progresso (ex.: "4/40") e o job termina como **cancelada**. No **Transcrever**, a barra mostra o progresso em segundos de áudio ("s de áudio").
+- **Cancelar** funciona também na Voz (Falar e Transcrever): a barra mostra o progresso (ex.: "4/40") e o job termina como **cancelada**. No **Falar**, a barra conta as frases ("frase" ou "frases"). No **Transcrever**, a barra mostra o progresso em segundos de áudio ("s de áudio").
 - Funciona sem internet (Whisper pra transcrever, Piper com voz em português pra falar).
 
 ## 7. Fila de tarefas
