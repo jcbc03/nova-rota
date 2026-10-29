@@ -128,18 +128,18 @@ Regras: só o ia_off executa no PC; antes de instalar, P2 verde no hash exato; b
 
 | ID | Teste | Esperado | Status |
 |---|---|---|---|
-| F1 | P2 limpa 2x + R1/R5 no hash candidato | Suíte verde, nenhum caminho fixo fora do config.py | ⏳ |
-| F2 | Instalar com backup, conferir SHA256 de ollama_client.py, app.py, media_tabs.py, sdcpp.py | Hashes batem; P1 abre em < 15 s | ⏳ |
-| F3 | Chat: C1 + Parar antes do 1º pedaço, no meio e durante o ensure_running (c5ae85c), com qwen3.8-27b-aggressive | Parar < 0,5 s nos três; 2º Enviar normal; llama-server sem CPU depois | ⏳ |
-| F4 | Chat: C3 (fechar e reabrir) + E12 (250 mensagens) | Histórico preservado, abre em < 1 s | ⏳ |
-| F5 | Documentos: D2 com um PDF | Resposta com citação | ⏳ |
-| F6 | Imagem: I1 Z-Image 512x512 8 passos + Cancelar numa 2ª | Gera; tempo até +15% do E4 (875 s); cancela sem "Carregando modelo…" | ⏳ |
-| F7 | Vídeo: Wan 2.2 256x256 4 passos + Cancelar numa 2ª | "Decodificando…" até o fim, 24 fps; cancela em ~1 passo | ⏳ |
-| F8 | Ampliador: U1 2x (só se o .onnx estiver aprovado) senão U3 | IA ou Lanczos com aviso | ⏳ |
-| F9 | Voz: A1 + A2 + Cancelar na transcrição | Texto e áudio ok; barra "s de áudio"; cancela em < 1 s | ⏳ |
-| F10 | Moderador: desligado por padrão (MO1) + um bloqueio em Rígido (MO5) | Sem amarras desligado; bloqueio com motivo | ⏳ |
-| F11 | R2/R4: OLLAMA_MODELS e HF_HOME, outros apps acham os modelos | Tudo em C:\IA\modelos | ⏳ |
-| F12 | Fim: fechar processos (ollama ps vazio, nenhum python rodando), tela bloqueada | PC como estava; nada apagado sem ok do Julio (nem backups, zips ou stash) | ⏳ |
+| F1 | P2 limpa 2x + R1/R5 no hash candidato | Suíte verde, nenhum caminho fixo fora do config.py | ✅ 28/10 no 3f1e0b6: P2 limpa 2x, 268 ok e 3 skipped; R5 só a docstring do rag.py |
+| F2 | Instalar com backup, conferir SHA256 de ollama_client.py, app.py, media_tabs.py, sdcpp.py | Hashes batem; P1 abre em < 15 s | ✅ PC 29/10 09:14: backup C:\IA\backup\v3_20261029_091330; 26 arquivos batem com o pacote |
+| F3 | Chat: C1 + Parar antes do 1º pedaço, no meio e durante o ensure_running (c5ae85c), com qwen3.8-27b-aggressive | Parar < 0,5 s nos três; 2º Enviar normal; llama-server sem CPU depois | ✅ PC 29/10: Parar entre 42 e 89 ms |
+| F4 | Chat: C3 (fechar e reabrir) + E12 (250 mensagens) | Histórico preservado, abre em < 1 s | ✅ PC 29/10: 250 mensagens abrem em 343 ms |
+| F5 | Documentos: D2 com um PDF | Resposta com citação | ✅ PC 29/10: PDF indexado em 4,0 s, resposta com citação em 9,1 s |
+| F6 | Imagem: I1 Z-Image 512x512 8 passos + Cancelar numa 2ª | Gera; tempo até +15% do E4 (875 s); cancela sem "Carregando modelo…" | ✅ PC 29/10: Z-Image 512² em 792 s (E4 875 s); Cancelar em 0,66 s |
+| F7 | Vídeo: Wan 2.2 256x256 4 passos + Cancelar numa 2ª | "Decodificando…" até o fim, 24 fps; cancela em ~1 passo | ✅ PC 29/10: Wan 2.2 256², 9 quadros, em 454 s; 24 fps; Cancelar em 0,71 s. Ver falha da estimativa da decodificação |
+| F8 | Ampliador: U1 2x (só se o .onnx estiver aprovado) senão U3 | IA ou Lanczos com aviso | ✅ PC 29/10: 2x em 4,0 s; sem o modelo cai no Lanczos |
+| F9 | Voz: A1 + A2 + Cancelar na transcrição | Texto e áudio ok; barra "s de áudio"; cancela em < 1 s | ✅ PC 29/10: Piper e Whisper ok; Cancelar em 0,08 s |
+| F10 | Moderador: desligado por padrão (MO1) + um bloqueio em Rígido (MO5) | Sem amarras desligado; bloqueio com motivo | ✅ PC 29/10: MO1 a MO6 ok; moderação segue OFF |
+| F11 | R2/R4: OLLAMA_MODELS e HF_HOME, outros apps acham os modelos | Tudo em C:\IA\modelos | 🟡 PC 29/10: ok, exceto R4 (pendente Julio) |
+| F12 | Fim: fechar processos (ollama ps vazio, nenhum python rodando), tela bloqueada | PC como estava; nada apagado sem ok do Julio (nem backups, zips ou stash) | 🟡 PC 29/10: config.json com o mesmo hash do início ao fim, app reaberto, logs em C:\IA\tmp; bloqueio de tela pendente Julio |
 
 ## Registro de falhas
 | Data | ID | Versão | O que aconteceu | Responsável | Status |
@@ -160,6 +160,7 @@ Regras: só o ia_off executa no PC; antes de instalar, P2 verde no hash exato; b
 | 22/10 | Julio | 3.0 | Imagem pelo atalho (pythonw): "AttributeError: 'NoneType' object has no attribute 'isatty'" — sys.stdout/stderr None, biblioteca do motor (tqdm/HF) chama isatty; testes não pegam por rodarem com console | DEV Front (app.py) + beck (log no job_queue) | causa: transformers loading_report._style; corrigido em a126945+5024dda (+ testes 35c5de4, log 66cb14c); P2 fb8b04d 231 ok; PC fb8b04d (backup v3_20261022_110249): txt2img 18,8 s e inpaint 21,3 s pelo pythonw do app sem erro; falta Julio confirmar pelo atalho |
 | 22/10 | Julio | 3.0 | Imagem/Melhorar: "falta" e % só mudam quando o passo termina; entre passos ficam parados (Lanczos é 1 passo só) | DEV Front (media_tabs) | cc241d6/02f0e8c + e6f82af; P2 d040ea5 236 ok; PC d040ea5 (backup v3_20261022_114804) instalado; falta Julio conferir na tela |
 | 22/10 | Julio | 3.0 | Vídeo (fb8b04d): linha "Tamanho" espremida, Proporção/Resolução/L×A sobrepostos e impossíveis de usar (painel do Vídeo sem rolagem) | DEV Front (media_tabs) | corrigido em 5c3ea45 (teste com janela baixa); PC d040ea5 instalado; falta Julio conferir na tela |
+| 29/10 | F7 | 3.0 | Estimativa da decodificação do Wan mostrou ~6min59s, real 3min38s (~92% acima, fora dos 25%); taxa gravada talvez de outro tamanho | DEV Front | aberto; main congelado, decisão do Julio se entra antes da entrega |
 
 
 ## Checklist do Julio
