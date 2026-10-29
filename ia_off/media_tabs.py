@@ -171,7 +171,9 @@ class QueueClient:
         cfo = params.get("cfg_override") or {}
         mod = cfo.get("video_modelo", "") if tipo == "video" else params.get("modo", "")
         un = int(params.get("width") or 0) * int(params.get("height") or 0) * max(1, int(params.get("frames") or 1))
-        self.__dict__.setdefault("_dec_info", {})[jid] = {"chave": f"decode_rate_{tipo}_{mod}".rstrip("_"), "un": un}
+        chave = f"decode_rate_{tipo}_{mod}".rstrip("_")
+        exata = f"{chave}_{int(params.get('width') or 0)}x{int(params.get('height') or 0)}x{max(1, int(params.get('frames') or 1))}"
+        self.__dict__.setdefault("_dec_info", {})[jid] = {"chave": chave, "exata": exata, "un": un}
         self.gen_btn.setEnabled(False); self.cancel_btn.setEnabled(True)
         self.bar.setRange(0, 0); self.bar.setFormat("Na fila…"); self.status.showMessage("Tarefa na fila…")
         return jid
@@ -240,8 +242,9 @@ class QueueClient:
         if info is not None:
             if fase == "decodificando":
                 info["t0"] = time.monotonic(); self._dec_jid = jid
-                rate = (self.cfg() or {}).get(info["chave"])
-                info["est"] = rate * info["un"] if rate and info["un"] else None
+                c = self.cfg() or {}; rate = c.get(info["chave"]); exato = c.get(info.get("exata"))
+                # F7: o tempo do mesmo tamanho/quadros vale mais que a taxa proporcional (o VAE do Wan não é linear)
+                info["est"] = exato if exato else (rate * info["un"] if rate and info["un"] else None)
                 self._dec_timer().start()
             elif "t0" in info and "dur" not in info:
                 info["dur"] = time.monotonic() - info["t0"]; self._save_decode_rate(info)
@@ -268,10 +271,14 @@ class QueueClient:
 
     def _save_decode_rate(self, info):
         if not info.get("un") or info.get("dur", 0) <= 0: return
-        rate = info["dur"] / info["un"]; old = (self.cfg() or {}).get(info["chave"])
+        c = self.cfg() or {}
+        rate = info["dur"] / info["un"]; old = c.get(info["chave"])
         rate = rate if not old else 0.5 * old + 0.5 * rate  # média móvel simples
+        vals = {info["chave"]: rate}
+        if info.get("exata"):
+            ant = c.get(info["exata"]); vals[info["exata"]] = info["dur"] if not ant else 0.5 * ant + 0.5 * info["dur"]
         cs = getattr(self, "cfg_set", None)
-        if callable(cs): cs(**{info["chave"]: rate})
+        if callable(cs): cs(**vals)
 
     def _q_end(self, jid):
         info = getattr(self, "_dec_info", {}).pop(jid, None)
