@@ -63,7 +63,7 @@ Se algo falhar, mande no grupo um print e o horário.
 
 ## O que o Julio precisa conferir na tela (atualizado 23/10, 9h)
 
-**Versão no PC hoje:** `fc6a16c` (22/10, 12h49, backup `C:\IA\backup\v3_20261022_124924`), já com o FLUX.2 na CPU (E15). Conferido pelo ia_off: o Auto resolve para CPU, e uma edição levou 1754 s no total, com o modelo carregando em menos de 5 min. Faltam as medidas em 512×512 e 512×1024, depois que o vídeo Wan de 49 quadros do Julio terminar (até lá ninguém mexe no PC). **Hash candidato à entrega:** ainda não definido. Vai ser o topo do main depois do `init_image` do vídeo no `engines_registry.py` (ia_off, espera o ok do Julio no chat direto dele), com a P2 do sub2 verde. Os itens abaixo valem para a versão instalada no momento em que o Julio for conferir; os da parte B só depois da instalação do candidato.
+**Versão no PC hoje:** `fc6a16c` (22/10, 12h49, backup `C:\IA\backup\v3_20261022_124924`), já com o FLUX.2 na CPU (E15). Conferido pelo ia_off: o Auto resolve para CPU, e uma edição levou 1754 s no total, com o modelo carregando em menos de 5 min. Faltam as medidas em 512×512 e 512×1024, depois que o vídeo Wan de 49 quadros do Julio terminar (até lá ninguém mexe no PC). **Hash candidato à entrega:** `3f1e0b6` (28/10, noite). Traz o `init_image` do vídeo (ia_off `72bda76`, com o ok do Julio às 22h42), revisado pelo beck (fila e Cancelar), testado pelo Front no topo do main e com a P2 do sub2 verde duas vezes (268 ok, 3 skipped; R5 limpa). Falta instalar no PC com backup e medir o E15 e o E16. Os itens abaixo valem para a versão instalada no momento em que o Julio for conferir; os da parte B só depois da instalação do candidato.
 
 **A. Já dá pra conferir no `fc6a16c`:**
 1. **E9** (roteiro).
