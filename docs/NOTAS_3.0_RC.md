@@ -1,6 +1,6 @@
 # IA Off 3.0: versão candidata (16/10/2026)
 
-Versão no PC: `fc6a16c`, instalada em 22/10 às 12h49 (P2 verde 2x, 248 ok e 3 skipped). Backup em `C:\IA\backup\v3_20261022_124924`. Antes: `d040ea5`, instalada às 11h48 (P2 236 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_114804`; `fb8b04d`, instalada às 11h02 (P2 231 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_110249`; `48dd94e`, instalada às 9h06 (P2 226 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_090636`; `e7bb291`, instalada às 6h38 (P2 219 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_063817`; `4641034`, instalada às 6h19 (P2 212 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_061853`; `97d1539`, instalada em 22/10 às 6h14, backup em `C:\IA\backup\v3_20261022_061414` (medida descartada, substituído pelo `4641034`); `d7e8c8b`, instalada às 5h41 (P2 verde, 206 ok e 3 skipped; SHA256 de 4 arquivos conferido, incluindo `ollama_client.py` e `media_tabs.py`), backup em `C:\IA\backup\v3_20261022_054120`; `5818bfc`, instalada em 22/10 às 4h48, backup em `C:\IA\backup\v3_20261022_044800`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
+Versão no PC: `3f1e0b6` (hash da entrega), instalada em 29/10 às 9h14 (P2 verde 2x, 268 ok e 3 skipped). Backup em `C:\IA\backup\v3_20261029_091330`; os 26 arquivos batem com o pacote. Antes: `fc6a16c`, instalada em 22/10 às 12h49 (P2 verde 2x, 248 ok e 3 skipped). Backup em `C:\IA\backup\v3_20261022_124924`. Antes: `d040ea5`, instalada às 11h48 (P2 236 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_114804`; `fb8b04d`, instalada às 11h02 (P2 231 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_110249`; `48dd94e`, instalada às 9h06 (P2 226 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_090636`; `e7bb291`, instalada às 6h38 (P2 219 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_063817`; `4641034`, instalada às 6h19 (P2 212 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_061853`; `97d1539`, instalada em 22/10 às 6h14, backup em `C:\IA\backup\v3_20261022_061414` (medida descartada, substituído pelo `4641034`); `d7e8c8b`, instalada às 5h41 (P2 verde, 206 ok e 3 skipped; SHA256 de 4 arquivos conferido, incluindo `ollama_client.py` e `media_tabs.py`), backup em `C:\IA\backup\v3_20261022_054120`; `5818bfc`, instalada em 22/10 às 4h48, backup em `C:\IA\backup\v3_20261022_044800`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
 
 ## O que tem de novo
 - **Moderador opcional**, desligado por padrão. Desligado, não restringe nada. Ligado, tem três níveis (leve, médio e rígido), e mudar o filtro exige senha. A senha fica guardada só como hash.
@@ -61,21 +61,38 @@ Já feitos em 16/10, com o ok do Julio: SE4 aprovado (sem o `moderacao_senha.jso
 
 Se algo falhar, mande no grupo um print e o horário.
 
-## O que o Julio precisa conferir na tela (atualizado 23/10, 9h)
+## O que o Julio precisa conferir na tela (atualizado 29/10, 11h30)
 
-**Versão no PC hoje:** `fc6a16c` (22/10, 12h49, backup `C:\IA\backup\v3_20261022_124924`), já com o FLUX.2 na CPU (E15). Conferido pelo ia_off: o Auto resolve para CPU, e uma edição levou 1754 s no total, com o modelo carregando em menos de 5 min. Faltam as medidas em 512×512 e 512×1024, depois que o vídeo Wan de 49 quadros do Julio terminar (até lá ninguém mexe no PC). **Hash candidato à entrega:** `3f1e0b6` (28/10, noite). Traz o `init_image` do vídeo (ia_off `72bda76`, com o ok do Julio às 22h42), revisado pelo beck (fila e Cancelar), testado pelo Front no topo do main e com a P2 do sub2 verde duas vezes (268 ok, 3 skipped; R5 limpa). Falta instalar no PC com backup e medir o E15 e o E16. Os itens abaixo valem para a versão instalada no momento em que o Julio for conferir; os da parte B só depois da instalação do candidato.
+**Versão no PC hoje:** `3f1e0b6`, o hash da entrega (29/10, 9h14, backup `C:\IA\backup\v3_20261029_091330`).
 
-**A. Já dá pra conferir no `fc6a16c`:**
+Medido pelo ia_off no PC:
+- **E15 ✅:** com o Dispositivo em Auto, o FLUX.2 rodou na CPU, levando 474,6 s em 512×512 e 825,5 s em 512×1024.
+- **E16 ✅:** o Wan 2.2 com imagem inicial (256×256, 9 quadros, 8 passos) levou 602,6 s. A imagem chegou ao sd-cli com `-i`, e o `.txt` ao lado do vídeo registra a linha `init_image`.
+
+**Rodada final F1–F12 no `3f1e0b6`** (29/10, das 10h39 às 11h30, sem nenhuma falha): F1 a F10 passaram ✅. O F11 e o F12 ficam 🟡 só pelo que depende do Julio, o R4 e o bloqueio de tela.
+- F3: o Parar do chat levou de 42 a 89 ms.
+- F4: uma conversa de 250 mensagens abriu em 343 ms.
+- F5: o PDF foi indexado em 4,0 s, e a resposta com citação veio em 9,1 s.
+- F6: o Z-Image 512² levou 792 s, e o Cancelar 0,66 s.
+- F7: o Wan 2.2 256² com 9 quadros levou 454 s, e o Cancelar 0,71 s, a 24 fps.
+- F8: o upscale 2x levou 4,0 s e cai no Lanczos quando falta o modelo.
+- F9: Piper e Whisper ok, com Cancelar em 0,08 s.
+- F10: MO1 a MO6 ok, com a moderação desligada.
+- O hash do `config.json` não mudou durante a rodada.
+
+Detalhes no `ROTEIRO_TESTES.md` (`6d5db31`, `e4a8ae3`).
+
+**Limite conhecido:** no F7, a estimativa da decodificação mostrou cerca de 6 min 59 s, mas o tempo real foi 3 min 38 s, cerca de 92% a mais. É só o número da tela e não bloqueia a entrega. O main está congelado, então fica com o Julio decidir se a correção (Front) entra antes da entrega.
+
+**A. Para o Julio conferir na tela, no `3f1e0b6`:**
 1. **E9** (roteiro).
-2. Cliques reais do **E10** (cosmético das abas de mídia, instalado desde o `d040ea5`), do **MO5** e do **SE1**.
+2. Cliques reais do **E10** (cosmético das abas de mídia), do **MO5** e do **SE1**.
 3. **Barra de progresso** (Imagem, Melhorar e Vídeo): o "falta" desce a cada segundo entre os passos; "Carregando modelo… Xs" antes do 1º passo; "Processando… Xs" no Melhorar sem IA.
 4. **Aba Vídeo, linha Tamanho:** Proporção, Resolução e L×A separados e clicáveis; o painel rola com a janela baixa.
 5. **Trocar a senha temporária** pelo botão "Trocar senha…" no painel do moderador.
-6. **E15, FLUX.2 na CPU com o Dispositivo em Auto:** editar uma imagem em 512×512 e ver que não fica preso em "Carregando modelo…". Antes, o Dispositivo volta de CPU para Auto (mudado no teste de 22/10).
-7. **S3:** usar o app com a internet desligada (por último).
-
-**B. Depois da instalação do hash candidato:**
-8. **E16, vídeo com imagem inicial:** com o Wan 2.2, escolher uma imagem em "Imagem inicial (opcional)…" e gerar; no Wan 2.1 a linha não aparece.
+6. **E16 na mão:** com o Wan 2.2, escolher uma imagem em "Imagem inicial (opcional)…" e gerar. No Wan 2.1, a linha não aparece.
+7. **R4 (F11) e bloqueio de tela (F12).**
+8. **S3:** usar o app com a internet desligada e o firewall configurado como admin (por último).
 
 **C. Decisões só do Julio:**
 - Modelo do chat: o `config.json` está com o `qwen3-30b-a3b`, não com o `qwen3.8-27b-aggressive` aprovado (com o 30b, o app mínimo passa de ~57 GB para ~74 GB).
