@@ -163,10 +163,13 @@ def gerar_video(params, on_progress, cancel_flag):
     cfgs, fps, seed = float(p.get("cfg_scale", d.get("cfg_scale", 6.0))), int(p.get("fps", d.get("fps", 16))), _seed(p.get("seed"))
     neg = str(p.get("negative") or "").strip() or sdcpp.WAN_NEG; stem = f"{time.strftime('%Y%m%d_%H%M%S')}_wan_{seed}"
     avi = out / f"{stem}.avi"
-    (out / f"{stem}.txt").write_text(f"prompt: {prompt}\nnegative: {neg}\nseed: {seed}\nsize: {w}x{h}\n"
-                                     f"modelo: {modelo}\nframes: {frames}\nsteps: {steps}\ncfg: {cfgs}\nfps: {fps}\n", encoding="utf-8")
+    init = str(p.get("init_image") or "").strip() or None  # E16: imagem inicial (só Wan 2.2; GUI só manda no 2.2)
     mk = lambda b: sdcpp.build_wan_args(b, cfg, prompt, avi, neg, w, h, frames, steps, cfgs, seed, fps,
-                                        float(p.get("flow_shift", d.get("flow_shift", 3.0))), modelo)
+                                        float(p.get("flow_shift", d.get("flow_shift", 3.0))), modelo, init_image=init)
+    if init: mk("sd-cli")  # valida cedo (wan21 + imagem -> ValueError; imagem ausente -> FileNotFoundError) antes do sd-cli
+    (out / f"{stem}.txt").write_text(f"prompt: {prompt}\nnegative: {neg}\nseed: {seed}\nsize: {w}x{h}\n"
+                                     f"modelo: {modelo}\nframes: {frames}\nsteps: {steps}\ncfg: {cfgs}\nfps: {fps}\n"
+                                     + (f"init_image: {init}\n" if init else ""), encoding="utf-8")
     phase = getattr(on_progress, "phase", None)  # opcional (JobQueue): fase sem passos, ex. decodificação VAE
     kw = {"phase_cb": phase} if phase is not None else {}
     sdcpp.run_with_fallback(cfg.get("sdcpp_dir"), sdcpp.video_variant(cfg), mk,
