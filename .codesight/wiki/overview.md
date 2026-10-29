@@ -19,7 +19,7 @@ Changes to these files have the widest blast radius across the codebase:
 - `ia_off/perf.py` — imported by **15** files
 - `ia_off/engines_registry.py` — imported by **13** files
 - `ia_off/engine_api.py` — imported by **11** files
-- `ia_off/job_queue.py` — imported by **8** files
+- `ia_off/media_tabs.py` — imported by **9** files
 
 ## Required Environment Variables
 
