@@ -1,6 +1,6 @@
 # IA Off 3.0: versão candidata (16/10/2026)
 
-Versão no PC: `3f1e0b6` (hash da entrega), instalada em 29/10 às 9h14 (P2 verde 2x, 268 ok e 3 skipped). Backup em `C:\IA\backup\v3_20261029_091330`; os 26 arquivos batem com o pacote. Antes: `fc6a16c`, instalada em 22/10 às 12h49 (P2 verde 2x, 248 ok e 3 skipped). Backup em `C:\IA\backup\v3_20261022_124924`. Antes: `d040ea5`, instalada às 11h48 (P2 236 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_114804`; `fb8b04d`, instalada às 11h02 (P2 231 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_110249`; `48dd94e`, instalada às 9h06 (P2 226 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_090636`; `e7bb291`, instalada às 6h38 (P2 219 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_063817`; `4641034`, instalada às 6h19 (P2 212 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_061853`; `97d1539`, instalada em 22/10 às 6h14, backup em `C:\IA\backup\v3_20261022_061414` (medida descartada, substituído pelo `4641034`); `d7e8c8b`, instalada às 5h41 (P2 verde, 206 ok e 3 skipped; SHA256 de 4 arquivos conferido, incluindo `ollama_client.py` e `media_tabs.py`), backup em `C:\IA\backup\v3_20261022_054120`; `5818bfc`, instalada em 22/10 às 4h48, backup em `C:\IA\backup\v3_20261022_044800`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
+Versão no PC: `2f9ec50` (hash da entrega, o `3f1e0b6` com a correção do F7), instalada em 29/10 às 22h36 (P2 271 ok), com backup `C:\IA\backup\v3_20261029_223603`. Antes: `3f1e0b6`, instalada em 29/10 às 9h14 (P2 verde 2x, 268 ok e 3 skipped). Backup em `C:\IA\backup\v3_20261029_091330`; os 26 arquivos batem com o pacote. Antes: `fc6a16c`, instalada em 22/10 às 12h49 (P2 verde 2x, 248 ok e 3 skipped). Backup em `C:\IA\backup\v3_20261022_124924`. Antes: `d040ea5`, instalada às 11h48 (P2 236 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_114804`; `fb8b04d`, instalada às 11h02 (P2 231 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_110249`; `48dd94e`, instalada às 9h06 (P2 226 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_090636`; `e7bb291`, instalada às 6h38 (P2 219 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_063817`; `4641034`, instalada às 6h19 (P2 212 ok e 3 skipped), backup em `C:\IA\backup\v3_20261022_061853`; `97d1539`, instalada em 22/10 às 6h14, backup em `C:\IA\backup\v3_20261022_061414` (medida descartada, substituído pelo `4641034`); `d7e8c8b`, instalada às 5h41 (P2 verde, 206 ok e 3 skipped; SHA256 de 4 arquivos conferido, incluindo `ollama_client.py` e `media_tabs.py`), backup em `C:\IA\backup\v3_20261022_054120`; `5818bfc`, instalada em 22/10 às 4h48, backup em `C:\IA\backup\v3_20261022_044800`. A primeira candidata foi o `4c6d743` (16/10). Backup da versão candidata em `C:\IA\backup\rc_v3.0_4c6d743_20261016` (com `LEIA_rc.txt`). O código no PC é igual ao do `af66cc4` nos 56 arquivos, e o app usa as bibliotecas do `.venv`. Entrega prevista: 30/10/2026. Detalhes e commits em `docs/CHANGELOG.md`.
 
 ## O que tem de novo
 - **Moderador opcional**, desligado por padrão. Desligado, não restringe nada. Ligado, tem três níveis (leve, médio e rígido), e mudar o filtro exige senha. A senha fica guardada só como hash.
@@ -63,7 +63,7 @@ Se algo falhar, mande no grupo um print e o horário.
 
 ## O que o Julio precisa conferir na tela (atualizado 29/10, 11h30)
 
-**Versão no PC hoje:** `3f1e0b6`, o hash da entrega (29/10, 9h14, backup `C:\IA\backup\v3_20261029_091330`).
+**Versão no PC hoje:** `2f9ec50`, o hash da entrega (29/10, 22h36, backup `C:\IA\backup\v3_20261029_223603`). Os resultados abaixo foram medidos no `3f1e0b6`, e o F7 foi refeito no `2f9ec50`.
 
 Medido pelo ia_off no PC:
 - **E15 ✅:** com o Dispositivo em Auto, o FLUX.2 rodou na CPU, levando 474,6 s em 512×512 e 825,5 s em 512×1024.
@@ -82,9 +82,9 @@ Medido pelo ia_off no PC:
 
 Detalhes no `ROTEIRO_TESTES.md` (`6d5db31`, `e4a8ae3`).
 
-**Limite conhecido:** no F7, a estimativa da decodificação mostrou cerca de 6 min 59 s, mas o tempo real foi 3 min 38 s, cerca de 92% a mais. É só o número da tela e não bloqueia a entrega. O main está congelado, então fica com o Julio decidir se a correção (Front) entra antes da entrega.
+**F7 corrigido (`2f9ec50`):** a estimativa da decodificação, que saía cerca de 92% acima do real, ficou 8% abaixo na 2ª rodada no PC. A 1ª rodada de um tamanho novo ainda usa a conta antiga.
 
-**A. Para o Julio conferir na tela, no `3f1e0b6`:**
+**A. Para o Julio conferir na tela, no `2f9ec50`:**
 1. **E9** (roteiro).
 2. Cliques reais do **E10** (cosmético das abas de mídia), do **MO5** e do **SE1**.
 3. **Barra de progresso** (Imagem, Melhorar e Vídeo): o "falta" desce a cada segundo entre os passos; "Carregando modelo… Xs" antes do 1º passo; "Processando… Xs" no Melhorar sem IA.
