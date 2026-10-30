@@ -134,7 +134,7 @@ Regras: só o ia_off executa no PC; antes de instalar, P2 verde no hash exato; b
 | F4 | Chat: C3 (fechar e reabrir) + E12 (250 mensagens) | Histórico preservado, abre em < 1 s | ✅ PC 29/10: 250 mensagens abrem em 343 ms |
 | F5 | Documentos: D2 com um PDF | Resposta com citação | ✅ PC 29/10: PDF indexado em 4,0 s, resposta com citação em 9,1 s |
 | F6 | Imagem: I1 Z-Image 512x512 8 passos + Cancelar numa 2ª | Gera; tempo até +15% do E4 (875 s); cancela sem "Carregando modelo…" | ✅ PC 29/10: Z-Image 512² em 792 s (E4 875 s); Cancelar em 0,66 s |
-| F7 | Vídeo: Wan 2.2 256x256 4 passos + Cancelar numa 2ª | "Decodificando…" até o fim, 24 fps; cancela em ~1 passo | ✅ PC 29/10: Wan 2.2 256², 9 quadros, em 454 s; 24 fps; Cancelar em 0,71 s. Ver falha da estimativa da decodificação |
+| F7 | Vídeo: Wan 2.2 256x256 4 passos + Cancelar numa 2ª | "Decodificando…" até o fim, 24 fps; cancela em ~1 passo | ✅ PC 29/10: Wan 2.2 256², 9 quadros, em 454 s; 24 fps; Cancelar em 0,71 s. Estimativa corrigida no 2f9ec50 (~8% na 2ª rodada) |
 | F8 | Ampliador: U1 2x (só se o .onnx estiver aprovado) senão U3 | IA ou Lanczos com aviso | ✅ PC 29/10: 2x em 4,0 s; sem o modelo cai no Lanczos |
 | F9 | Voz: A1 + A2 + Cancelar na transcrição | Texto e áudio ok; barra "s de áudio"; cancela em < 1 s | ✅ PC 29/10: Piper e Whisper ok; Cancelar em 0,08 s |
 | F10 | Moderador: desligado por padrão (MO1) + um bloqueio em Rígido (MO5) | Sem amarras desligado; bloqueio com motivo | ✅ PC 29/10: MO1 a MO6 ok; moderação segue OFF |
@@ -160,7 +160,7 @@ Regras: só o ia_off executa no PC; antes de instalar, P2 verde no hash exato; b
 | 22/10 | Julio | 3.0 | Imagem pelo atalho (pythonw): "AttributeError: 'NoneType' object has no attribute 'isatty'" — sys.stdout/stderr None, biblioteca do motor (tqdm/HF) chama isatty; testes não pegam por rodarem com console | DEV Front (app.py) + beck (log no job_queue) | causa: transformers loading_report._style; corrigido em a126945+5024dda (+ testes 35c5de4, log 66cb14c); P2 fb8b04d 231 ok; PC fb8b04d (backup v3_20261022_110249): txt2img 18,8 s e inpaint 21,3 s pelo pythonw do app sem erro; falta Julio confirmar pelo atalho |
 | 22/10 | Julio | 3.0 | Imagem/Melhorar: "falta" e % só mudam quando o passo termina; entre passos ficam parados (Lanczos é 1 passo só) | DEV Front (media_tabs) | cc241d6/02f0e8c + e6f82af; P2 d040ea5 236 ok; PC d040ea5 (backup v3_20261022_114804) instalado; falta Julio conferir na tela |
 | 22/10 | Julio | 3.0 | Vídeo (fb8b04d): linha "Tamanho" espremida, Proporção/Resolução/L×A sobrepostos e impossíveis de usar (painel do Vídeo sem rolagem) | DEV Front (media_tabs) | corrigido em 5c3ea45 (teste com janela baixa); PC d040ea5 instalado; falta Julio conferir na tela |
-| 29/10 | F7 | 3.0 | Estimativa da decodificação do Wan mostrou ~6min59s, real 3min38s (~92% acima, fora dos 25%); taxa gravada talvez de outro tamanho | DEV Front | aberto; main congelado, decisão do Julio se entra antes da entrega |
+| 29/10 | F7 | 3.0 | Estimativa da decodificação do Wan mostrou ~6min59s, real 3min38s (~92% acima, fora dos 25%); taxa gravada talvez de outro tamanho | DEV Front | ✅ corrigido em 9200d19 (Front, revisão beck, merge 2f9ec50, P2 271 ok 2x); PC 29/10 22:36 (backup C:\IA\backup\v3_20261029_223603, 53/53 hashes ok): 1ª rodada est. 6m59s vs real 3m31s (conta antiga, esperado), 2ª est. 3m30s vs real 3m49s (~8%, dentro dos 25%) |
 
 
 ## Checklist do Julio
